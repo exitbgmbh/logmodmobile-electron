@@ -1,6 +1,8 @@
 const index = require('electron');
 const app = index.app;
-const { startElectronApp, windowInstance } = require(__dirname + '/src/app.js');
+const { startElectronApp, windowInstance } = require(__dirname + '/src/app');
+
+require('dotenv').config({path: __dirname + '/auth.env'});
 
 app.on('ready', startElectronApp);
 app.on('window-all-closed', function () {
