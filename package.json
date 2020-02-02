@@ -38,11 +38,10 @@
     "artifactName": "${productName}.${ext}",
     "win": {
       "target": [
-        "zip"
+        "nsis"
       ]
     },
     "linux": {
-      "executableName": "exitB-LogModMobile2",
       "target": [
         "AppImage"
       ]

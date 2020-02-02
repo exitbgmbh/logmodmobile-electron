@@ -38,7 +38,7 @@ function showWindow() {
         }
     });
 
-    const startUrl = process.env.ELECTRON_START_URL || 'http://localhost:3000';
+    const startUrl = process.env.ELECTRON_START_URL || 'https://www.exitb.de';
     console.log(__dirname);
     mainWindow.setMenu(null);
     mainWindow.loadURL(startUrl).then(() => {
