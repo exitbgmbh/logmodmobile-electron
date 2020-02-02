@@ -42,7 +42,8 @@
     "linux": {
       "target": [
         "AppImage"
-      ]
+      ],
+      "productName": "exitB-LogModMobile"
     },
     "publish": {
       "provider": "github"
