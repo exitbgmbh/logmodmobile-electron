@@ -40,10 +40,10 @@
       ]
     },
     "linux": {
+      "productName": "exitB-LogModMobile",
       "target": [
         "AppImage"
-      ],
-      "productName": "exitB-LogModMobile"
+      ]
     },
     "publish": {
       "provider": "github"
