@@ -34,13 +34,13 @@
   },
   "build": {
     "appId": "de.exitb.logmodmobile",
+    "productName": "exitB-LogModMobile",
     "win": {
       "target": [
         "zip"
       ]
     },
     "linux": {
-      "productName": "exitB-LogModMobile",
       "target": [
         "AppImage"
       ]
