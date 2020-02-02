@@ -1,10 +1,13 @@
 {
   "name": "logmodmobile-electron",
-  "version": "1.0.0-alpha",
+  "version": "1.0.2-alpha",
   "description": "electron.js wrapper for exitB LogModMobile (blisstribute logistic module)",
   "main": "index.js",
   "scripts": {
-    "electron-dev": "NODE_ENV=development ELECTRON_START_URL=http://localhost:3000 electron ."
+    "electron-dev": "NODE_ENV=development ELECTRON_START_URL=http://localhost:3000 electron .",
+    "bump-version-patch": "npm version patch",
+    "bump-version-minor": "npm version minor",
+    "bump-version-major": "npm version major"
   },
   "repository": {
     "type": "git",
@@ -24,9 +27,10 @@
   },
   "homepage": "https://github.com/ccarnivore/logmodmobile-electron#readme",
   "dependencies": {
+    "axios": "^0.19.2",
+    "electron-updater": "^4.2.0",
     "pdf-to-printer": "^1.1.2",
-    "websocket": "^1.0.31",
-    "axios": "^0.19.2"
+    "websocket": "^1.0.31"
   },
   "build": {
     "appId": "de.exitb.logmodmobile",
