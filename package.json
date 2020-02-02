@@ -1,11 +1,11 @@
 {
   "name": "logmodmobile-electron",
-  "version": "1.0.3",
+  "version": "1.0.3-alpha",
   "description": "electron.js wrapper for exitB LogModMobile (blisstribute logistic module)",
   "main": "index.js",
   "scripts": {
     "electron-dev": "NODE_ENV=development ELECTRON_START_URL=http://localhost:3000 electron .",
-    "bump-version-patch": "npm version patch",
+    "bump-version-patch": "npm version prerelease --preid=alpha",
     "bump-version-minor": "npm version minor",
     "bump-version-major": "npm version major"
   },
