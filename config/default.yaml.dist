@@ -1,8 +1,8 @@
 # application base configuration
 app:
 
-  # the exitB logmodmobile application url
-  url: https://localhost:3000
+  # the exitB logmod mobile application url
+  url: 'https://your-logmod-mobile-application-url.de'
 
   # the check for update interval (in seconds)
   autoUpdateCheckInterval: 600

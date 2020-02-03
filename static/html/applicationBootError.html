@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Application Boot Error</title>
+</head>
+<body>
+<h2>Die Anwendung konnte nicht gestartet werden.</h2>
+<p id="errormsg" style="font-family: 'Courier 10 Pitch',monospace">
+</p>
+</body>
+<script type="text/javascript">
+    const url = new URL(window.location);
+    document.getElementById('errormsg').innerHTML = url.searchParams.get('error');
+</script>
+</html>
