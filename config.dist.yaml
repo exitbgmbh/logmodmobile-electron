@@ -1,0 +1,116 @@
+# application base configuration
+app:
+
+  # the exitB logmodmobile application url
+  url: https://localhost:3000
+
+  # the check for update interval (in seconds)
+  autoUpdateCheckInterval: 600
+
+# shipping configuration
+shipping:
+
+  # shipment type code
+  DHL:
+
+    # export configuration (polling)
+    export:
+
+      # the path to export the file to
+      path: '/tmp'
+
+      # the export file pattern - this pattern supports placeholders
+      # available placeholders; placeholder has to be wrapped in ${}
+      # ${COUNTER} - a simple auto incrementing number, starting at 1 every time the client starts
+      # ${INVOICE_NUMBER} - the invoice number for an export file
+      pattern: 'Poll-${COUNTER}.csv'
+
+    # import configuration (day-end closing import)
+    import:
+
+      # the path to import files from
+      # we do not use directory polling anymore. we use file system watchers
+      path: '/tmp/export'
+
+      # the import file pattern
+      pattern: ''
+
+# printer configuration
+printing:
+
+  # path where invoice-/delivery-/return-slips and shipment labels are stored temporary
+  temporaryPath: '/tmp'
+
+  # purges the temporary path on close
+  purgeTemporaryPathOnClose: true
+
+  # the default invoice printer
+  # this needs to be the OS printer name
+  defaultInvoiceSlipPrinter: ''
+
+  # the default delivery slip printer
+  # if not configured, the defaultInvoiceSlipPrinter will be used
+  # this needs to be the OS printer name
+  defaultDeliverySlipPrinter: ''
+
+  # the default return slip printer
+  # if not configured, the defaultInvoiceSlipPrinter will be used
+  # this needs to be the OS printer name
+  defaultReturnSlipPrinter: ''
+
+  # the default shipment label printer
+  # if not configured, the defaultInvoiceSlipPrinter will be used
+  # this needs to be the OS printer name
+  defaultShipmentLabelPrinter: ''
+
+  # the default product label printer
+  # if not configured, the defaultInvoiceSlipPrinter will be used
+  # this needs to be the OS printer name
+  defaultProductLabelPrinter: ''
+
+  # the number of invoice copies to print for invoices shipped to client country (CC)
+  defaultInvoiceSlipPrintCountCC: 1
+
+  # the number of invoice copies to print for invoices shipped to countries in european union (EU)
+  defaultInvoiceSlipPrintCountEU: 1
+
+  # the number of invoice copies to print for invoices shipped to third countries (TC)
+  defaultInvoiceSlipPrintCountTC: 3
+
+  # additional configuration based on shipment type codes
+  shipmentTypeConfig:
+
+    # shipment type code
+    DHL:
+
+      # shipment label printer
+      # this needs to be the OS printer name
+      shipmentLabelPrinter: ''
+
+  # additional configuration based on advertising medium codes
+  advertisingMediumConfig:
+
+    # advertising medium code
+    EXB:
+
+      # invoice slip printer
+      # this needs to be the OS printer name
+      invoiceSlipPrinter: ''
+
+      # delivery slip printer
+      # this needs to be the OS printer name
+      deliverySlipPrinter: ''
+
+      # return slip printer
+      # this needs to be the OS printer name
+      returnSlipPrinter: ''
+
+      # the number of invoice copies to print for invoices shipped to client country (CC)
+      invoiceSlipPrintCountCC: 1
+
+      # the number of invoice copies to print for invoices shipped to countries in european union (EU)
+      invoiceSlipPrintCountEU: 1
+
+      # the number of invoice copies to print for invoices shipped to third countries (TC)
+      invoiceSlipPrintCountTC: 3
+
