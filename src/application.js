@@ -5,7 +5,8 @@ const path = require('path');
 const registerEvents = require('./events');
 const {logDebug, logInfo, logWarning} = require('./logging');
 const config = require('config');
-const { autoUpdater } = require('electron-updater');
+const { initializeAutoUpdateCheck } = require('./autoUpdateCheck');
+const shippingHandler = require('./shippingHandler');
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -15,19 +16,6 @@ const isDevelopment = process.env.NODE_ENV === 'development';
  * @type Electron.BrowserWindow
  */
 let windowInstance = null;
-
-/**
- * initializes the electron-updater auto updater mechanism, using update interval from application config
- */
-const initAutoUpdate = () => {
-    autoUpdater.checkForUpdatesAndNotify().then((updateInfo) => {
-        console.log(updateInfo);
-    });
-
-    const autoUpdateInterval = (config.has('app.autoUpdateCheckInterval') ? config.get('app.autoUpdateCheckInterval') : 600);
-    setTimeout(initAutoUpdate, autoUpdateInterval * 1000);
-    logInfo('application', 'initAutoUpdate', 'auto update started with interval %interval'.replace('%interval', autoUpdateInterval.toString()))
-};
 
 /**
  * show the application main window
@@ -53,9 +41,6 @@ const instantiateApplicationWindow = (applicationBootError) => {
         windowInstance.loadURL(startUrl).then(() => {
             windowInstance.setTitle(windowInstance.getTitle() + ' • Client %s'.replace('%s', version));
         });
-
-        initAutoUpdate();
-        registerEvents();
     }
 
     if (isDevelopment) {
@@ -72,14 +57,24 @@ const instantiateApplicationWindow = (applicationBootError) => {
  */
 const bootApplication = () => {
     logInfo('application', 'bootApplication', 'start');
-
-    let applicationBootError = null;
     if (!config.has('app.url')) {
-        applicationBootError = {message: 'config not found or not valid'};
+        instantiateApplicationWindow({message: 'config not found or not valid'});
         logWarning('application', 'bootApplication', 'invalid config');
+        return;
     }
 
-    instantiateApplicationWindow(applicationBootError);
+    try {
+        initializeAutoUpdateCheck();
+        registerEvents();
+
+        shippingHandler.initialize();
+    } catch (err) {
+        logWarning('application', 'bootApplication', err.message);
+        instantiateApplicationWindow(err);
+        return;
+    }
+
+    instantiateApplicationWindow();
     logInfo('application', 'bootApplication', 'end');
 };
 

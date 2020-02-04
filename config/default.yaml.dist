@@ -7,13 +7,24 @@ app:
   # the check for update interval (in seconds)
   autoUpdateCheckInterval: 600
 
+  # the websocket heartbeat interval (in seconds)
+  heartbeatInterval: 15
+
 # shipping configuration
 shipping:
 
   # shipment type code
   DHL:
 
-    # export configuration (polling)
+    # printer configuration [CONDITIONAL - necessary if shipment provider provides printable label]
+    printing:
+
+      # the shipment label printer for selected shipment type
+      # if not configured, the defaultInvoiceSlipPrinter will be used
+      # this needs to be the OS printer name
+      shipmentLabelPrinter: ''
+
+    # export configuration (polling) [CONDITIONAL - necessary if shipment provider uses polling]
     export:
 
       # the path to export the file to
@@ -25,7 +36,7 @@ shipping:
       # ${INVOICE_NUMBER} - the invoice number for an export file
       pattern: 'Poll-${COUNTER}.csv'
 
-    # import configuration (day-end closing import)
+    # import configuration (day-end closing import) [CONDITIONAL - necessary if shipment provider uses polling and day-end closing files is available]
     import:
 
       # the path to import files from
@@ -45,6 +56,7 @@ printing:
   purgeTemporaryPathOnClose: true
 
   # the default invoice printer
+  # if not configured, the OS default printer will be used
   # this needs to be the OS printer name
   defaultInvoiceSlipPrinter: ''
 
@@ -76,16 +88,6 @@ printing:
 
   # the number of invoice copies to print for invoices shipped to third countries (TC)
   defaultInvoiceSlipPrintCountTC: 3
-
-  # additional configuration based on shipment type codes
-  shipmentTypeConfig:
-
-    # shipment type code
-    DHL:
-
-      # shipment label printer
-      # this needs to be the OS printer name
-      shipmentLabelPrinter: ''
 
   # additional configuration based on advertising medium codes
   advertisingMediumConfig:

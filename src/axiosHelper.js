@@ -15,6 +15,4 @@ const getAxiosInstance = (authenticationToken) => {
     return axiosInstance;
 };
 
-module.exports = {
-    getAxiosInstance: getAxiosInstance
-};
+module.exports = getAxiosInstance;
