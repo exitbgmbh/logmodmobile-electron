@@ -61,8 +61,21 @@ class ShippingHandler
     };
 
 
-    handleShipOut = () => {
+    handleShipOut = (providerCode) => {
+        if (!this.shipmentProviders.hasOwnProperty(providerCode)) {
+            throw new Error('shipment provider ' + providerCode + ' seems not configured');
+        }
 
+        const provider = this.shipmentProviders[providerCode];
+        if (provider.supportsPrinting()) {
+            console.log('printing result');
+            return;
+        }
+
+        if (provider.supportsPolling()) {
+            console.log('export polling file');
+            return;
+        }
     };
 }
 
