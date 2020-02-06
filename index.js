@@ -2,8 +2,6 @@ const index = require('electron');
 const app = index.app;
 const { bootApplication, windowInstance } = require('./src/application');
 
-require('dotenv').config({path: './auth.env'});
-
 app.on('ready', bootApplication);
 app.on('window-all-closed', function () {
     // On OS X it is common for applications and their menu bar

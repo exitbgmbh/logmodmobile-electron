@@ -26,6 +26,7 @@ const instantiateApplicationWindow = (applicationBootError) => {
     windowInstance = new BrowserWindow({
         width: 1280,
         height: 800,
+        show: isDevelopment,
         icon: path.join(__dirname, '/../static/assets/logmodmobile-64.png'),
         webPreferences: {
             nodeIntegration: true,

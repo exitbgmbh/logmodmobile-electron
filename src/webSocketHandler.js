@@ -55,26 +55,27 @@ class WebSocketHandler
 
         this.socket = new WebSocketClient();
         this.socket.on('connectFailed', function(error) {
-            console.log('Connect Error: ' + error.toString());
+            logWarning('webSocketHandler', 'connectToWebSocket', 'connection failed: ' + error.toString());
         });
 
         this.socket.on('connect', function(connection) {
             this.currentConnection = connection;
+            logInfo('webSocketHandler', 'onConnect', 'instance registered ' + this.logModIdentification);
             showNotification('LogModMobile wurde erfolgreich als %s registriert.'.replace('%s', this.logModIdentification));
 
             this._registerHeartbeat();
 
             this.currentConnection.on('error', function(error) {
+                logWarning('webSocketHandler', 'onError', 'error occurred: ' + error.toString());
                 showNotification('LogModMobile - Fehler in der WebSocket-Verbindung: ' + error.toString());
             });
             this.currentConnection.on('close', function() {
+                logWarning('webSocketHandler', 'onClose', 'connection closed');
                 showNotification('LogModMobile - Die aktuelle WebSocket-Verbindung wurde geschlossen.');
             });
 
             this.currentConnection.on('message', function(message) {
-                if (message.type === 'utf8') {
-                    console.log("Received: '" + message.utf8Data + "'");
-                }
+                logDebug('webSocketHandler', 'onMessage', 'message received: ' + message);
             });
         }.bind(this));
 
