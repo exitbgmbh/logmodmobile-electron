@@ -2,15 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Application Boot Error</title>
+    <title>Anwendungsfehler</title>
 </head>
 <body>
 <h2>Die Anwendung konnte nicht gestartet werden.</h2>
 <p id="errormsg" style="font-family: 'Courier 10 Pitch',monospace">
 </p>
+<p id="configHint"></p>
 </body>
 <script type="text/javascript">
     const url = new URL(window.location);
     document.getElementById('errormsg').innerHTML = url.searchParams.get('error');
+    document.getElementById('configHint').innerHTML = 'Bitte prüfen Sie die Ihre Konfigurationsdatei "<b>default.yaml</b>" ("<b>' + process.env.NODE_CONFIG_DIR + '</b>")';
 </script>
 </html>

@@ -32,11 +32,11 @@
     "axios": "^0.19.2",
     "chalk": "^3.0.0",
     "config": "^3.2.5",
+    "electron-is-running-in-asar": "^1.0.0",
     "electron-updater": "^4.2.0",
     "js-yaml": "^3.13.1",
     "pdf-to-printer": "^1.1.2",
-    "websocket": "^1.0.31",
-    "dotenv": "^8.2.0"
+    "websocket": "^1.0.31"
   },
   "build": {
     "appId": "de.exitb.logmodmobile",
@@ -54,7 +54,11 @@
     },
     "publish": {
       "provider": "github"
-    }
+    },
+    "extraFiles": [
+      "config/*",
+      "!config/default.yaml"
+    ]
   },
   "devDependencies": {
     "electron": "^7.1.11",

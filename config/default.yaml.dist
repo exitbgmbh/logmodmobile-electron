@@ -16,7 +16,7 @@ shipping:
   # shipment type code
   DHL:
 
-    # printer configuration [CONDITIONAL - necessary if shipment provider provides printable label]
+    # printer configuration [CONDITIONAL - necessary if shipment provider is configured for direct label printing]
     printing:
 
       # the shipment label printer for selected shipment type
@@ -24,27 +24,29 @@ shipping:
       # this needs to be the OS printer name
       shipmentLabelPrinter: ''
 
-    # export configuration (polling) [CONDITIONAL - necessary if shipment provider uses polling]
-    export:
+    # polling configuration [CONDITIONAL - necessary if shipment provider is configured for polling]
+    polling:
+      # export configuration
+      export:
 
-      # the path to export the file to
-      path: '/tmp'
+        # the path to export the file to
+        path: '/tmp'
 
-      # the export file pattern - this pattern supports placeholders
-      # available placeholders; placeholder has to be wrapped in ${}
-      # ${COUNTER} - a simple auto incrementing number, starting at 1 every time the client starts
-      # ${INVOICE_NUMBER} - the invoice number for an export file
-      pattern: 'Poll-${COUNTER}.csv'
+        # the export file pattern - this pattern supports placeholders
+        # available placeholders; placeholder has to be wrapped in ${}
+        # ${COUNTER} - a simple auto incrementing number, starting at 1 every time the client starts
+        # ${INVOICE_NUMBER} - the invoice number for an export file
+        pattern: 'Poll-${COUNTER}.csv'
 
-    # import configuration (day-end closing import) [CONDITIONAL - necessary if shipment provider uses polling and day-end closing files is available]
-    import:
+      # import configuration (day-end closing import) [CONDITIONAL - necessary if day-end closing files are available]
+      import:
 
-      # the path to import files from
-      # we do not use directory polling anymore. we use file system watchers
-      path: '/tmp/export'
+        # the path to import files from
+        # we do not use directory polling anymore. we use file system watchers
+        path: '/tmp/export'
 
-      # the import file pattern
-      pattern: ''
+        # the import file pattern
+        pattern: ''
 
 # printer configuration
 printing:
