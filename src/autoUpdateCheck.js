@@ -9,6 +9,8 @@ let updateCheckPID = null;
  */
 const initializeAutoUpdateCheck = () => {
     const autoUpdateInterval = (config.has('app.autoUpdateCheckInterval') ? config.get('app.autoUpdateCheckInterval') : 600);
+
+    _checkForUpdates();
     updateCheckPID = setInterval(_checkForUpdates, autoUpdateInterval * 1000);
     logInfo('application', 'initAutoUpdate', 'auto update started with interval %interval'.replace('%interval', autoUpdateInterval.toString()))
 };

@@ -1,4 +1,5 @@
 const application = require('electron');
+const { ipcMain } = require('electron');
 const version = require('./../package').version;
 const BrowserWindow = application.BrowserWindow;
 const path = require('path');
@@ -29,7 +30,10 @@ const windowOnLoadCompleted = () => {
         windowInstance.show();
     }
 
-    windowInstance.setTitle(windowInstance.getTitle() + ' • Client %s'.replace('%s', version));
+    let windowTitle = windowInstance.getTitle();
+    if (windowTitle.indexOf('Client') === -1) {
+        windowInstance.setTitle(windowInstance.getTitle() + ' • Client %s'.replace('%s', version));
+    }
     logDebug('application', 'windowOnLoadCompleted', 'done');
 };
 
@@ -82,6 +86,7 @@ const instantiateApplicationWindow = (applicationBootError) => {
         windowInstance.webContents.openDevTools();
     }
 
+    ipcMain.on('authentication-succeed', windowOnLoadCompleted);
     windowInstance.on('closed', function () {
         windowInstance = null
     });
