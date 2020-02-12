@@ -42,7 +42,10 @@ const showApplicationError = (error) => {
     windowInstance.loadFile(
         'static/html/applicationBootError.html',
         {search: 'error=' + JSON.stringify(error.message)}
-    ).then(windowOnLoadCompleted);
+    ).then(() => {
+
+    });
+    windowInstance.webContents.on('did-finish-load', windowOnLoadCompleted);
 };
 
 /**
@@ -54,7 +57,7 @@ const instantiateApplicationWindow = (applicationBootError) => {
     windowInstance = new BrowserWindow({
         width: 1280,
         height: 800,
-        show: applicationBootError || !isDevelopment,
+        show: applicationBootError || isDevelopment,
         icon: path.join(__dirname, '/../static/assets/logmodmobile-64.png'),
         webPreferences: {
             nodeIntegration: true,
@@ -67,9 +70,12 @@ const instantiateApplicationWindow = (applicationBootError) => {
         showApplicationError(applicationBootError);
     } else {
         const startUrl = process.env.ELECTRON_START_URL || config.get('app.url');
-        windowInstance.loadURL(startUrl).then(windowOnLoadCompleted).catch((err) => {
+        windowInstance.loadURL(startUrl).then(() => {
+
+        }).catch((err) => {
             showApplicationError(err);
-        })
+        });
+        windowInstance.webContents.on('did-finish-load', windowOnLoadCompleted);
     }
 
     if (isDevelopment) {

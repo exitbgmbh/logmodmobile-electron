@@ -12,7 +12,6 @@ const authenticationSucceed = (event, arguments) => {
     const logModMobileIdent = getLogModIdentification();
     restClientInstance.requestWebSocketAccessLink(logModMobileIdent).then((response) => {
         showNotification('LogModMobile wird registriert...');
-        console.log(response);
         const { socketLink } = response.response;
 
         webSocketHandler.setLogModIdentification(logModMobileIdent).connectToWebSocket(socketLink);
