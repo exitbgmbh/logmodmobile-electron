@@ -3,14 +3,31 @@ const path = require('path');
 const isRunningInAsar = require('electron-is-running-in-asar');
 const {logDebug, logInfo} = require('./src/logging');
 
+/**
+ * get the default user config path
+ *
+ * @param app Electron.App
+ * @returns {string}
+ */
 const getApplicationConfigPath = (app) => {
     return app.getPath('userData');
 };
 
+/**
+ * get default user config file
+ *
+ * @param app Electron.App
+ * @returns {string}
+ */
 const getApplicationConfigFile = (app) => {
     return getApplicationConfigPath(app) + path.sep + 'default.yaml';
 };
 
+/**
+ * setting up default configuration
+ *
+ * @param app Electron.App
+ */
 const setupConfig = (app) => {
     logInfo('preCheckConfig', 'setupConfig', 'start');
 
@@ -29,6 +46,11 @@ const setupConfig = (app) => {
     return fs.copyFileSync(srcFile, destFile);
 };
 
+/**
+ * check if default config is available and update config path to user config path
+ *
+ * @param app Electron.App
+ */
 const checkConfig = (app) => {
     logDebug('setupConfig', 'checkConfig', 'start');
     const cfgPath = getApplicationConfigPath(app);

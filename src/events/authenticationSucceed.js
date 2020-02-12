@@ -1,28 +1,22 @@
-const getAxiosInstance = require(__dirname + '/../axiosHelper');
-const os = require('os');
+const restClientInstance = require('./../restClient');
 const { logInfo, logDebug, logWarning } = require('./../logging');
 const showNotification = require('./../notificationHelper');
-const webSocketHandler = require('./../webSocketHandler');
+const webSocketHandler = require('./../websocket');
+const { getLogModIdentification } = require('./../helper');
 
-let axiosInstance;
 const authenticationSucceed = (event, arguments) => {
     logDebug('event', 'authenticationSucceed', 'start ' + JSON.stringify(arguments));
-    if (!axiosInstance) {
-        axiosInstance = getAxiosInstance(arguments.authenticationToken);
-    }
+    restClientInstance.setAuthToken(arguments.authenticationToken);
+    restClientInstance.parseBaseUrl(arguments.requestUrl);
 
-    const logModMobileIdent = 'LOG-' + os.hostname();
-    let url = new URL(arguments.requestUrl);
-    url.searchParams.append('logModIdent', logModMobileIdent);
-    logDebug('event', 'authenticationSucceed', 'call for websocket ' + url.href);
-
-    axiosInstance.get(url.toString()).then((response) => {
+    const logModMobileIdent = getLogModIdentification();
+    restClientInstance.requestWebSocketAccessLink(logModMobileIdent).then((response) => {
         showNotification('LogModMobile wird registriert...');
-        const { socketLink } = response.data.response;
+        console.log(response);
+        const { socketLink } = response.response;
 
         webSocketHandler.setLogModIdentification(logModMobileIdent).connectToWebSocket(socketLink);
-    })
-    .catch((error) => {
+    }).catch((error) => {
         logWarning('event', 'authenticationSucceed', 'call for websocket failed ' + error.message);
     });
 };

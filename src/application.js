@@ -6,7 +6,9 @@ const registerEvents = require('./events');
 const {logDebug, logInfo, logWarning} = require('./logging');
 const config = require('config');
 const { initializeAutoUpdateCheck } = require('./autoUpdateCheck');
-const shippingHandler = require('./shippingHandler');
+const shippingHandlerInstance = require('./shipping');
+const printingHandlerInstance = require('./printing');
+const invoiceHandlerInstance = require('./invoice');
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -23,11 +25,11 @@ let windowInstance = null;
  */
 const windowOnLoadCompleted = () => {
     logDebug('application', 'windowOnLoadCompleted', 'started');
-    windowInstance.setTitle(windowInstance.getTitle() + ' • Client %s'.replace('%s', version));
     if (!windowInstance.isVisible()) {
         windowInstance.show();
     }
 
+    windowInstance.setTitle(windowInstance.getTitle() + ' • Client %s'.replace('%s', version));
     logDebug('application', 'windowOnLoadCompleted', 'done');
 };
 
@@ -94,7 +96,9 @@ const bootApplication = () => {
         initializeAutoUpdateCheck();
         registerEvents();
 
-        shippingHandler.initialize();
+        shippingHandlerInstance.initialize();
+        printingHandlerInstance.initialize();
+        invoiceHandlerInstance.initialize();
     } catch (err) {
         logWarning('application', 'bootApplication', err.message);
         instantiateApplicationWindow(err);
