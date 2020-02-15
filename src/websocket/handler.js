@@ -15,6 +15,8 @@ class WebSocketHandler
     constructor() {
         eventEmitter.on('shipOutFailed', this.sendMessage);
         eventEmitter.on('shipOutSucceed', this.sendMessage);
+        eventEmitter.on('pickBoxInvoiceSuccess', this.sendMessage);
+        eventEmitter.on('pickBoxInvoiceFailed', this.sendMessage);
     }
 
     /**
@@ -57,6 +59,7 @@ class WebSocketHandler
      * @param message
      */
     sendMessage = (message) => {
+        logDebug('webSocketHandler', 'sendMessage', 'sending message ... ' + JSON.stringify(message));
         this.currentConnection.send(JSON.stringify(message));
     };
 
@@ -115,7 +118,7 @@ class WebSocketHandler
                 break;
             }
             case PRINT_EVENT: {
-                eventEmitter.emit('print', socketEvent.data);
+                eventEmitter.emit('requestDocuments', socketEvent.data);
                 break;
             }
             case PICK_BOX_READY: {

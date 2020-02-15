@@ -137,6 +137,11 @@ const init = (app) => {
             bootApplication()
         }
     });
+
+    // when application is shut down, we've to remove our temporary files
+    app.on('quit', function () {
+        printingHandlerInstance.cleanup();
+    });
 };
 
 module.exports = init;

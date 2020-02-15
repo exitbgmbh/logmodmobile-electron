@@ -37,7 +37,9 @@ class RestClient
      * @param {string} path
      * @param {string} parameter
      * @param {string} apiVersion
+     *
      * @returns {string}
+     *
      * @private
      */
     _getFinalPath = (path, parameter, apiVersion = 'v1') => {
@@ -54,6 +56,7 @@ class RestClient
      * @param {string} path
      * @param {object} parameter
      * @param {string} apiVersion
+     *
      * @returns {*|Promise}
      */
     get = (path, parameter = {}, apiVersion = 'v1') => {
@@ -70,6 +73,7 @@ class RestClient
      * @param {object} data
      * @param {object} parameter
      * @param {string} apiVersion
+     *
      * @returns {*|Promise}
      */
     post = (path, data = {}, parameter = {}, apiVersion = 'v1') => {
@@ -82,6 +86,7 @@ class RestClient
     /**
      *
      * @param {string} logModIdent
+     *
      * @returns {*|Promise}
      */
     requestWebSocketAccessLink = (logModIdent) => {
@@ -92,6 +97,7 @@ class RestClient
      *
      * @param {string} boxIdentification
      * @param {object} data
+     *
      * @returns {*|Promise}
      */
     requestShipOut = (boxIdentification, data) => {
@@ -103,15 +109,29 @@ class RestClient
      *
      * @param {string} productIdentification
      * @param {int} templateId
+     *
+     * @returns {*|Promise}
      */
     requestProductLabel = (productIdentification, templateId) => {
         return this.get('document/readProductLabel/' + productIdentification, {templateId: templateId});
     };
 
     /**
+     *
+     * @param {string} pickBoxIdentification
+     * @param {boolean} forceInvoice
+     *
+     * @returns {*|Promise}
+     */
+    requestInvoice = (pickBoxIdentification, forceInvoice = false) => {
+        return this.post('pickBox/createInvoice/' + pickBoxIdentification, {forceInvoice: forceInvoice});
+    };
+
+    /**
      * request a single invoice slip for printing
      *
      * @param {string} invoiceNumber
+     *
      * @returns {*|Promise}
      */
     requestInvoiceDocument = (invoiceNumber) => {
@@ -122,6 +142,7 @@ class RestClient
      * requests a single delivery slip for printing
      *
      * @param {string} invoiceNumber
+     *
      * @returns {*|Promise}
      */
     requestDeliverySlipDocument = (invoiceNumber) => {
@@ -132,6 +153,7 @@ class RestClient
      * request a single return slip for printing
      *
      * @param {string} invoiceNumber
+     *
      * @returns {*|Promise}
      */
     requestReturnSlipDocument = (invoiceNumber) => {
@@ -142,6 +164,7 @@ class RestClient
      * request all documents for an invoice for printing
      *
      * @param {string} invoiceNumber
+     *
      * @returns {*|Promise}
      */
     requestAllDocuments = (invoiceNumber) => {

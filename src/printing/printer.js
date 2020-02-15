@@ -1,19 +1,61 @@
 const { logDebug } = require('./../logging');
 const config = require('config');
-// const printer = require('pdf-to-printer');
+const printer = require('pdf-to-printer');
 
-const defaultPrinter = 'EPSON'; //change to printer.list(true);
+let printerList = [];
+printer.list().then(res => printerList = res);
+
+let defaultPrinter = '';
+printer.list(true).then(res => defaultPrinter = res);
 
 /**
+ * checks if given printer name is existent in system
+ * if not, the system default printer will be returned
+ *
+ * @param {string} printerName
+ *
+ * @returns {string}
+ *
+ * @private
+ */
+_checkPrinterAndCorrect = (printerName) => {
+  if (printerList.indexOf(printerName) === -1) {
+    return defaultPrinter.trim();
+  }
+
+  return printerName.trim();
+};
+
+/**
+ * checks if given key is available and configured
+ *
+ * @param {string} printerKey
+ *
+ * @returns {boolean}
+ *
+ * @private
+ */
+_checkPrinterKey = (printerKey) => {
+  if (!config.has(printerKey)) {
+    return false;
+  }
+
+  const printerConfig = config.get(key);
+  return printerConfig && printerConfig.trim() !== '';
+};
+
+/**
+ * evaluates the printer and printer settings for given documentType
  *
  * @param {string} documentType
  * @param {string} advertisingMedium
  * @param {string} deliveryCountryCode
- * @param {string} deliveryCountryIsEU
- * @returns {object} {{numOfCopies: number}|{}}
- * @private
+ * @param {boolean} deliveryCountryIsEU
+ *
+ * @returns {{numOfCopies: number, printer: string}}
+ *
  */
-getDocumentPrinter = (documentType, advertisingMedium, deliveryCountryCode, deliveryCountryIsEU) => {
+getDocumentPrinter = (documentType, advertisingMedium = '', deliveryCountryCode= '', deliveryCountryIsEU = false) => {
   logDebug('printer', 'getDocumentPrinter', JSON.stringify({documentType, advertisingMedium, deliveryCountryIsEU, deliveryCountryCode}));
   let printerConfig = {};
   switch(documentType.toUpperCase()) {
@@ -33,6 +75,11 @@ getDocumentPrinter = (documentType, advertisingMedium, deliveryCountryCode, deli
       printerConfig = getProductLabelPrinter();
       break;
     }
+    case 'SHIPMENTLABEL': {
+      // todo
+      printerConfig = {};
+      break;
+    }
   }
 
   logDebug('printer', 'getDocumentPrinter', JSON.stringify(printerConfig));
@@ -40,17 +87,20 @@ getDocumentPrinter = (documentType, advertisingMedium, deliveryCountryCode, deli
 };
 
 /**
+ * load invoice printer and number of copies
+ * this is configured by default and can be overwritten by additional configuration with advertising medium
  *
  * @param {string} advertisingMedium
  * @param {string} deliveryCountryCode
- * @param {string} deliveryCountryIsEU
- * @returns {object} {{numOfCopies: number}}
- * @private
+ * @param {boolean} deliveryCountryIsEU
+ *
+ * @returns {{numOfCopies: number, printer: string}}
+ *
  */
-getInvoicePrinter = (advertisingMedium, deliveryCountryCode, deliveryCountryIsEU) => {
+getInvoicePrinter = (advertisingMedium, deliveryCountryCode, deliveryCountryIsEU = false) => {
   let printerConfig = { numOfCopies: 1, printer: defaultPrinter };
-  if (config.has('printing.defaultInvoiceSlipPrinter')) {
-    printerConfig.printer = config.get('printing.defaultInvoiceSlipPrinter');
+  if (_checkPrinterKey('printing.defaultInvoiceSlipPrinter')) {
+    printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultInvoiceSlipPrinter'));
   }
 
   if (deliveryCountryCode === 'DE' && config.has('printing.defaultInvoiceSlipPrintCountCC')) {
@@ -62,8 +112,8 @@ getInvoicePrinter = (advertisingMedium, deliveryCountryCode, deliveryCountryIsEU
   }
 
   const advertisingMediumConfigKey = 'printing.advertisingMediumConfig.' + advertisingMedium;
-  if (config.has(advertisingMediumConfigKey + '.invoiceSlipPrinter')) {
-    printerConfig.printer = config.get(advertisingMediumConfigKey + '.invoiceSlipPrinter');
+  if (_checkPrinterKey(advertisingMediumConfigKey + '.invoiceSlipPrinter')) {
+    printerConfig.printer = _checkPrinterAndCorrect(config.get(advertisingMediumConfigKey + '.invoiceSlipPrinter'));
   }
 
   if (deliveryCountryCode === 'DE' && config.has(advertisingMediumConfigKey + '.invoiceSlipPrintCountCC')) {
@@ -77,38 +127,59 @@ getInvoicePrinter = (advertisingMedium, deliveryCountryCode, deliveryCountryIsEU
   return printerConfig;
 };
 
+/**
+ * load delivery slip printer and number of copies
+ * this is configured by default and can be overwritten by additional configuration with advertising medium
+ *
+ * @param {string} advertisingMedium
+ *
+ * @returns {{numOfCopies: number, printer: string}}
+ */
 getDeliverySlipPrinter = (advertisingMedium) => {
-  let printerConfig = { numOfCopies: 1 };
-  if (config.has('printing.defaultDeliverySlipPrinter')) {
-    printerConfig.printer = config.get('printing.defaultDeliverySlipPrinter');
+  let printerConfig = { numOfCopies: 1, printer: defaultPrinter };
+  if (_checkPrinterKey('printing.defaultDeliverySlipPrinter')) {
+    printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultDeliverySlipPrinter'));
   }
 
   const advertisingMediumConfigKey = 'printing.advertisingMediumConfig.' + advertisingMedium + '.deliverySlipPrinter';
-  if (config.has(advertisingMediumConfigKey)) {
-    printerConfig.printer = config.get(advertisingMediumConfigKey);
+  if (_checkPrinterKey(advertisingMediumConfigKey)) {
+    printerConfig.printer = _checkPrinterAndCorrect(config.get(advertisingMediumConfigKey));
   }
 
   return printerConfig;
 };
 
+/**
+ * load return slip printer and number of copies
+ * this is configured by default and can be overwritten by additional configuration with advertising medium
+ *
+ * @param {string} advertisingMedium
+ *
+ * @returns {{numOfCopies: number, printer: string}}
+ */
 getReturnSlipPrinter = (advertisingMedium) => {
-  let printerConfig = { numOfCopies: 1 };
-  if (config.has('printing.defaultReturnSlipPrinter')) {
-    printerConfig.printer = config.get('printing.defaultReturnSlipPrinter');
+  let printerConfig = { numOfCopies: 1, printer: defaultPrinter };
+  if (_checkPrinterKey('printing.defaultReturnSlipPrinter')) {
+    printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultReturnSlipPrinter'));
   }
 
   const advertisingMediumConfigKey = 'printing.advertisingMediumConfig.' + advertisingMedium + '.returnSlipPrinter';
-  if (config.has(advertisingMediumConfigKey)) {
-    printerConfig.printer = config.get(advertisingMediumConfigKey);
+  if (_checkPrinterKey(advertisingMediumConfigKey)) {
+    printerConfig.printer = _checkPrinterAndCorrect(config.get(advertisingMediumConfigKey));
   }
 
   return printerConfig;
 };
 
+/**
+ * load product label printer
+ *
+ * @returns {{numOfCopies: number, printer: string}}
+ */
 getProductLabelPrinter = () => {
-  let printerConfig = { numOfCopies: 1 };
-  if (config.has('printing.defaultProductLabelPrinter')) {
-    printerConfig.printer = config.get('printing.defaultProductLabelPrinter');
+  let printerConfig = { numOfCopies: 1, printer: defaultPrinter };
+  if (_checkPrinterKey('printing.defaultProductLabelPrinter')) {
+    printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultProductLabelPrinter'));
   }
 
   return printerConfig;

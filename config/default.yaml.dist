@@ -2,7 +2,7 @@
 app:
 
   # the exitB logmod mobile application url
-  url: 'https://your-logmod-mobile-application-url.de'
+  url: 'https://your-log-mod-mobile-application-url'
 
   # the check for update interval (in seconds)
   autoUpdateCheckInterval: 600
@@ -13,9 +13,7 @@ app:
 # shipping configuration
 shipping:
 
-  # shipment type code
-  DHL:
-
+  DHL2:
     # printer configuration [CONDITIONAL - necessary if shipment provider is configured for direct label printing]
     printing:
 
@@ -23,6 +21,9 @@ shipping:
       # if not configured, the defaultInvoiceSlipPrinter will be used
       # this needs to be the OS printer name
       shipmentLabelPrinter: ''
+
+  # shipment type code
+  DHL:
 
     # polling configuration [CONDITIONAL - necessary if shipment provider is configured for polling]
     polling:
@@ -51,36 +52,30 @@ shipping:
 # printer configuration
 printing:
 
-  # path where invoice-/delivery-/return-slips and shipment labels are stored temporary
-  temporaryPath: '/tmp'
-
-  # purges the temporary path on close
-  purgeTemporaryPathOnClose: true
-
   # the default invoice printer
   # if not configured, the OS default printer will be used
   # this needs to be the OS printer name
-  defaultInvoiceSlipPrinter: ''
+  defaultInvoiceSlipPrinter: 'DEFAULT-INVOICE-SLIP-PRINTER'
 
   # the default delivery slip printer
   # if not configured, the defaultInvoiceSlipPrinter will be used
   # this needs to be the OS printer name
-  defaultDeliverySlipPrinter: ''
+  defaultDeliverySlipPrinter: 'DEFAULT-DELIVERY-SLIP-PRINTER'
 
   # the default return slip printer
   # if not configured, the defaultInvoiceSlipPrinter will be used
   # this needs to be the OS printer name
-  defaultReturnSlipPrinter: ''
+  defaultReturnSlipPrinter: 'DEFAULT-RETURN-SLIP-PRINTER'
 
   # the default shipment label printer
   # if not configured, the defaultInvoiceSlipPrinter will be used
   # this needs to be the OS printer name
-  defaultShipmentLabelPrinter: ''
+  defaultShipmentLabelPrinter: 'DEFAULT-SHIPMENT-LABEL-PRINTER'
 
   # the default product label printer
   # if not configured, the defaultInvoiceSlipPrinter will be used
   # this needs to be the OS printer name
-  defaultProductLabelPrinter: ''
+  defaultProductLabelPrinter: 'DEFAULT-PRODUCT-LABEL-PRINTER'
 
   # the number of invoice copies to print for invoices shipped to client country (CC)
   defaultInvoiceSlipPrintCountCC: 1
@@ -99,15 +94,15 @@ printing:
 
       # invoice slip printer
       # this needs to be the OS printer name
-      invoiceSlipPrinter: ''
+      invoiceSlipPrinter: 'SPECIAL-INVOICE-PRINTER-FOR-EXB'
 
       # delivery slip printer
       # this needs to be the OS printer name
-      deliverySlipPrinter: ''
+      deliverySlipPrinter: 'SPECIAL-DELIVERY-SLIP-PRINTER-FOR-EXB'
 
       # return slip printer
       # this needs to be the OS printer name
-      returnSlipPrinter: ''
+      returnSlipPrinter: 'SPECIAL-RETURN-SLIP-PRINTER-FOR-EXB'
 
       # the number of invoice copies to print for invoices shipped to client country (CC)
       invoiceSlipPrintCountCC: 1
