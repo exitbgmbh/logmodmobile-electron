@@ -3,13 +3,16 @@ const { ipcMain } = require('electron');
 const version = require('./../package').version;
 const BrowserWindow = application.BrowserWindow;
 const path = require('path');
-const registerEvents = require('./events');
 const {logDebug, logInfo, logWarning} = require('./logging');
 const config = require('config');
 const { initializeAutoUpdateCheck } = require('./autoUpdateCheck');
 const shippingHandlerInstance = require('./shipping');
 const printingHandlerInstance = require('./printing');
 const invoiceHandlerInstance = require('./invoice');
+const restClientInstance = require('./restClient');
+const { getLogModIdentification } = require('./helper');
+const showNotification = require('./notificationHelper');
+const webSocketHandler = require('./websocket');
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -93,6 +96,30 @@ const instantiateApplicationWindow = (applicationBootError) => {
 };
 
 /**
+ * ipc event from logmodmobile
+ * this informs us about successful authentication
+ * we can now connect to blisstribute websocket
+ *
+ * @param event
+ * @param arguments
+ */
+const authenticationSucceed = (event, arguments) => {
+    logDebug('event', 'authenticationSucceed', 'start ' + JSON.stringify(arguments));
+    restClientInstance.setAuthToken(arguments.authenticationToken);
+    restClientInstance.parseBaseUrl(arguments.requestUrl);
+
+    const logModMobileIdent = getLogModIdentification();
+    restClientInstance.requestWebSocketAccessLink(logModMobileIdent).then((response) => {
+        showNotification('LogModMobile wird registriert...');
+        const { socketLink } = response.response;
+
+        webSocketHandler.setLogModIdentification(logModMobileIdent).connectToWebSocket(socketLink);
+    }).catch((error) => {
+        logWarning('event', 'authenticationSucceed', 'call for websocket failed ' + error.message);
+    });
+};
+
+/**
  * booting the application
  */
 const bootApplication = () => {
@@ -105,7 +132,8 @@ const bootApplication = () => {
 
     try {
         initializeAutoUpdateCheck();
-        registerEvents();
+
+        ipcMain.on('authentication-succeed', authenticationSucceed);
 
         shippingHandlerInstance.initialize();
         printingHandlerInstance.initialize();
