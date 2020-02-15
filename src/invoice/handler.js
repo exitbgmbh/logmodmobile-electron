@@ -14,9 +14,7 @@ class InvoiceHandler {
       .requestInvoice(pickBoxIdent, forceInvoice)
       .then((res) => {
         if (!res.success) {
-          let event = 'pickBoxInvoiceFailed';
-          eventEmitter.emit(event, {...messageTemplate, event: event});
-          return;
+          throw new Error('request not successful');
         }
 
         const { response } = res;

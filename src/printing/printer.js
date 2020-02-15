@@ -6,7 +6,7 @@ let printerList = [];
 printer.list().then(res => printerList = res);
 
 let defaultPrinter = '';
-printer.list(true).then(res => defaultPrinter = res);
+printer.list(true).then(res => defaultPrinter = res.trim());
 
 /**
  * checks if given printer name is existent in system
@@ -20,10 +20,10 @@ printer.list(true).then(res => defaultPrinter = res);
  */
 _checkPrinterAndCorrect = (printerName) => {
   if (printerList.indexOf(printerName) === -1) {
-    return defaultPrinter.trim();
+    return defaultPrinter;
   }
 
-  return printerName.trim();
+  return printerName;
 };
 
 /**
@@ -69,15 +69,6 @@ getDocumentPrinter = (documentType, advertisingMedium = '', deliveryCountryCode=
     }
     case 'RETURN': {
       printerConfig = getReturnSlipPrinter(advertisingMedium);
-      break;
-    }
-    case 'PRODUCTLABEL': {
-      printerConfig = getProductLabelPrinter();
-      break;
-    }
-    case 'SHIPMENTLABEL': {
-      // todo
-      printerConfig = {};
       break;
     }
   }
@@ -185,4 +176,23 @@ getProductLabelPrinter = () => {
   return printerConfig;
 };
 
-module.exports = getDocumentPrinter;
+/**
+ * load shipment label printer
+ *
+ * @returns {{numOfCopies: number, printer: string}}
+ */
+getShipmentLabelPrinter = (shipmentTypeCode) => {
+  let printerConfig = { numOfCopies: 1, printer: defaultPrinter };
+  const key = 'shipping.' + shipmentTypeCode + '.printing.shipmentLabelPrinter';
+  if (_checkPrinterKey(key)) {
+    printerConfig.printer = _checkPrinterAndCorrect(config.get(key));
+  }
+
+  return printerConfig;
+};
+
+module.exports = {
+  getDocumentPrinter,
+  getProductLabelPrinter,
+  getShipmentLabelPrinter
+};
