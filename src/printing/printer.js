@@ -40,7 +40,7 @@ _checkPrinterKey = (printerKey) => {
     return false;
   }
 
-  const printerConfig = config.get(key);
+  const printerConfig = config.get(printerKey);
   return printerConfig && printerConfig.trim() !== '';
 };
 
