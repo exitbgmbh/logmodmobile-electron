@@ -35,6 +35,7 @@
     "config": "^3.2.5",
     "electron-is-running-in-asar": "^1.0.0",
     "electron-updater": "^4.2.0",
+    "encoding": "^0.1.12",
     "js-yaml": "^3.13.1",
     "node-fetch": "^2.6.0",
     "node-pdftk": "^2.1.2",
