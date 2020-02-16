@@ -10,6 +10,10 @@ app:
   # the websocket heartbeat interval (in seconds)
   heartbeatInterval: 15
 
+  # this is not recommended, but possible
+  username: ''
+  password: ''
+
 # shipping configuration
 shipping:
 
@@ -21,6 +25,10 @@ shipping:
       # if not configured, the defaultInvoiceSlipPrinter will be used
       # this needs to be the OS printer name
       shipmentLabelPrinter: ''
+
+      # rotate the label before print
+      # to use this, you need to have pdfTk installed on your system
+      rotate: true
 
   # shipment type code
   DHL:
@@ -76,6 +84,10 @@ printing:
   # if not configured, the defaultInvoiceSlipPrinter will be used
   # this needs to be the OS printer name
   defaultProductLabelPrinter: 'DEFAULT-PRODUCT-LABEL-PRINTER'
+
+  # if configured, the received product label will be rotated before print
+  # to use this, you need to have pdfTk installed on your system
+  rotateProductLabel: true
 
   # the number of invoice copies to print for invoices shipped to client country (CC)
   defaultInvoiceSlipPrintCountCC: 1

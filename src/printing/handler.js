@@ -6,6 +6,10 @@ const fs = require('fs');
 const printer = require('pdf-to-printer');
 const { getDocumentPrinter, getProductLabelPrinter, getShipmentLabelPrinter } = require('./printer');
 const {logDebug} = require('./../logging');
+const pdftk = require('node-pdftk');
+pdftk.configure({
+  bin: config.has('app.pdfTkExecutable') ? config.get('app.pdfTkExecutable') : 'pdftk'
+});
 
 class PrintingHandler {
   /**
@@ -179,36 +183,6 @@ class PrintingHandler {
   };
 
   /**
-   * printing product label
-   *
-   * @param {string} contentToPrint
-   * @param {int} numberOfCopies
-   *
-   * @private
-   */
-  _handleProductLabelPrinting = (contentToPrint, numberOfCopies) => {
-    if (!contentToPrint || contentToPrint.length < 100) {
-      return;
-    }
-
-    const tmpFileName = this._saveResultToPdf(contentToPrint);
-
-    let options = {};
-    const printerConfig = getProductLabelPrinter();
-    if (printerConfig.printer) {
-      options.printer = printerConfig.printer;
-    }
-
-    if (numberOfCopies) {
-      options.unix = ['-n ' + numberOfCopies, '-o scaling=100'];
-      options.win32 = ['-print-settings "' + numberOfCopies + 'x"'];
-    }
-
-    logDebug('printingHandler', '_handleProductLabelPrinting', 'start printing with options ' + JSON.stringify(options));
-    printer.print(tmpFileName, options).then(console.log).catch(console.log);
-  };
-
-  /**
    * printing a document
    *
    * @param {string} type
@@ -238,6 +212,56 @@ class PrintingHandler {
     printer.print(tmpFileName, options).then(console.log).catch(console.log);
   };
 
+  _printRotated = (sourceFileName, printingOptions) => {
+    const rotatedFileName = '/tmp/foobar_rotated.pdf';
+    pdftk
+      .input(sourceFileName)
+      .cat('1-endWest')
+      .output(rotatedFileName)
+      .then((res) => {
+        console.log('pdftkres', res);
+        this.createdFilesCache.push(rotatedFileName);
+        printer.print(rotatedFileName, printingOptions).then(console.log).catch(console.log);
+      })
+      .catch((err) => {
+        console.log('pdftkerror', err);
+      });
+  };
+
+  /**
+   * printing product label
+   *
+   * @param {string} contentToPrint
+   * @param {int} numberOfCopies
+   *
+   * @private
+   */
+  _handleProductLabelPrinting = (contentToPrint, numberOfCopies) => {
+    if (!contentToPrint || contentToPrint.length < 100) {
+      return;
+    }
+
+    const tmpFileName = this._saveResultToPdf(contentToPrint);
+
+    let options = {};
+    const printerConfig = getProductLabelPrinter();
+    if (printerConfig.printer) {
+      options.printer = printerConfig.printer;
+    }
+
+    if (numberOfCopies) {
+      options.unix = ['-n ' + numberOfCopies, '-o scaling=100'];
+      options.win32 = ['-print-settings "' + numberOfCopies + 'x"'];
+    }
+
+    logDebug('printingHandler', '_handleProductLabelPrinting', 'start printing with options ' + JSON.stringify(options));
+    if (printerConfig.rotate) {
+      this._printRotated(tmpFileName, options);
+    } else {
+      printer.print(tmpFileName, options).then(console.log).catch(console.log);
+    }
+  };
+
   /**
    * printing labels got from shipping handler
    *
@@ -255,12 +279,20 @@ class PrintingHandler {
     data.shipmentLabelCollection.forEach((label) => {
       if (label.shipmentLabel && label.shipmentLabel.trim() !== '') {
         let shipmentTmpFile = this._saveResultToPdf(label.shipmentLabel);
-        printer.print(shipmentTmpFile, options).then(console.log).catch(console.log);
+        if (printerConfig.rotate) {
+          this._printRotated(shipmentTmpFile, options);
+        } else {
+          printer.print(shipmentTmpFile, options).then(console.log).catch(console.log);
+        }
       }
 
       if (label.returnLabel && label.returnLabel.trim() !== '') {
         let returnTmpFile = this._saveResultToPdf(label.returnLabel);
-        printer.print(returnTmpFile, options).then(console.log).catch(console.log);
+        if (printerConfig.rotate) {
+          this._printRotated(returnTmpFile, options);
+        } else {
+          printer.print(returnTmpFile, options).then(console.log).catch(console.log);
+        }
       }
     });
   };

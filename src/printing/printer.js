@@ -165,12 +165,16 @@ getReturnSlipPrinter = (advertisingMedium) => {
 /**
  * load product label printer
  *
- * @returns {{numOfCopies: number, printer: string}}
+ * @returns {{numOfCopies: number, printer: string, rotate: boolean}}
  */
 getProductLabelPrinter = () => {
-  let printerConfig = { numOfCopies: 1, printer: defaultPrinter };
+  let printerConfig = { numOfCopies: 1, printer: defaultPrinter, rotate: false };
   if (_checkPrinterKey('printing.defaultProductLabelPrinter')) {
     printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultProductLabelPrinter'));
+  }
+
+  if (config.has('printing.rotateProductLabel')) {
+    printerConfig.rotate = config.get('printing.rotateProductLabel');
   }
 
   return printerConfig;
@@ -179,13 +183,18 @@ getProductLabelPrinter = () => {
 /**
  * load shipment label printer
  *
- * @returns {{numOfCopies: number, printer: string}}
+ * @returns {{numOfCopies: number, printer: string, rotate: boolean}}
  */
 getShipmentLabelPrinter = (shipmentTypeCode) => {
-  let printerConfig = { numOfCopies: 1, printer: defaultPrinter };
-  const key = 'shipping.' + shipmentTypeCode + '.printing.shipmentLabelPrinter';
-  if (_checkPrinterKey(key)) {
-    printerConfig.printer = _checkPrinterAndCorrect(config.get(key));
+  let printerConfig = { numOfCopies: 1, printer: defaultPrinter, rotate: false };
+  const printerKey = 'shipping.' + shipmentTypeCode + '.printing.shipmentLabelPrinter';
+  if (_checkPrinterKey(printerKey)) {
+    printerConfig.printer = _checkPrinterAndCorrect(config.get(printerKey));
+  }
+
+  const rotateKey = 'shipping.' + shipmentTypeCode + '.printing.rotate';
+  if (config.has(rotateKey)) {
+    printerConfig.rotate = config.get(rotateKey);
   }
 
   return printerConfig;
