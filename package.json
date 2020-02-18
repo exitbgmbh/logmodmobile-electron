@@ -6,9 +6,9 @@
   "scripts": {
     "electron-dev": "NODE_ENV=development electron .",
     "electron-dev-local": "NODE_ENV=development ELECTRON_START_URL=http://localhost:3000 electron .",
-    "bump-version-patch": "npm version prerelease --preid=alpha",
-    "bump-version-minor": "npm version minor",
-    "bump-version-major": "npm version major"
+    "alpha-bump-version-patch": "npm version prerelease --preid=alpha",
+    "alpha-bump-version-minor": "npm version minor --preid=alpha",
+    "alpha-bump-version-major": "npm version major --preid=alpha"
   },
   "repository": {
     "type": "git",
