@@ -6,9 +6,16 @@
   "scripts": {
     "electron-dev": "NODE_ENV=development electron .",
     "electron-dev-local": "NODE_ENV=development ELECTRON_START_URL=http://localhost:3000 electron .",
-    "alpha-bump-version-patch": "npm version prerelease --preid=alpha",
-    "alpha-bump-version-minor": "npm version minor --preid=alpha",
-    "alpha-bump-version-major": "npm version major --preid=alpha"
+    "publish": "electron-builder -l -w -p always",
+    "alpha-version-patch": "npm version prerelease --preid=alpha",
+    "alpha-version-minor": "npm version minor --preid=alpha",
+    "alpha-version-major": "npm version major --preid=alpha",
+    "beta-version-patch": "npm version prerelease --preid=beta",
+    "beta-version-minor": "npm version minor --preid=beta",
+    "beta-version-major": "npm version major --preid=beta",
+    "release-version-patch": "npm version prerelease --preid=release",
+    "release-version-minor": "npm version minor --preid=release",
+    "release-version-major": "npm version major --preid=release"
   },
   "repository": {
     "type": "git",
