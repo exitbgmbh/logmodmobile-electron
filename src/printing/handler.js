@@ -214,7 +214,8 @@ class PrintingHandler {
     };
 
     _printRotated = (sourceFileName, printingOptions) => {
-        const rotatedFileName = '/tmp/foobar_rotated.pdf';
+        logDebug('printingHandler', '_printRotated', 'rotating document ' + sourceFileName);
+        const rotatedFileName = sourceFileName + '_rotated.pdf';
         pdftk
             .input(sourceFileName)
             .cat('1-endWest')
