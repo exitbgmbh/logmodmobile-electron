@@ -95,6 +95,17 @@ class RestClient
 
     /**
      *
+     * @param {string} shipmentTypeCode
+     * @param {string} shipmentTypeData
+     *
+     * @returns {*|Promise}
+     */
+    reportTrackingFile = (shipmentTypeCode, shipmentTypeData) => {
+        return this.post('tracking/importTrackingFile/' + shipmentTypeCode, {trackingFileContent: shipmentTypeData, encoding: 'UTF-8'});
+    };
+
+    /**
+     *
      * @param {string} boxIdentification
      * @param {object} data
      *

@@ -1,7 +1,11 @@
+const {getHostname} = require("../helper");
+
 const mapWebSocketMessage = (data) => {
     let requestData = {
         shippingData: {}
     };
+    
+    requestData.shippingData.workplaceIdentifier = getHostname();
 
     if (data.hasOwnProperty('overrideShipmentTypeId')) {
         requestData.shippingData.overrideShipmentTypeId = data.overrideShipmentTypeId;

@@ -1,9 +1,13 @@
 const os = require('os');
 
 const getLogModIdentification = () => {
-  return 'ELOG-' + os.hostname();
+  return 'ELOG-' + getHostname();
+};
+
+const getHostname = () => {
+  return os.hostname();
 };
 
 module.exports = {
-  getLogModIdentification
+  getLogModIdentification, getHostname
 };

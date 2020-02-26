@@ -1,8 +1,9 @@
-const fs = require('fs');
-const chokidar = require('chokidar');
 const {logInfo, logDebug, logWarning} = require('./../logging');
-const encoding = require("encoding");
+const restClientInstance = require('./../restClient');
+const chokidar = require('chokidar');
+const encoding = require('encoding');
 const path = require('path');
+const fs = require('fs');
 
 class PollingProvider {
     /**
@@ -123,8 +124,11 @@ class PollingProvider {
             if (fileEncoding) {
                 dayClosingData = encoding.convert(dayClosingData, 'utf-8', fileEncoding);
             }
-        
-            console.log(dayClosingData.toString());
+    
+            restClientInstance.reportTrackingFile(this.code, dayClosingData.toString()).then((response) => {
+                console.log(response);
+                fs.renameSync(file, file + '.done' + new Date().toISOString())
+            }).catch(console.log);
         });
     };
 
