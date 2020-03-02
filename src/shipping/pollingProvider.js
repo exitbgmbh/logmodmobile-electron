@@ -95,7 +95,7 @@ class PollingProvider {
 
         logInfo('pollingProvider', '_initializeFileWatcher', 'fileWatcher is active for ' + directoryToWatch + ' with pattern ' + filePattern);
         chokidar
-            .watch(directoryToWatch, {awaitWriteFinish: {stabilityThreshold: 2000, pollInterval: 500}})
+            .watch(directoryToWatch, {awaitWriteFinish: {stabilityThreshold: 2000, pollInterval: 500}, depth: 0})
             .on('add', this._fileWatcherGotFile);
     };
     
@@ -112,11 +112,17 @@ class PollingProvider {
             if (err) throw err;
             
             const { dayClosingFileImportPattern: filePattern, dayClosingFileImportEncoding: fileEncoding } = this.importConfig;
-            
-            const fileName = path.basename(file);
-            if (!fileName.match(filePattern)) {
+    
+            const parsedFile = path.parse(file);
+            if (!parsedFile.base.match(filePattern)) {
                 logDebug('pollingProvider', '_fileWatcherGotFile', 'file does not match pattern. skipping.');
                 return;
+            }
+            
+            const archivePath = path.join(parsedFile.dir, 'archive');
+            if (!fs.existsSync(archivePath)) {
+                logDebug('pollingProvider', '_fileWatcherGotFile', 'archive path not existing. creating.');
+                fs.mkdirSync(archivePath);
             }
         
             logInfo('pollingProvider', '_fileWatcherGotFile', 'processing file ' + file);
@@ -124,10 +130,11 @@ class PollingProvider {
             if (fileEncoding) {
                 dayClosingData = encoding.convert(dayClosingData, 'utf-8', fileEncoding);
             }
-    
+            
             restClientInstance.reportTrackingFile(this.code, dayClosingData.toString()).then((response) => {
-                console.log(response);
-                fs.renameSync(file, file + '.done' + new Date().toISOString())
+                const archiveFileName = path.join(archivePath, parsedFile.base + '.done' + new Date().toISOString());
+                logInfo('pollingProvider', '_fileWatcherGotFile', 'file processed successfully. moving to archive. ' + archiveFileName);
+                fs.renameSync(file, archiveFileName);
             }).catch(console.log);
         });
     };
