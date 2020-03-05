@@ -13,7 +13,7 @@ const restClientInstance = require('./restClient');
 const { getLogModIdentification } = require('./helper');
 const showNotification = require('./notificationHelper');
 const webSocketHandler = require('./websocket');
-
+const scaleHandler = require('./scale');
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 /**
@@ -138,6 +138,11 @@ const bootApplication = () => {
         shippingHandlerInstance.initialize();
         printingHandlerInstance.initialize();
         invoiceHandlerInstance.initialize();
+        scaleHandler.initialize();
+        
+        setInterval(() => {
+            scaleHandler.callScale(console.log);
+        }, 5000);
     } catch (err) {
         logWarning('application', 'bootApplication', err.message);
         instantiateApplicationWindow(err);
