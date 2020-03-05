@@ -2,7 +2,7 @@ const config = require('config');
 const SerialPort = require('serialport');
 
 class ScaleHandler {
-    active = false;
+    active = true;
     reading = false;
     command = [];
     connector = false;
@@ -10,6 +10,7 @@ class ScaleHandler {
 
     initialize = () => {
         if (!config.has('scale')) {
+            this.active = false;
             return;
         }
         
@@ -27,35 +28,25 @@ class ScaleHandler {
                 return console.log('error connecting serial port: ', err.message);
             }
             
+            console.log('connected to serial port');
             this.active = true;
         }.bind(this));
     };
     
-    callScale = (callback) => {
-        console.log('callScale');
+    callScale = () => {
         if (!this.active) {
             console.log('not active');
             return;
         }
-        
-        if (this.reading) {
-            console.log('is reading');
-            return;
-        }
-        
-        this.reading = true;
-        this.connector.write(Buffer.from(this.command));
-        setTimeout(() => {
-            let data = this.parser.read();
-            console.log(data);
+    
+        this.connector.write(this.command);
+        return new Promise(resolve => this.parser.on('data', (data) => {
             if (data) {
-                data = data.trim().replace(/\s[a-zA-Z]/, '');
+                data = data.trim().replace(/[\sA-Za-z]+/, '');
             }
             
-            this.reading = false;
-            callback(data);
-        }, 500);
-        
+            resolve(data);
+        }));
     }
     
 }
