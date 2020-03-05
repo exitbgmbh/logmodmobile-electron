@@ -15,13 +15,13 @@ class ScaleHandler {
         }
         
         this.command = config.get('scale.command');
-        this.parser = new SerialPort.parsers.Readline();
+        this.parser = new SerialPort.parsers.Readline('\r\n');
         
         this.connector = new SerialPort(config.get('scale.path'), {
             baudRate: config.get('scale.baud'),
             autoOpen: false
         });
-        this.connector.pipe(this.parser);
+        //this.connector.pipe(this.parser);
         this.connector.open(function(err) {
             if (err) {
                 this.active = false;
@@ -31,6 +31,9 @@ class ScaleHandler {
             console.log('connected to serial port');
             this.active = true;
         }.bind(this));
+        this.connector.on('error', function(err) {
+            console.log(err);
+        });
     };
     
     callScale = () => {
@@ -39,7 +42,7 @@ class ScaleHandler {
             return;
         }
     
-        this.connector.write(this.command, function(err) {
+        if (!this.connector.write(this.command, function(err) {
             if (err) {
                 console.log('error writing data', err.message);
                 return new Promise((resolve,reject) => {
@@ -48,12 +51,10 @@ class ScaleHandler {
             }
             
             console.log('data written');
-        });
-        return new Promise(resolve => this.parser.on('data', (data) => {
-            if (data) {
-                data = data.trim().replace(/[\sA-Za-z]+/, '');
-            }
-            
+        })) {
+            console.log('could not write data');
+        }
+        return new Promise(resolve => this.connector.on('data', (data) => {
             resolve(data);
         }));
     }

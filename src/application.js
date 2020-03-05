@@ -141,7 +141,7 @@ const bootApplication = () => {
         scaleHandler.initialize();
         
         setInterval(() => {
-            scaleHandler.callScale().then(console.log);
+            scaleHandler.callScale().then(console.log).catch(console.log);
         }, 1000);
     } catch (err) {
         logWarning('application', 'bootApplication', err.message);
