@@ -39,7 +39,16 @@ class ScaleHandler {
             return;
         }
     
-        this.connector.write(this.command);
+        this.connector.write(this.command, function(err) {
+            if (err) {
+                console.log('error writing data', err.message);
+                return new Promise((resolve,reject) => {
+                    reject(err);
+                });
+            }
+            
+            console.log('data written');
+        });
         return new Promise(resolve => this.parser.on('data', (data) => {
             if (data) {
                 data = data.trim().replace(/[\sA-Za-z]+/, '');
