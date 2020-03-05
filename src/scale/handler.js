@@ -32,21 +32,29 @@ class ScaleHandler {
     };
     
     callScale = (callback) => {
+        console.log('callScale');
         if (!this.active) {
+            console.log('not active');
             return;
         }
         
         if (this.reading) {
+            console.log('is reading');
             return;
         }
         
         this.reading = true;
         this.connector.write(Buffer.from(this.command));
         setTimeout(() => {
-            const data = this.parser.read().trim().replace(/\s[a-zA-Z]/, '');
+            let data = this.parser.read();
+            console.log(data);
+            if (data) {
+                data = data.trim().replace(/\s[a-zA-Z]/, '');
+            }
+            
             this.reading = false;
             callback(data);
-        }, 250);
+        }, 500);
         
     }
     
