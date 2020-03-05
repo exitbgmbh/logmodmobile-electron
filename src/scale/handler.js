@@ -2,7 +2,7 @@ const config = require('config');
 const SerialPort = require('serialport');
 
 class ScaleHandler {
-    active = true;
+    active = false;
     reading = false;
     command = [];
     connector = false;
@@ -39,7 +39,7 @@ class ScaleHandler {
     callScale = () => {
         if (!this.active) {
             console.log('not active');
-            return;
+            return new Promise((resolve, reject) => { reject('not active'); })
         }
     
         if (!this.connector.write(this.command, function(err) {
