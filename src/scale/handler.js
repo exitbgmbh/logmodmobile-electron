@@ -21,7 +21,7 @@ class ScaleHandler {
             baudRate: config.get('scale.baud'),
             autoOpen: false
         });
-        //this.connector.pipe(this.parser);
+        this.connector.pipe(this.parser);
         this.connector.open(function(err) {
             if (err) {
                 this.active = false;
@@ -42,19 +42,20 @@ class ScaleHandler {
             return new Promise((resolve, reject) => { reject('not active'); })
         }
     
-        if (!this.connector.write(this.command, function(err) {
+        this.connector.write(this.command, function(err) {
             if (err) {
                 console.log('error writing data', err.message);
                 return new Promise((resolve,reject) => {
                     reject(err);
                 });
             }
+        });
+        
+        return new Promise(resolve => this.parser.on('data', (data) => {
+            if (data) {
+                data = data.trim().replace(/[\sA-Za-z]+/, '');
+            }
             
-            console.log('data written');
-        })) {
-            console.log('could not write data');
-        }
-        return new Promise(resolve => this.connector.on('data', (data) => {
             resolve(data);
         }));
     }
