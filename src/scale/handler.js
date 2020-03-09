@@ -1,63 +1,41 @@
 const config = require('config');
 const SerialPort = require('serialport');
+const PLC6000 = require('./type/plc6000');
+const {logDebug, logInfo, logWarning} = require('./../logging');
 
 class ScaleHandler {
-    active = false;
-    reading = false;
-    command = [];
-    connector = false;
-    parser = false;
-
+    /**
+     *
+     * @type PLC6000
+     */
+    scale = null;
+    
     initialize = () => {
-        if (!config.has('scale')) {
-            this.active = false;
+        if (!config.has('scale') || !config.has('scale.type')) {
             return;
         }
         
-        this.command = config.get('scale.command');
-        this.parser = new SerialPort.parsers.Readline('\r\n');
-        
-        this.connector = new SerialPort(config.get('scale.path'), {
-            baudRate: config.get('scale.baud'),
-            autoOpen: false
-        });
-        this.connector.pipe(this.parser);
-        this.connector.open(function(err) {
-            if (err) {
-                this.active = false;
-                return console.log('error connecting serial port: ', err.message);
+        const scaleConfig = config.get('scale');
+        switch(scaleConfig.type) {
+            case 'PLC6000': {
+                this.scale = new PLC6000(scaleConfig);
+                break;
             }
             
-            console.log('connected to serial port');
-            this.active = true;
-        }.bind(this));
-        this.connector.on('error', function(err) {
-            console.log(err);
-        });
+            default: {}
+        }
     };
     
     callScale = () => {
-        if (!this.active) {
-            console.log('not active');
-            return new Promise((resolve, reject) => { reject('not active'); })
+        logDebug('ScaleHandler', 'callScale', 'start');
+        if (this.scale === null) {
+            logWarning('ScaleHandler', 'callScale', 'no active scale found');
+            return new Promise((resolve, reject) => {
+                reject('no scale active')
+            });
         }
-    
-        this.connector.write(this.command, function(err) {
-            if (err) {
-                console.log('error writing data', err.message);
-                return new Promise((resolve,reject) => {
-                    reject(err);
-                });
-            }
-        });
         
-        return new Promise(resolve => this.parser.on('data', (data) => {
-            if (data) {
-                data = data.trim().replace(/[\sA-Za-z]+/, '');
-            }
-            
-            resolve(data);
-        }));
+        return this.scale.scale();
     }
     
 }

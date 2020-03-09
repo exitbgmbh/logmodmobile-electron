@@ -1,5 +1,5 @@
 const application = require('electron');
-const { ipcMain } = require('electron');
+const { ipcMain, ipcRenderer } = require('electron');
 const version = require('./../package').version;
 const BrowserWindow = application.BrowserWindow;
 const path = require('path');
@@ -15,6 +15,7 @@ const showNotification = require('./notificationHelper');
 const webSocketHandler = require('./websocket');
 const scaleHandler = require('./scale');
 const isDevelopment = process.env.NODE_ENV === 'development';
+const promiseIpc = require('electron-promise-ipc');
 
 /**
  * the application main window instance
@@ -134,17 +135,14 @@ const bootApplication = () => {
         initializeAutoUpdateCheck();
 
         ipcMain.on('authentication-succeed', authenticationSucceed);
+        promiseIpc.on('scale-package', () => {
+            return scaleHandler.callScale();
+        });
 
         shippingHandlerInstance.initialize();
         printingHandlerInstance.initialize();
         invoiceHandlerInstance.initialize();
         scaleHandler.initialize();
-        
-        setInterval(() => {
-            scaleHandler.callScale().then((result) => {
-                console.log('got scale result>> ', result)
-            }).catch(console.log);
-        }, 5000);
     } catch (err) {
         logWarning('application', 'bootApplication', err.message);
         instantiateApplicationWindow(err);
