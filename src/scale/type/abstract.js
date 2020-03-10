@@ -30,6 +30,9 @@ class AbstractScale {
         connector.pipe(parser);
         
         console.log('sending command', command);
+        connector.on('data', (connData) => {
+            console.log('>>', connData);
+        });
     
         connector.write(command);
         return new Promise(resolve => parser.on('data', (data) => {
