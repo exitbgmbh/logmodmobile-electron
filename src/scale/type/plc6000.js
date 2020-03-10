@@ -1,8 +1,9 @@
 const AbstractScale = require('./abstract');
 const {logDebug, logInfo, logWarning} = require('./../../logging');
-
+const SerialPort = require('serialport');
 
 class PLC6000 extends AbstractScale {
+    parser = new SerialPort.parsers.Readline();
     command = Buffer.from([0x1b, 0x70]);
     
     constructor(scaleConfig) {

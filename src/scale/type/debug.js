@@ -1,8 +1,9 @@
 const AbstractScale = require('./abstract');
 const {logDebug, logInfo, logWarning} = require('./../../logging');
-
+const SerialPort = require('serialport');
 
 class Debug extends AbstractScale {
+    parser = new SerialPort.parsers.Delimiter('<GB>');
     command = Buffer.from([]);
     
     constructor(scaleConfig) {
