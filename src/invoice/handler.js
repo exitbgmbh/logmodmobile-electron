@@ -24,11 +24,6 @@ class InvoiceHandler {
 
         // print documents
         eventEmitter.emit('invoiceCreationSuccess', response);
-
-        // not used atm
-        // if (response.hasOwnProperty('shipOutResponse') && response.shipOutResponse) {
-        //   eventEmitter.emit('shipOut', response.shipOutResponse);
-        // }
       })
       .catch((res) => {
         console.log(res);

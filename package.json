@@ -7,6 +7,7 @@
     "electron-dev": "NODE_ENV=development electron .",
     "electron-dev-local": "NODE_ENV=development ELECTRON_START_URL=http://localhost:3000 electron .",
     "publish": "electron-builder -l -w -p always",
+    "after-publish": "rm ./node_modules/@serialport -Rf && rm ./node_modules/serialport -Rf && npm install && $(npm bin)/electron-rebuild",
     "alpha-version-patch": "npm version prerelease --preid=alpha",
     "alpha-version-minor": "npm version minor --preid=alpha",
     "alpha-version-major": "npm version major --preid=alpha",

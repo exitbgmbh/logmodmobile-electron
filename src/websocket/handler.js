@@ -102,7 +102,12 @@ class WebSocketHandler
 
         this.socket.connect(socketLink);
     };
-
+    
+    /**
+     * handle the websocket message
+     * @param {{type: string, utf8Data: string}} message
+     * @private
+     */
     _handleMessage = (message) => {
         if (message.type !== 'utf8') {
             logWarning('webSocketHandler', 'onMessage', 'skip processing. message not utf8 encoded ' + JSON.stringify(message));
@@ -122,7 +127,7 @@ class WebSocketHandler
                 break;
             }
             case PICK_BOX_READY: {
-                if (!this._isMessageForMe(socketEvent.data)) {
+                if (!this._isMessageForMe(socketEvent.data) && !this._isInvoicePrintingActive(socketEvent.data)) {
                     return;
                 }
                 
@@ -134,10 +139,33 @@ class WebSocketHandler
             }
         }
     };
-
+    
+    /**
+     * checks if socket message is for me
+     *
+     * @param {{}} messageData
+     * @returns {boolean}
+     * @private
+     */
     _isMessageForMe = (messageData) => {
         const ident = getLogModIdentification();
         return messageData.hasOwnProperty('logModIdent') && messageData.logModIdent === ident;
+    };
+    
+    /**
+     * checks if automatic invoice process is active and box is watched
+     *
+     * @param {{}} messageData
+     * @returns {boolean}
+     * @private
+     */
+    _isInvoicePrintingActive = (messageData) => {
+        if (!config.has('invoicing.watchBoxes') || !messageData.pickBoxIdent) {
+            return false;
+        }
+        
+        const watchPattern = new RegExp(config.get('invoicing.watchBoxes'));
+        return watchPattern.test(messageData.pickBoxIdent);
     };
 
     /**

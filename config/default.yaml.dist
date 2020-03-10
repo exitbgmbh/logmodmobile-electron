@@ -14,6 +14,26 @@ app:
   username: ''
   password: ''
 
+# configuration for hardware scales connected by RS232
+scale:
+  # scale type, (DEBUG, PLC6000)
+  type: 'DEBUG'
+
+  # path to serial device
+  path: '/dev/ttyUSB0'
+
+  # serial device baud rate
+  baud: 9600
+
+  # scale execution command for debugging
+  command: [0x1b, 0x70]
+
+# enables automatic invoice process
+invoicing:
+
+  # regular expression to match boxes to watch
+  watchBoxes: /.*/
+
 # shipping configuration
 shipping:
 

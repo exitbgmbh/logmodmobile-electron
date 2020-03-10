@@ -87,10 +87,6 @@ const instantiateApplicationWindow = (applicationBootError) => {
         windowInstance.webContents.on('did-finish-load', windowOnLoadCompleted);
     }
 
-    if (isDevelopment) {
-        windowInstance.webContents.openDevTools();
-    }
-
     ipcMain.on('authentication-succeed', windowOnLoadCompleted);
     windowInstance.on('closed', function () {
         windowInstance = null
@@ -145,6 +141,7 @@ const bootApplication = () => {
         invoiceHandlerInstance.initialize();
         scaleHandler.initialize();
     } catch (err) {
+        console.log(err);
         logWarning('application', 'bootApplication', err.message);
         instantiateApplicationWindow(err);
         return;

@@ -28,6 +28,8 @@ class AbstractScale {
         
         const parser = new SerialPort.parsers.Readline();
         connector.pipe(parser);
+        
+        console.log('sending command', command);
     
         connector.write(command);
         return new Promise(resolve => parser.on('data', (data) => {

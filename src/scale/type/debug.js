@@ -3,11 +3,11 @@ const {logDebug, logInfo, logWarning} = require('./../../logging');
 
 
 class Debug extends AbstractScale {
-    command = [0x1b, 0x70];
+    command = Buffer.from([]);
     
     constructor(scaleConfig) {
         super(scaleConfig);
-        this.command = scaleConfig['command'];
+        this.command = Buffer.from(scaleConfig['command']);
     }
     
     scale = () => {

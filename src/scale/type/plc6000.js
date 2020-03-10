@@ -3,7 +3,7 @@ const {logDebug, logInfo, logWarning} = require('./../../logging');
 
 
 class PLC6000 extends AbstractScale {
-    command = [0x1b, 0x70];
+    command = Buffer.from([0x1b, 0x70]);
     
     constructor(scaleConfig) {
         super(scaleConfig);
