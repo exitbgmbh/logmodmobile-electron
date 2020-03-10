@@ -1,6 +1,7 @@
 const config = require('config');
 const SerialPort = require('serialport');
 const PLC6000 = require('./type/plc6000');
+const Rhewa82 = require('./type/rhewa82');
 const Debug = require('./type/debug');
 const {logDebug, logInfo, logWarning} = require('./../logging');
 
@@ -23,6 +24,10 @@ class ScaleHandler {
             }
             case 'PLC6000': {
                 this.scale = new PLC6000(scaleConfig);
+                break;
+            }
+            case 'RHEWA82': {
+                this.scale = new Rhewa82(scaleConfig);
                 break;
             }
             

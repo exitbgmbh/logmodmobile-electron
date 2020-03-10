@@ -2,20 +2,19 @@ const AbstractScale = require('./abstract');
 const {logDebug, logInfo, logWarning} = require('./../../logging');
 const SerialPort = require('serialport');
 
-class Debug extends AbstractScale {
-    command = Buffer.from([]);
+class Rhewa82 extends AbstractScale {
+    parser = new SerialPort.parsers.Delimiter({delimiter: [0x3c, 0x47, 0x42, 0x3e]});
+    command = Buffer.from([0x3c, 0x47, 0x42, 0x31, 0x3e]);
     
     constructor(scaleConfig) {
         super(scaleConfig);
-        this.command = Buffer.from(scaleConfig['command']);
-        this.parser = new SerialPort.parsers.Delimiter({delimiter: scaleConfig['parserDelimiter']});
     }
     
     scale = () => {
-        logDebug('Debug', 'scale', 'start');
+        logDebug('Rhewa82', 'scale', 'start');
         return this._scale(this.command).then((data) => {
-            logDebug('Debug', 'scale', 'got data from abstract ' + data);
-            logDebug('Debug', 'scale', 'data ' + data);
+            logDebug('Rhewa82', 'scale', 'got data from abstract ' + data);
+            logDebug('Rhewa82', 'scale', 'data after postprocessing ' + data);
             
             return new Promise((resolve) => {
                 resolve(data);
@@ -24,4 +23,4 @@ class Debug extends AbstractScale {
     }
 }
 
-module.exports = Debug;
+module.exports = Rhewa82;
