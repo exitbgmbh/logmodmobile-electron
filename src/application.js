@@ -16,6 +16,7 @@ const webSocketHandler = require('./websocket');
 const scaleHandler = require('./scale');
 const isDevelopment = process.env.NODE_ENV === 'development';
 const promiseIpc = require('electron-promise-ipc');
+const menu = require('./menu');
 
 /**
  * the application main window instance
@@ -73,7 +74,7 @@ const instantiateApplicationWindow = (applicationBootError) => {
         }
     });
 
-    windowInstance.setMenu(null);
+    windowInstance.setMenu(menu);
     if (applicationBootError) {
         showApplicationError(applicationBootError);
     } else {

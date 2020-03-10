@@ -1,12 +1,12 @@
 const config = require('config');
 const SerialPort = require('serialport');
 const PLC6000 = require('./type/plc6000');
+const Debug = require('./type/debug');
 const {logDebug, logInfo, logWarning} = require('./../logging');
 
 class ScaleHandler {
     /**
-     *
-     * @type PLC6000
+     * @type AbstractScale
      */
     scale = null;
     
@@ -17,6 +17,10 @@ class ScaleHandler {
         
         const scaleConfig = config.get('scale');
         switch(scaleConfig.type) {
+            case 'DEBUG': {
+                this.scale = new Debug(scaleConfig);
+                break;
+            }
             case 'PLC6000': {
                 this.scale = new PLC6000(scaleConfig);
                 break;
