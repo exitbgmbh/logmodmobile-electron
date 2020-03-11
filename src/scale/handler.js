@@ -2,6 +2,7 @@ const config = require('config');
 const SerialPort = require('serialport');
 const PLC6000 = require('./type/plc6000');
 const Rhewa82 = require('./type/rhewa82');
+const PCE_EP_E = require('./type/pce-ep-e');
 const Debug = require('./type/debug');
 const {logDebug, logInfo, logWarning} = require('./../logging');
 
@@ -28,6 +29,10 @@ class ScaleHandler {
             }
             case 'RHEWA82': {
                 this.scale = new Rhewa82(scaleConfig);
+                break;
+            }
+            case 'PCE-EP-E': {
+                this.scale = new PCE_EP_E(scaleConfig);
                 break;
             }
             
