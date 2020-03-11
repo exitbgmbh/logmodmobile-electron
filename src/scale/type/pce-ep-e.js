@@ -13,6 +13,7 @@ class PCE_EP_E extends AbstractScale {
     scale = () => {
         logDebug('PCE-EP-E', 'scale', 'start');
         return this._scale(this.command).then((data) => {
+            
             logDebug('PCE-EP-E', 'scale', 'got data from abstract ' + data);
             if (data) {
                 data = data.match(/\d+\.\d+[a-z]+/).replace(/[\skg]+/, '');

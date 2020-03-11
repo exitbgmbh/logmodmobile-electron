@@ -43,7 +43,7 @@ class AbstractScale {
             connector.close();
             logDebug('abstractScale', '_scale', 'scale disconnected');
             
-            resolve(data);
+            resolve(data.toString());
         }));
     }
 }
