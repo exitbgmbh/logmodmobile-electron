@@ -16,7 +16,7 @@ class PCE_EP_E extends AbstractScale {
             
             logDebug('PCE-EP-E', 'scale', 'got data from abstract ' + data);
             if (data) {
-                data = data.match(/\d+\.\d+[a-z]+/).replace(/[\skg]+/, '');
+                data = data.match(/\d+\.\d+[a-z]+/).toString().replace(/[\skg]+/, '');
             }
             
             logDebug('PCE-EP-E', 'scale', 'data after postprocessing ' + data);
