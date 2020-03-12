@@ -3,7 +3,6 @@ const SerialPort = require('serialport');
 
 class AbstractScale {
     scaleConfig = null;
-    parser = new SerialPort.parsers.Readline();
     
     constructor(scaleConfig) {
         if (this.constructor === AbstractScale) {
@@ -13,7 +12,7 @@ class AbstractScale {
         this.scaleConfig = scaleConfig;
     }
     
-    _scale = (command) => {
+    _scale = (command, parser) => {
         logDebug('abstractScale', '_scale', 'start');
         const connector = new SerialPort(this.scaleConfig.path, {
             baudRate: this.scaleConfig.baud
@@ -27,9 +26,7 @@ class AbstractScale {
             logDebug('abstractScale', '_scale', 'scale connected');
         });
         
-        if (this.parser !== null) {
-            connector.pipe(this.parser);
-        }
+        connector.pipe(parser);
         
         console.log('sending command', command);
         connector.on('data', (connData) => {
@@ -37,7 +34,7 @@ class AbstractScale {
         });
     
         connector.write(command);
-        return new Promise(resolve => this.parser.on('data', (data) => {
+        return new Promise(resolve => parser.on('data', (data) => {
             logDebug('abstractScale', '_scale', 'got raw data ' + data);
             
             connector.close();

@@ -3,17 +3,16 @@ const {logDebug, logInfo, logWarning} = require('./../../logging');
 const SerialPort = require('serialport');
 
 class Debug extends AbstractScale {
-    command = Buffer.from([]);
-    
     constructor(scaleConfig) {
         super(scaleConfig);
-        this.command = Buffer.from(scaleConfig['command']);
-        this.parser = new SerialPort.parsers.Delimiter({delimiter: scaleConfig['parserDelimiter']});
     }
     
     scale = () => {
         logDebug('Debug', 'scale', 'start');
-        return this._scale(this.command).then((data) => {
+        const command = Buffer.from(scaleConfig['command']);
+        const parser = new SerialPort.parsers.Delimiter({delimiter: scaleConfig['parserDelimiter']});
+        
+        return this._scale(command, parser).then((data) => {
             logDebug('Debug', 'scale', 'got data from abstract ' + data);
             logDebug('Debug', 'scale', 'data ' + data);
             
