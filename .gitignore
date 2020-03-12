@@ -3,3 +3,4 @@ dist
 electron-builder.env
 auth.env
 config/default.yaml
+.idea
