@@ -152,6 +152,12 @@ const bootApplication = () => {
 };
 
 const init = (app) => {
+    app.on('certificate-error', function(event, webContents, url, error,
+                                         certificate, callback) {
+        event.preventDefault();
+        callback(true);
+    });
+    
     app.on('ready', bootApplication);
     app.on('window-all-closed', function () {
         // On OS X it is common for applications and their menu bar

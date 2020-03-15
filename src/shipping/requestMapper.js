@@ -22,9 +22,13 @@ const mapWebSocketMessage = (data) => {
                 requestPackage.weight = shippingRequestPackage.weight;
             }
 
-            // not support atm
-            // if (shippingRequestPackage.hasOwnProperty('services') && shippingRequestPackage.services.length > 0) {
-            // }
+            if (shippingRequestPackage.hasOwnProperty('services') && shippingRequestPackage.services.length > 0) {
+                requestPackage.services = shippingRequestPackage.services;
+            }
+
+            if (shippingRequestPackage.hasOwnProperty('products') && shippingRequestPackage.products.length > 0) {
+                requestPackage.products = shippingRequestPackage.products;
+            }
 
             requestData.shippingData.shippingRequestPackages.push(requestPackage);
         });
