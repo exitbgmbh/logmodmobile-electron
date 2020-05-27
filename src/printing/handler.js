@@ -219,8 +219,8 @@ class PrintingHandler {
 
         const tmpFileName = this._saveResultToPdf(contentToPrint);
         
-        const printerConfig = getProductLabelPrinter();
-        const printingOptions = this._getOptionsForPrinting(printerConfig, numberOfCopies);
+        const printerConfig = getProductLabelPrinter(numberOfCopies);
+        const printingOptions = this._getOptionsForPrinting(printerConfig);
 
         logDebug('printingHandler', '_handleProductLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
         printer.print(tmpFileName, printingOptions).then(console.log).catch(console.log);

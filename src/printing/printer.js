@@ -167,8 +167,8 @@ getReturnSlipPrinter = (advertisingMedium) => {
  *
  * @returns {{numOfCopies: number, printer: string, rotate: boolean}}
  */
-getProductLabelPrinter = () => {
-  let printerConfig = { numOfCopies: 1, printer: defaultPrinter, rotate: false };
+getProductLabelPrinter = (numberOfCopies) => {
+  let printerConfig = { numOfCopies: numberOfCopies, printer: defaultPrinter, rotate: false };
   if (_checkPrinterKey('printing.defaultProductLabelPrinter')) {
     printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultProductLabelPrinter'));
   }
