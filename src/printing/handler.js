@@ -200,7 +200,7 @@ class PrintingHandler {
         const printerConfig = getDocumentPrinter(type, data.advertisingMedium, data.deliveryCountry, data.isEU);
         const printingOptions = this._getOptionsForPrinting(printerConfig);
 
-        logDebug('printingHandler', '_handleDocumentPrinting', 'start printing with options ' + JSON.stringify(options));
+        logDebug('printingHandler', '_handleDocumentPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
         printer.print(tmpFileName, printingOptions).then(console.log).catch(console.log);
     };
 
@@ -222,7 +222,7 @@ class PrintingHandler {
         const printerConfig = getProductLabelPrinter();
         const printingOptions = this._getOptionsForPrinting(printerConfig, numberOfCopies);
 
-        logDebug('printingHandler', '_handleProductLabelPrinting', 'start printing with options ' + JSON.stringify(options));
+        logDebug('printingHandler', '_handleProductLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
         printer.print(tmpFileName, printingOptions).then(console.log).catch(console.log);
     };
 
@@ -240,11 +240,14 @@ class PrintingHandler {
         data.shipmentLabelCollection.forEach((label) => {
             if (label.shipmentLabel && label.shipmentLabel.trim() !== '') {
                 let shipmentTmpFile = this._saveResultToPdf(label.shipmentLabel);
+    
+                logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
                 printer.print(shipmentTmpFile, printingOptions).then(console.log).catch(console.log);
             }
 
             if (label.returnLabel && label.returnLabel.trim() !== '') {
                 let returnTmpFile = this._saveResultToPdf(label.returnLabel);
+                logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
                 printer.print(returnTmpFile, printingOptions).then(console.log).catch(console.log);
             }
         });
@@ -258,13 +261,13 @@ class PrintingHandler {
      * @returns {{}}
      * @private
      */
-    _getOptionsForPrinting = (printerConfig, numberOfCopies) => {
+    _getOptionsForPrinting = (printerConfig, numberOfCopies = 1) => {
         let options = {};
         if (printerConfig.printer) {
             options.printer = printerConfig.printer;
         }
         
-        numberOfCopies = numberOfCopies || printerConfig.numOfCopies;
+        numberOfCopies = printerConfig.numOfCopies || numberOfCopies;
     
         if (useGsPrint) {
             options.gsprint = {
