@@ -3,10 +3,10 @@ const config = require('config');
 const printer = require('pdf-to-printer');
 
 let printerList = [];
-printer.list().then(res => printerList = res);
+printer.getPrinters().then(res => printerList = res);
 
 let defaultPrinter = '';
-printer.list(true).then(res => defaultPrinter = res.trim());
+printer.getDefaultPrinter().then(res => defaultPrinter = res.trim());
 
 /**
  * checks if given printer name is existent in system

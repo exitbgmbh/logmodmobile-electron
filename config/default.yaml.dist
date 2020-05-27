@@ -10,6 +10,9 @@ app:
   # the websocket heartbeat interval (in seconds)
   heartbeatInterval: 15
 
+  # if you want to use gsPrint instead of SumatraPDF
+  gsPrintExecutable: ''
+
   # this is not recommended, but possible
   username: ''
   password: ''

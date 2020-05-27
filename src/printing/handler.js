@@ -6,10 +6,9 @@ const fs = require('fs');
 const printer = require('pdf-to-printer');
 const {getDocumentPrinter, getProductLabelPrinter, getShipmentLabelPrinter} = require('./printer');
 const {logDebug} = require('./../logging');
-const pdftk = require('node-pdftk');
-pdftk.configure({
-    bin: config.has('app.pdfTkExecutable') ? config.get('app.pdfTkExecutable') : 'pdftk'
-});
+
+const useGsPrint = config.has('app.gsPrintExecutable');
+const gsPrintExecutable = useGsPrint ? config.get('app.gsPrintExecutable') : '';
 
 class PrintingHandler {
     /**
@@ -198,36 +197,11 @@ class PrintingHandler {
 
         const tmpFileName = this._saveResultToPdf(contentToPrint);
 
-        let options = {};
         const printerConfig = getDocumentPrinter(type, data.advertisingMedium, data.deliveryCountry, data.isEU);
-        if (printerConfig.printer) {
-            options.printer = printerConfig.printer;
-        }
-
-        if (printerConfig.numOfCopies) {
-            options.unix = ['-n ' + printerConfig.numOfCopies];
-            options.win32 = ['-print-settings "' + printerConfig.numOfCopies + 'x"'];
-        }
+        const printingOptions = this._getOptionsForPrinting(printerConfig);
 
         logDebug('printingHandler', '_handleDocumentPrinting', 'start printing with options ' + JSON.stringify(options));
-        printer.print(tmpFileName, options).then(console.log).catch(console.log);
-    };
-
-    _printRotated = (sourceFileName, printingOptions) => {
-        logDebug('printingHandler', '_printRotated', 'rotating document ' + sourceFileName);
-        const rotatedFileName = sourceFileName + '_rotated.pdf';
-        pdftk
-            .input(sourceFileName)
-            .cat('1-endWest')
-            .output(rotatedFileName)
-            .then((res) => {
-                console.log('pdftkres', res);
-                this.createdFilesCache.push(rotatedFileName);
-                printer.print(rotatedFileName, printingOptions).then(console.log).catch(console.log);
-            })
-            .catch((err) => {
-                console.log('pdftkerror', err);
-            });
+        printer.print(tmpFileName, printingOptions).then(console.log).catch(console.log);
     };
 
     /**
@@ -244,24 +218,12 @@ class PrintingHandler {
         }
 
         const tmpFileName = this._saveResultToPdf(contentToPrint);
-
-        let options = {};
+        
         const printerConfig = getProductLabelPrinter();
-        if (printerConfig.printer) {
-            options.printer = printerConfig.printer;
-        }
-
-        if (numberOfCopies) {
-            options.unix = ['-n ' + numberOfCopies, '-o scaling=100'];
-            options.win32 = ['-print-settings "' + numberOfCopies + 'x"'];
-        }
+        const printingOptions = this._getOptionsForPrinting(printerConfig, numberOfCopies);
 
         logDebug('printingHandler', '_handleProductLabelPrinting', 'start printing with options ' + JSON.stringify(options));
-        if (printerConfig.rotate) {
-            this._printRotated(tmpFileName, options);
-        } else {
-            printer.print(tmpFileName, options).then(console.log).catch(console.log);
-        }
+        printer.print(tmpFileName, printingOptions).then(console.log).catch(console.log);
     };
 
     /**
@@ -272,32 +234,61 @@ class PrintingHandler {
      * @private
      */
     _handleShipmentLabelPrinting = (data) => {
-        let options = {};
         const printerConfig = getShipmentLabelPrinter(data.shipmentTypeCode);
-        if (printerConfig.printer) {
-            options.printer = printerConfig.printer;
-        }
+        const printingOptions = this._getOptionsForPrinting(printerConfig);
 
         data.shipmentLabelCollection.forEach((label) => {
             if (label.shipmentLabel && label.shipmentLabel.trim() !== '') {
                 let shipmentTmpFile = this._saveResultToPdf(label.shipmentLabel);
-                if (printerConfig.rotate) {
-                    this._printRotated(shipmentTmpFile, options);
-                } else {
-                    printer.print(shipmentTmpFile, options).then(console.log).catch(console.log);
-                }
+                printer.print(shipmentTmpFile, printingOptions).then(console.log).catch(console.log);
             }
 
             if (label.returnLabel && label.returnLabel.trim() !== '') {
                 let returnTmpFile = this._saveResultToPdf(label.returnLabel);
-                if (printerConfig.rotate) {
-                    this._printRotated(returnTmpFile, options);
-                } else {
-                    printer.print(returnTmpFile, options).then(console.log).catch(console.log);
-                }
+                printer.print(returnTmpFile, printingOptions).then(console.log).catch(console.log);
             }
         });
     };
+    
+    /**
+     * map printer configuration to pdf-to-printer options
+     *
+     * @param {{}} printerConfig
+     * @param {int} numberOfCopies
+     * @returns {{}}
+     * @private
+     */
+    _getOptionsForPrinting = (printerConfig, numberOfCopies) => {
+        let options = {};
+        if (printerConfig.printer) {
+            options.printer = printerConfig.printer;
+        }
+        
+        numberOfCopies = numberOfCopies || printerConfig.numOfCopies;
+    
+        if (useGsPrint) {
+            options.gsprint = {
+                executable: gsPrintExecutable
+            }
+        
+            options.win32 = ['-color'];
+        
+            if (numberOfCopies) {
+                options.win32.push('-copies "' + numberOfCopies + '"');
+            }
+        
+            if (printerConfig.rotate) {
+                options.win32.push('-landscape');
+            }
+        } else {
+            if (numberOfCopies) {
+                options.unix = ['-n ' + numberOfCopies];
+                options.win32 = ['-print-settings "' + numberOfCopies + 'x"'];
+            }
+        }
+        
+        return options;
+    }
 }
 
 module.exports = PrintingHandler;
