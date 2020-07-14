@@ -3,6 +3,7 @@ const { ipcMain, ipcRenderer } = require('electron');
 const menuEventEmitter = require('./menu/eventEmitter');
 const version = require('./../package').version;
 const BrowserWindow = application.BrowserWindow;
+const app = application.app;
 const path = require('path');
 const {logDebug, logInfo, logWarning} = require('./logging');
 const config = require('config');
@@ -19,6 +20,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 const promiseIpc = require('electron-promise-ipc');
 const menu = require('./menu');
 const { getApplicationConfigFile } = require('./../setupConfig');
+const fs = require('fs');
 
 /**
  * the application main window instance
@@ -62,7 +64,7 @@ const showApplicationError = (error) => {
 /**
  * displaying json editor
  */
-const showApplicationConfig = (app) => {
+const showApplicationConfig = () => {
     const fileName = getApplicationConfigFile(app);
     windowInstance.loadFile(
         'static/html/applicationConfiguration.html',
@@ -95,12 +97,7 @@ const instantiateApplicationWindow = (applicationBootError) => {
     } else {
         showLogModMobile(windowInstance);
     }
-
-    ipcMain.on('authentication-succeed', windowOnLoadCompleted);
-    ipcMain.on('saveConfig', (config) => {
-        // save config
-        showLogModMobile(windowInstance);
-    });
+    
     windowInstance.on('closed', function () {
         windowInstance = null
     });
@@ -143,7 +140,7 @@ const authenticationSucceed = (event, arguments) => {
 /**
  * booting the application
  */
-const bootApplication = (app) => {
+const bootApplication = () => {
     logInfo('application', 'bootApplication', 'start');
     menuEventEmitter.on('showConfig', () => showApplicationConfig(app));
     
@@ -159,6 +156,12 @@ const bootApplication = (app) => {
         ipcMain.on('authentication-succeed', authenticationSucceed);
         promiseIpc.on('scale-package', () => {
             return scaleHandler.callScale();
+        });
+        ipcMain.on('authentication-succeed', windowOnLoadCompleted);
+        ipcMain.on('saveConfig', (event, arg) => {
+            const configFile = getApplicationConfigFile(app);
+            fs.writeFileSync(configFile, arg);
+            showLogModMobile(windowInstance);
         });
         
         shippingHandlerInstance.initialize();
@@ -183,7 +186,7 @@ const init = (app) => {
         callback(true);
     });
     
-    app.on('ready', () => bootApplication(app));
+    app.on('ready', bootApplication);
     app.on('window-all-closed', function () {
         // On OS X it is common for applications and their menu bar
         // to stay active until the user quits explicitly with Cmd + Q
@@ -196,7 +199,7 @@ const init = (app) => {
         // On OS X it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
         if (windowInstance === null) {
-            bootApplication(app)
+            bootApplication();
         }
     });
 

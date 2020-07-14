@@ -49,6 +49,11 @@
     // its just Day Version Month
     const password = d.getDate() + window.elVersion.replace(/\./g, '') + (d.getMonth() + 1);
 
+    changedHandler = () => {
+        console.log('changed handler');
+        changed = true;
+    }
+
     save = (config) => {
         window.ipcRenderer.send('saveConfig', config);
     }
@@ -69,8 +74,6 @@
                     return;
                 }
 
-                console.log(result.toString());
-                console.log(password.toString());
                 if (result.toString() === password.toString()) {
                     locked = false;
                     editor.setMode('tree');
@@ -91,24 +94,19 @@
     document.getElementById('documentation').onclick = () => { shell.openExternal('https://confluence.exitb.de/display/BLIS/Konfiguration') }
     document.getElementById('toggleRo').onclick = () => { toggleRO(); }
 
-
     const container = document.getElementById("jsoneditor")
     const options = {
         mode: 'view',
         schema: schema,
         onValidationError: function (errors) {
             if (errors && errors.length) {
-                console.log('errors');
                 document.getElementById('saveDocument').disabled = true;
             } else {
-                console.log('no errors');
                 document.getElementById('saveDocument').disabled = !changed;
             }
         },
-        onChange: function() {
-            console.log('changed')
-            changed = true;
-        }
+        onChange: changedHandler,
+        onChangeText: changedHandler
     }
 
     const editor = new JSONEditor(container, options)

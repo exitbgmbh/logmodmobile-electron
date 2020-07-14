@@ -7,7 +7,6 @@ const version = require('./../package').version;
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-window.app = require('electron').app;
 window.ipcRenderer = require('electron').ipcRenderer;
 window.promiseIpc = promiseIpc;
 window.printer = printer;
