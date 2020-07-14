@@ -1,0 +1,120 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <!-- when using the mode "code", it's important to specify charset utf-8 -->
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>Einstellungen</title>
+    <link href="jsoneditor/jsoneditor.css" rel="stylesheet" type="text/css">
+    <script src="jsoneditor/jsoneditor.js"></script>
+</head>
+<style>
+    html, body {
+        font: 11pt sans-serif;
+    }
+    #jsoneditor {
+        width: 100%;
+        height: calc(100vh - 150px);
+    }
+    #saveDocument {
+        background-color: #3a3a3a;
+        color: #ffffff;
+        border: 0;
+        padding: 5px 10px;
+        font-weight: bold;
+        text-align: center;
+        width: 100px;
+    }
+    #saveDocument:disabled {
+        background-color: #3a3a3a;
+        color: #a0a0a0;
+    }
+</style>
+<body>
+<h4>Einstellungen</h4>
+<p>Es wird dringend davon abgeraten, selbstständig Einstellungen zu verändern, da eine fehlerhafte Konfiguration zu Problemen im Arbeitsablauf führen kann.</p>
+<p>Wenden Sie sich an per Email an den exitB Support (support@exitb.de), eröffnen Sie ein Ticket im <a href="#" id="ticket">exitB Ticketsystem</a> oder konsultieren Sie die <a href="#" id="documentation">Dokumenation</a>.</p>
+<input type="button" id="toggleRo" value="Entsperren" style="background-color: #3a3a3a; color: #ffffff; border: 0; padding: 5px 10px; font-weight: bold; text-align: center; width: 100px" />
+<input type="button" id="saveDocument" value="Speichern" disabled style=""/>
+<div id="jsoneditor"></div>
+
+<script>
+    const { shell } = require('electron');
+    const schema = require('./../configSchema.json');
+    const prompt = require('electron-prompt');
+    let changed = false,
+        locked = true;
+
+    const d = new Date();
+    // no need for a secure, unknown password. its just to avoid everybody can change settings
+    // its just Day Version Month
+    const password = d.getDate() + window.elVersion.replace(/\./g, '') + (d.getMonth() + 1);
+
+    save = (config) => {
+        window.ipcRenderer.send('saveConfig', config);
+    }
+
+    toggleRO = () => {
+        if (locked) {
+            document.getElementById('toggleRo').disabled = true;
+            prompt({
+                title: "Bitte geben Sie das Passwort ein",
+                label: "",
+                type: "input",
+                inputAttrs: {
+                    type: 'password'
+                }
+            }).then((result) => {
+                document.getElementById('toggleRo').disabled = false;
+                if (!result) {
+                    return;
+                }
+
+                console.log(result.toString());
+                console.log(password.toString());
+                if (result.toString() === password.toString()) {
+                    locked = false;
+                    editor.setMode('tree');
+                    document.getElementById('toggleRo').value = 'Sperren';
+                } else {
+                    alert('Falsches Passwort')
+                }
+            })
+        } else {
+            editor.setMode('view');
+            document.getElementById('toggleRo').value = 'Entsperren';
+            locked = true;
+        }
+    }
+
+    document.getElementById('saveDocument').onclick = () => { save(editor.getText()); }
+    document.getElementById('ticket').onclick = () => { shell.openExternal('https://jira.exitb.de/servicedesk') }
+    document.getElementById('documentation').onclick = () => { shell.openExternal('https://confluence.exitb.de/display/BLIS/Konfiguration') }
+    document.getElementById('toggleRo').onclick = () => { toggleRO(); }
+
+
+    const container = document.getElementById("jsoneditor")
+    const options = {
+        mode: 'view',
+        schema: schema,
+        onValidationError: function (errors) {
+            if (errors && errors.length) {
+                console.log('errors');
+                document.getElementById('saveDocument').disabled = true;
+            } else {
+                console.log('no errors');
+                document.getElementById('saveDocument').disabled = !changed;
+            }
+        },
+        onChange: function() {
+            console.log('changed')
+            changed = true;
+        }
+    }
+
+    const editor = new JSONEditor(container, options)
+    const url = new URL(window.location);
+    initialJson = require(url.searchParams.get('configFile'));
+    editor.set(initialJson)
+</script>
+</body>
+</html>

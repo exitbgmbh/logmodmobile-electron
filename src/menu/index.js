@@ -1,6 +1,7 @@
 const { Menu, shell, app } = require('electron');
 const path = require('path');
 const scaleHandler = require('./../scale');
+const menuEventEmitter = require('./eventEmitter');
 
 const template = [
     {
@@ -15,8 +16,7 @@ const template = [
             {
                 label: 'Configuration',
                 click: async () => {
-                    const configFile = path.join(app.getPath('userData'), 'default.yaml');
-                    await shell.openItem(configFile);
+                    menuEventEmitter.emit('showConfig');
                 }
             },
             { type: 'separator' },

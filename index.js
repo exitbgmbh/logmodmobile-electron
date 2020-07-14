@@ -1,7 +1,7 @@
 const app = require('electron').app;
 
 if (process.env.NODE_ENV !== 'development') {
-    const checkConfig = require('./setupConfig');
+    const { checkConfig } = require('./setupConfig');
     checkConfig(app);
 }
 

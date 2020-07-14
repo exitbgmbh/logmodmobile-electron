@@ -2,5 +2,5 @@ node_modules
 dist
 electron-builder.env
 auth.env
-config/default.yaml
+config/default.json
 .idea

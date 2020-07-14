@@ -1,0 +1,67 @@
+{
+  "app": {
+    "url": "https://your-blisstribute-instance-rest-url",
+    "autoUpdateCheckInterval": 600,
+    "heartbeatInterval": 5,
+    "gsPrintExecutable": "/bin/echo",
+    "username": "",
+    "password": ""
+  },
+  "scale": {
+    "type": "PLC6000",
+    "path": "/dev/ttyUSB0",
+    "baud": 9600,
+    "command": [
+      "0x1b", "0x70"
+    ],
+    "parserDelimiter": [
+      "0x0d", "0x0a"
+    ]
+  },
+  "invoicing": {
+    "watchBoxes": ".*"
+  },
+  "shipping": {
+    "DHL3": {
+      "printing": {
+        "shipmentLabelPrinter": "PDF",
+        "rotate": true
+      }
+    },
+    "DHL": {
+      "polling": {
+        "fileExport": {
+          "path": "PFAD",
+          "pattern": "Poll-{COUNTER}.csv",
+          "encoding": "iso-8859-1"
+        },
+        "fileImport": {
+          "path": "PFAD",
+          "pattern": "^ELSendEx.*.txt$",
+          "encoding": "utf-8"
+        }
+      }
+    }
+  },
+  "printing": {
+    "defaultInvoiceSlipPrinter": "PDF",
+    "defaultDeliverySlipPrinter": "PDF",
+    "defaultReturnSlipPrinter": "PDF",
+    "defaultShipmentLabelPrinter": "PDF",
+    "defaultProductLabelPrinter": "PDF",
+    "rotateProductLabel": true,
+    "defaultInvoiceSlipPrintCountCC": 1,
+    "defaultInvoiceSlipPrintCountEU": 1,
+    "defaultInvoiceSlipPrintCountTC": 3,
+    "advertisingMediumConfig": {
+      "FLR": {
+        "invoiceSlipPrinter": "PDF",
+        "deliverySlipPrinter": "",
+        "returnSlipPrinter": "",
+        "invoiceSlipPrintCountCC": 1,
+        "invoiceSlipPrintCountEU": 1,
+        "invoiceSlipPrintCountTC": 3
+      }
+    }
+  }
+}

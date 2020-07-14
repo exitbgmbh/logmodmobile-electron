@@ -20,7 +20,7 @@ const getApplicationConfigPath = (app) => {
  * @returns {string}
  */
 const getApplicationConfigFile = (app) => {
-    return getApplicationConfigPath(app) + path.sep + 'default.yaml';
+    return getApplicationConfigPath(app) + path.sep + 'default.json';
 };
 
 /**
@@ -33,9 +33,9 @@ const setupConfig = (app) => {
 
     let srcFile, destFile;
     if (isRunningInAsar()) {
-        srcFile = path.join(app.getAppPath(), '..', '..', 'config', 'default.yaml.dist');
+        srcFile = path.join(app.getAppPath(), '..', '..', 'config', 'default.dist.json');
     } else {
-        srcFile = app.getAppPath() + path.sep + 'config' + path.sep + 'default.yaml.dist';
+        srcFile = app.getAppPath() + path.sep + 'config' + path.sep + 'default.dist.json';
     }
 
     destFile = getApplicationConfigFile(app);
@@ -53,8 +53,7 @@ const setupConfig = (app) => {
  */
 const checkConfig = (app) => {
     logDebug('setupConfig', 'checkConfig', 'start');
-    const cfgPath = getApplicationConfigPath(app);
-    process.env.NODE_CONFIG_DIR = cfgPath;
+    process.env.NODE_CONFIG_DIR = getApplicationConfigPath(app);
     logDebug('setupConfig', 'checkConfig', 'configuration path set ' + process.env.NODE_CONFIG_DIR);
 
     if (!fs.existsSync(getApplicationConfigFile(app))) {
@@ -65,4 +64,7 @@ const checkConfig = (app) => {
     logDebug('setupConfig', 'checkConfig', 'done');
 };
 
-module.exports = checkConfig;
+module.exports = {
+    checkConfig,
+    getApplicationConfigFile
+};

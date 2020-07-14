@@ -1,5 +1,6 @@
 const application = require('electron');
 const { ipcMain, ipcRenderer } = require('electron');
+const menuEventEmitter = require('./menu/eventEmitter');
 const version = require('./../package').version;
 const BrowserWindow = application.BrowserWindow;
 const path = require('path');
@@ -17,6 +18,7 @@ const scaleHandler = require('./scale');
 const isDevelopment = process.env.NODE_ENV === 'development';
 const promiseIpc = require('electron-promise-ipc');
 const menu = require('./menu');
+const { getApplicationConfigFile } = require('./../setupConfig');
 
 /**
  * the application main window instance
@@ -58,6 +60,19 @@ const showApplicationError = (error) => {
 };
 
 /**
+ * displaying json editor
+ */
+const showApplicationConfig = (app) => {
+    const fileName = getApplicationConfigFile(app);
+    windowInstance.loadFile(
+        'static/html/applicationConfiguration.html',
+        { search: 'configFile=' + fileName }
+    ).then(() => {});
+    
+    windowInstance.webContents.on('did-finish-load', windowOnLoadCompleted);
+};
+
+/**
  * show the application main window
  *
  * @param applicationBootError an occurred error from application boot
@@ -73,25 +88,33 @@ const instantiateApplicationWindow = (applicationBootError) => {
             preload: __dirname + '/preload.js'
         }
     });
-
+    
     windowInstance.setMenu(menu);
     if (applicationBootError) {
         showApplicationError(applicationBootError);
     } else {
-        const startUrl = process.env.ELECTRON_START_URL || config.get('app.url');
-        windowInstance.loadURL(startUrl).then(() => {
-
-        }).catch((err) => {
-            showApplicationError(err);
-        });
-        windowInstance.webContents.on('did-finish-load', windowOnLoadCompleted);
+        showLogModMobile(windowInstance);
     }
 
     ipcMain.on('authentication-succeed', windowOnLoadCompleted);
+    ipcMain.on('saveConfig', (config) => {
+        // save config
+        showLogModMobile(windowInstance);
+    });
     windowInstance.on('closed', function () {
         windowInstance = null
     });
 };
+
+const showLogModMobile = (windowInstance) => {
+    const startUrl = process.env.ELECTRON_START_URL || config.get('app.url');
+    windowInstance.loadURL(startUrl).then(() => {
+    
+    }).catch((err) => {
+        showApplicationError(err);
+    });
+    windowInstance.webContents.on('did-finish-load', windowOnLoadCompleted);
+}
 
 /**
  * ipc event from logmodmobile
@@ -120,8 +143,10 @@ const authenticationSucceed = (event, arguments) => {
 /**
  * booting the application
  */
-const bootApplication = () => {
+const bootApplication = (app) => {
     logInfo('application', 'bootApplication', 'start');
+    menuEventEmitter.on('showConfig', () => showApplicationConfig(app));
+    
     if (!config.has('app.url')) {
         instantiateApplicationWindow({message: 'config not found or not valid'});
         logWarning('application', 'bootApplication', 'invalid config');
@@ -135,7 +160,7 @@ const bootApplication = () => {
         promiseIpc.on('scale-package', () => {
             return scaleHandler.callScale();
         });
-
+        
         shippingHandlerInstance.initialize();
         printingHandlerInstance.initialize();
         invoiceHandlerInstance.initialize();
@@ -158,7 +183,7 @@ const init = (app) => {
         callback(true);
     });
     
-    app.on('ready', bootApplication);
+    app.on('ready', () => bootApplication(app));
     app.on('window-all-closed', function () {
         // On OS X it is common for applications and their menu bar
         // to stay active until the user quits explicitly with Cmd + Q
@@ -171,7 +196,7 @@ const init = (app) => {
         // On OS X it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
         if (windowInstance === null) {
-            bootApplication()
+            bootApplication(app)
         }
     });
 
