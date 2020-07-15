@@ -1,25 +1,25 @@
 {
   "app": {
-    "url": "https://your-blisstribute-instance-rest-url",
+    "url": "https://your-logmod-mobile-instance-url",
     "autoUpdateCheckInterval": 600,
     "heartbeatInterval": 5,
     "gsPrintExecutable": "/bin/echo",
-    "username": "",
-    "password": ""
+    "username": "for debug purposes only",
+    "password": "for debug purposes only"
   },
   "scale": {
-    "type": "PLC6000",
+    "type": "Dummy",
     "path": "/dev/ttyUSB0",
     "baud": 9600,
     "command": [
-      "0x1b", "0x70"
+      "for debug scale only"
     ],
     "parserDelimiter": [
-      "0x0d", "0x0a"
+      "for debug scale only"
     ]
   },
   "invoicing": {
-    "watchBoxes": ".*"
+    "watchBoxes": "$x"
   },
   "shipping": {
     "DHL3": {
@@ -31,12 +31,12 @@
     "DHL": {
       "polling": {
         "fileExport": {
-          "path": "PFAD",
+          "path": "PATH",
           "pattern": "Poll-{COUNTER}.csv",
           "encoding": "iso-8859-1"
         },
         "fileImport": {
-          "path": "PFAD",
+          "path": "PATH",
           "pattern": "^ELSendEx.*.txt$",
           "encoding": "utf-8"
         }

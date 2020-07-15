@@ -59,8 +59,10 @@ class WebSocketHandler
      * @param message
      */
     sendMessage = (message) => {
-        logDebug('webSocketHandler', 'sendMessage', 'sending message ... ' + JSON.stringify(message));
-        this.currentConnection.send(JSON.stringify(message));
+        if (this.currentConnection && this.currentConnection.connected) {
+            logDebug('webSocketHandler', 'sendMessage', 'sending message ... ' + JSON.stringify(message));
+            this.currentConnection.send(JSON.stringify(message));
+        }
     };
 
     /**
@@ -69,10 +71,15 @@ class WebSocketHandler
      * @param socketLink
      */
     connectToWebSocket = (socketLink) => {
-        // we need to close the current connection first
-        if (this.socket && this.currentConnection) {
-            this.currentConnection.close();
+        if (this.currentConnection) {
+            if (this.currentConnection.connected) {
+                this.currentConnection.close();
+            }
+
             this.currentConnection = null;
+        }
+
+        if (this.socket) {
             this.socket = null;
         }
 
@@ -88,19 +95,32 @@ class WebSocketHandler
 
             this._registerHeartbeat();
 
-            this.currentConnection.on('error', function(error) {
-                logWarning('webSocketHandler', 'onError', 'error occurred: ' + error.toString());
-                showNotification('LogModMobile - Fehler in der WebSocket-Verbindung: ' + error.toString());
-            });
-            this.currentConnection.on('close', function() {
-                logWarning('webSocketHandler', 'onClose', 'connection closed');
-                showNotification('LogModMobile - Die aktuelle WebSocket-Verbindung wurde geschlossen.');
-            });
-
+            this.currentConnection.on('error', this._connectionError);
+            this.currentConnection.on('close', this._connectionClose);
             this.currentConnection.on('message', this._handleMessage);
         }.bind(this));
 
         this.socket.connect(socketLink);
+    };
+
+    _connectionError = () => {
+        logWarning('webSocketHandler', 'onError', 'error occurred: ' + error.toString());
+        showNotification('LogModMobile - Fehler in der WebSocket-Verbindung: ' + error.toString());
+    }
+
+    _connectionClose = () => {
+        logWarning('webSocketHandler', '_connectionClose', 'connection closed');
+        if (this.currentConnection) {
+            this.currentConnection.close();
+            logDebug('webSocketHandler', '_connectionClose', 'connection instance closed');
+        }
+
+        if (this.heartbeatIntervalPID) {
+            clearInterval(this.heartbeatIntervalPID);
+            logDebug('webSocketHandler', '_connectionClose', 'heartbeat interval removed');
+        }
+
+        showNotification('LogModMobile - Die aktuelle WebSocket-Verbindung wurde geschlossen.');
     };
     
     /**
@@ -194,7 +214,7 @@ class WebSocketHandler
      * @private
      */
     _heartbeat = () => {
-        logDebug('webSocketHandler', '_heartbeat', 'sending heartbeat...');
+        logDebug('webSocketHandler', '_heartbeat', 'try sending heartbeat...');
         this.sendMessage({event: 'logModHeartBeat', type: 'logMod', 'receiverUserId': 0, logModIdent: null, data: {logModIdent: this.logModIdentification}});
     };
 }

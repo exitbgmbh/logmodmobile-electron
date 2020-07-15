@@ -4,6 +4,7 @@ const PLC6000 = require('./type/plc6000');
 const Rhewa82 = require('./type/rhewa82');
 const PCE_EP_E = require('./type/pce-ep-e');
 const Debug = require('./type/debug');
+const Dummy = require('./type/dummy');
 const {logDebug, logInfo, logWarning} = require('./../logging');
 
 class ScaleHandler {
@@ -21,6 +22,10 @@ class ScaleHandler {
         switch(scaleConfig.type) {
             case 'DEBUG': {
                 this.scale = new Debug(scaleConfig);
+                break;
+            }
+            case 'DUMMY': {
+                this.scale = new Dummy(scaleConfig);
                 break;
             }
             case 'PLC6000': {

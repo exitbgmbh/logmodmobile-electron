@@ -125,17 +125,20 @@ const authenticationSucceed = (event, arguments) => {
     logDebug('event', 'authenticationSucceed', 'start ' + JSON.stringify(arguments));
     restClientInstance.setAuthToken(arguments.authenticationToken);
     restClientInstance.parseBaseUrl(arguments.requestUrl);
+};
 
+const websocketConnect = () => {
     const logModMobileIdent = getLogModIdentification();
     restClientInstance.requestWebSocketAccessLink(logModMobileIdent).then((response) => {
-        showNotification('LogModMobile wird registriert...');
         const { socketLink } = response.response;
+        logInfo('application', 'websocketConnect', 'got connection link ' + socketLink);
 
+        showNotification('LogModMobile wird registriert...');
         webSocketHandler.setLogModIdentification(logModMobileIdent).connectToWebSocket(socketLink);
     }).catch((error) => {
         logWarning('event', 'authenticationSucceed', 'call for websocket failed ' + error.message);
     });
-};
+}
 
 /**
  * booting the application
@@ -154,14 +157,16 @@ const bootApplication = () => {
         initializeAutoUpdateCheck();
 
         ipcMain.on('authentication-succeed', authenticationSucceed);
-        promiseIpc.on('scale-package', () => {
-            return scaleHandler.callScale();
-        });
         ipcMain.on('authentication-succeed', windowOnLoadCompleted);
+        ipcMain.on('websocket-connected', websocketConnect);
         ipcMain.on('saveConfig', (event, arg) => {
             const configFile = getApplicationConfigFile(app);
             fs.writeFileSync(configFile, arg);
             showLogModMobile(windowInstance);
+        });
+
+        promiseIpc.on('scale-package', () => {
+            return scaleHandler.callScale();
         });
         
         shippingHandlerInstance.initialize();
