@@ -1,5 +1,4 @@
-const { Menu, shell, app } = require('electron');
-const path = require('path');
+const { Menu, shell } = require('electron');
 const scaleHandler = require('./../scale');
 const menuEventEmitter = require('./eventEmitter');
 
