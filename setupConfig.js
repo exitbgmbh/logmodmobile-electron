@@ -10,7 +10,12 @@ const {logDebug, logInfo} = require('./src/logging');
  * @returns {string}
  */
 const getApplicationConfigPath = (app) => {
-    return app.getPath('userData');
+    const appPath = app.getPath('userData');
+    if (!fs.existsSync(appPath)) {
+        fs.mkdirSync(appPath);
+    }
+
+    return appPath;
 };
 
 /**
@@ -40,10 +45,10 @@ const setupConfig = (app) => {
 
     destFile = getApplicationConfigFile(app);
 
-    logDebug('setupConfig', 'setupConfig', srcFile);
-    logDebug('setupConfig', 'setupConfig', destFile);
+    logDebug('setupConfig', 'setupConfig::fileSource', srcFile);
+    logDebug('setupConfig', 'setupConfig::fileDestination', destFile);
 
-    return fs.copyFileSync(srcFile, destFile);
+    fs.copyFileSync(srcFile, destFile);
 };
 
 /**
@@ -53,14 +58,13 @@ const setupConfig = (app) => {
  */
 const checkConfig = (app) => {
     logDebug('setupConfig', 'checkConfig', 'start');
-    process.env.NODE_CONFIG_DIR = getApplicationConfigPath(app);
-    logDebug('setupConfig', 'checkConfig', 'configuration path set ' + process.env.NODE_CONFIG_DIR);
-
     if (!fs.existsSync(getApplicationConfigFile(app))) {
         logInfo('preCheckConfig', 'setupConfig', 'could not find configuration path. setting up...');
         setupConfig(app);
     }
 
+    process.env.NODE_CONFIG_DIR = getApplicationConfigPath(app);
+    logDebug('setupConfig', 'checkConfig', 'configuration path set ' + process.env.NODE_CONFIG_DIR);
     logDebug('setupConfig', 'checkConfig', 'done');
 };
 

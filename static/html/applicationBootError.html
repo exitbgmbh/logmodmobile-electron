@@ -13,6 +13,6 @@
 <script type="text/javascript">
     const url = new URL(window.location);
     document.getElementById('errormsg').innerHTML = url.searchParams.get('error');
-    document.getElementById('configHint').innerHTML = 'Bitte prüfen Sie die Ihre Konfigurationsdatei "<b>default.json</b>" ("<b>' + process.env.NODE_CONFIG_DIR + '</b>")';
+    document.getElementById('configHint').innerHTML = 'Bitte prüfen Sie Ihre Konfigurationsdatei "<b>default.json</b>" ("<b>' + process.env.NODE_CONFIG_DIR + '</b>")';
 </script>
 </html>

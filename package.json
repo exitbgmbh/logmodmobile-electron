@@ -7,6 +7,7 @@
     "electron-test": "electron .",
     "electron-dev": "NODE_ENV=development electron .",
     "electron-dev-local": "NODE_ENV=development ELECTRON_START_URL=http://localhost:3000 electron .",
+    "build": "electron-builder -l",
     "publish": "electron-builder -l -w -p always",
     "after-publish": "rm ./node_modules/@serialport -Rf && rm ./node_modules/serialport -Rf && npm install && $(npm bin)/electron-rebuild",
     "version-patch": "npm version patch",
@@ -58,6 +59,7 @@
       ]
     },
     "linux": {
+      "category": "Office",
       "target": [
         "AppImage"
       ]
