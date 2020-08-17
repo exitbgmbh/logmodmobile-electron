@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ccarnivore/logmodmobile-electron.git"
+    "url": "git+https://github.com/exitbgmbh/logmodmobile-electron.git"
   },
   "keywords": [
     "logmodmobile",
@@ -27,9 +27,9 @@
   "author": "Roman Robel (exitB GmbH)",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ccarnivore/logmodmobile-electron/issues"
+    "url": "https://github.com/exitbgmbh/logmodmobile-electron/issues"
   },
-  "homepage": "https://github.com/ccarnivore/logmodmobile-electron#readme",
+  "homepage": "https://github.com/exitbgmbh/logmodmobile-electron#readme",
   "dependencies": {
     "alert-node": "^2.1.3",
     "axios": "^0.19.2",
