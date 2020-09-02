@@ -1,5 +1,5 @@
 const AbstractScale = require('./abstract');
-const {logDebug, logInfo, logWarning} = require('./../../logging');
+const {logDebug} = require('./../../logging');
 const SerialPort = require('serialport');
 
 class Debug extends AbstractScale {
@@ -9,8 +9,8 @@ class Debug extends AbstractScale {
     
     scale = () => {
         logDebug('Debug', 'scale', 'start');
-        const command = Buffer.from(scaleConfig['command']);
-        const parser = new SerialPort.parsers.Delimiter({delimiter: scaleConfig['parserDelimiter']});
+        const command = Buffer.from(this.scaleConfig['command']);
+        const parser = new SerialPort.parsers.Delimiter({delimiter: this.scaleConfig['parserDelimiter']});
         
         return this._scale(command, parser).then((data) => {
             logDebug('Debug', 'scale', 'got data from abstract ' + data);
