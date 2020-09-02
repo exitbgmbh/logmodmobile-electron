@@ -4,7 +4,7 @@ const PLC6000 = require('./type/plc6000');
 const Rhewa82 = require('./type/rhewa82');
 const PCE_EP_E = require('./type/pce-ep-e');
 const Debug = require('./type/debug');
-const Dummy = require('./type/dummy');
+const Random = require('./type/random');
 const {logDebug, logInfo, logWarning} = require('./../logging');
 
 class ScaleHandler {
@@ -24,8 +24,8 @@ class ScaleHandler {
                 this.scale = new Debug(scaleConfig);
                 break;
             }
-            case 'DUMMY': {
-                this.scale = new Dummy(scaleConfig);
+            case 'RANDOM': {
+                this.scale = new Random(scaleConfig);
                 break;
             }
             case 'PLC6000': {
@@ -41,7 +41,9 @@ class ScaleHandler {
                 break;
             }
             
-            default: {}
+            default: {
+                break;
+            }
         }
     };
     

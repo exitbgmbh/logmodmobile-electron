@@ -47,7 +47,7 @@
     const d = new Date();
     // no need for a secure, unknown password. its just to avoid everybody can change settings
     // its just Day Version Month
-    const password = d.getDate() + window.elVersion.replace(/\./g, '') + (d.getMonth() + 1);
+    const password = ("0" + d.getDate()).slice(-2) + window.elVersion.replace(/\./g, '') + ("0" + (d.getMonth() + 1)).slice(-2);
 
     changedHandler = () => {
         console.log('changed handler');

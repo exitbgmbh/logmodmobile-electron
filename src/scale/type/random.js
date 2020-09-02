@@ -1,7 +1,7 @@
 const AbstractScale = require('./abstract');
 const {logDebug, logInfo, logWarning} = require('./../../logging');
 
-class Dummy extends AbstractScale {
+class Random extends AbstractScale {
     constructor(scaleConfig) {
         super(scaleConfig);
     }
@@ -18,4 +18,4 @@ class Dummy extends AbstractScale {
     }
 }
 
-module.exports = Dummy;
+module.exports = Random;
