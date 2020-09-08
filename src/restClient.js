@@ -3,6 +3,7 @@ const os = require('os');
 const version = require(__dirname + '/../package').version;
 const querystring = require('querystring');
 const { logInfo, logDebug, logWarning } = require('./logging');
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 class RestClient
 {
@@ -44,8 +45,14 @@ class RestClient
      */
     _getFinalPath = (path, parameter, apiVersion = 'v1') => {
         let finalPath = this.baseUrl + '/' + apiVersion + '/' + path;
-        if (parameter && Object.keys(parameter).length) {
-            finalPath += '?' + querystring.stringify(parameter);
+        let param = parameter || [];
+
+        if (isDevelopment) {
+            param['XDEBUG_SESSION_START'] = 'PHPSTORM';
+        }
+
+        if (param && Object.keys(param).length) {
+            finalPath += '?' + querystring.stringify(param);
         }
         return finalPath;
     };
