@@ -9,6 +9,7 @@ const {getLogModIdentification} = require("../helper");
 const SHIP_OUT_EVENT = 'LOGMODSHIPOUT';
 const PRINT_EVENT = 'LOGMODPRINT';
 const PICK_BOX_READY = 'PICKBOXREADY';
+const PICK_LIST_FINISHED = 'PICKLISTFINISHED';
 
 class WebSocketHandler
 {
@@ -151,7 +152,19 @@ class WebSocketHandler
                     return;
                 }
                 
+                if (this._pickListNeedsAdditionalDocuments(socketEvent.data)) {
+                    return;
+                }
+                
                 eventEmitter.emit('pickBoxReady', socketEvent.data);
+                break;
+            }
+            case PICK_LIST_FINISHED: {
+                if (!this._isAdditionalDocumentPrintingActive(socketEvent.data) || !this._pickListNeedsAdditionalDocuments(socketEvent.data)) {
+                    return;
+                }
+                
+                eventEmitter.emit('pickListNeedsAdditionalDocuments', socketEvent.data);
                 break;
             }
             default: {
@@ -187,6 +200,36 @@ class WebSocketHandler
         const watchPattern = new RegExp(config.get('invoicing.watchBoxes'));
         return watchPattern.test(messageData.pickBoxIdent);
     };
+    
+    /**
+     * checks if automatic additional document printing is enabled
+     *
+     * @param {{}} messageData
+     * @returns {boolean}
+     * @private
+     */
+    _isAdditionalDocumentPrintingActive = (messageData) => {
+        if (!config.has('printing.printAdditionalDocuments')) {
+            return false;
+        }
+        
+        return config.get('printing.printAdditionalDocuments');
+    };
+    
+    /**
+     * checks if pick list not containing shipping request items
+     *
+     * @param {{}} messageData
+     * @returns {boolean}
+     * @private
+     */
+    _pickListNeedsAdditionalDocuments = (messageData) => {
+        if (!messageData.hasOwnProperty('pickListNumber') || !messageData.hasOwnProperty('pickListType')) {
+            return false;
+        }
+        
+        return messageData.pickListType > 1;
+    }
 
     /**
      * registers the heartbeat interval

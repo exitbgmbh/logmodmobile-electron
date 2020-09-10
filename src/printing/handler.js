@@ -50,7 +50,8 @@ class PrintingHandler {
     _registerEventListener = () => {
         eventEmitter.on('requestDocuments', this._requestDocuments);
         eventEmitter.on('invoiceCreationSuccess', this._printInvoiceCreationResultDocuments);
-        eventEmitter.on('shipmentLabelPrint', this._handleShipmentLabelPrinting)
+        eventEmitter.on('shipmentLabelPrint', this._handleShipmentLabelPrinting);
+        eventEmitter.on('pickListNeedsAdditionalDocuments', this._requestAdditionalPickListDocuments);
     };
 
     /**
@@ -78,6 +79,40 @@ class PrintingHandler {
             this._handleDocumentPrinting('return', resultData, data.base64encodedReturnSlip);
         }
     };
+    
+    /**
+     *
+     * @param {{pickListNumber: string, pickListId: int, pickListType: int}} data
+     * @private
+     */
+    _requestAdditionalPickListDocuments = (data) => {
+        if (!data || !data.pickListNumber || !data.pickListType || data.pickListType === 1) {
+            return;
+        }
+        
+        switch (data.pickListType) {
+            case 2: {
+                // relocation list
+                restClientInstance.requestRelocationDocuments(data.pickListNumber).then((response) => {
+                    this._handleDocumentPrinting('invoice', response.response, response.response.relocationPdf)
+                }).catch(this._handleError);
+                break;
+            }
+            case 4: {
+                // repair cases
+                restClientInstance.requestRepairCaseDocuments(data.pickListNumber).then((response) => {
+                    this._handleDocumentPrinting('invoice', response.response, response.response.repairCasePdf)
+                }).catch(this._handleError);
+                break;
+            }
+            case 3:
+            default: {
+                // replenishment
+                break;
+            }
+            
+        }
+    }
 
     /**
      * requesting documents from blisstribute and print them
@@ -92,6 +127,28 @@ class PrintingHandler {
         }
 
         switch (data.documentType.toUpperCase()) {
+            case 'REPAIRCASECOVERLETTER': {
+                if (!data.hasOwnProperty('pickBox')) {
+                    this._handleError(new Error('invalid data, no pick box given'));
+                    return;
+                }
+    
+                restClientInstance.requestRepairCaseDocuments(data.pickBox).then((response) => {
+                    this._handleDocumentPrinting('invoice', response.response, response.response.repairCasePdf)
+                }).catch(this._handleError);
+                break;
+            }
+            case 'RELOCATIONPROOF': {
+                if (!data.hasOwnProperty('pickBox')) {
+                    this._handleError(new Error('invalid data, no pick box given'));
+                    return;
+                }
+    
+                restClientInstance.requestRelocationDocuments(data.pickBox).then((response) => {
+                    this._handleDocumentPrinting('invoice', response.response, response.response.relocationPdf)
+                }).catch(this._handleError);
+                break;
+            }
             case 'PRODUCTLABEL': {
                 if (!data.hasOwnProperty('productEan')) {
                     this._handleError(new Error('invalid data, no ean number given'));

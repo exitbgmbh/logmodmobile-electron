@@ -188,6 +188,24 @@ class RestClient
     requestAllDocuments = (invoiceNumber) => {
         return this.get('document/readInvoiceDocuments/' + invoiceNumber);
     };
+    
+    /**
+     * request (batched) repair case documents
+     *
+     * @param {string} identifier
+     */
+    requestRepairCaseDocuments = (identifier) => {
+        return this.get('document/readRepairCaseDocument/' + identifier);
+    }
+    
+    /**
+     * request relocation document
+     *
+     * @param {string} identifier
+     */
+    requestRelocationDocuments = (identifier) => {
+        return this.get('document/readRelocationDocument/' + identifier);
+    }
 }
 
 module.exports = new RestClient();

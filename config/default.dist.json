@@ -50,6 +50,7 @@
     "defaultShipmentLabelPrinter": "PDF",
     "defaultProductLabelPrinter": "PDF",
     "rotateProductLabel": true,
+    "printAdditionalDocuments": true,
     "defaultInvoiceSlipPrintCountCC": 1,
     "defaultInvoiceSlipPrintCountEU": 1,
     "defaultInvoiceSlipPrintCountTC": 3,

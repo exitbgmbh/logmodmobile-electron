@@ -140,6 +140,9 @@
         "rotateProductLabel": {
           "type": "boolean"
         },
+        "printAdditionalDocuments": {
+          "type": "boolean"
+        },
         "defaultInvoiceSlipPrintCountCC": {
           "type": "integer"
         },
