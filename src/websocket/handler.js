@@ -225,6 +225,7 @@ class WebSocketHandler
      */
     _pickListNeedsAdditionalDocuments = (messageData) => {
         if (!messageData.hasOwnProperty('pickListNumber') || !messageData.hasOwnProperty('pickListType')) {
+            logDebug('webSocketHandler', '_pickListNeedsAdditionalDocuments', 'no additional documents needed');
             return false;
         }
         

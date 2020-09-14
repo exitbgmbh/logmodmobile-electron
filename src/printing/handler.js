@@ -86,6 +86,7 @@ class PrintingHandler {
      * @private
      */
     _requestAdditionalPickListDocuments = (data) => {
+        logDebug('printingHandler', '_requestAdditionalPickListDocuments', JSON.stringify(data));
         if (!data || !data.pickListNumber || !data.pickListType || data.pickListType === 1) {
             return;
         }
