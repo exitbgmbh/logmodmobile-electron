@@ -63,6 +63,10 @@ getDocumentPrinter = (documentType, advertisingMedium = '', deliveryCountryCode=
       printerConfig = getInvoicePrinter(advertisingMedium, deliveryCountryCode, deliveryCountryIsEU);
       break;
     }
+    case 'INVOICEMERGE': {
+      printerConfig = getInvoicePrinter(advertisingMedium, 'DE', true);
+      break;
+    }
     case 'DELIVERY': {
       printerConfig = getDeliverySlipPrinter(advertisingMedium);
       break;

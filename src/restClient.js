@@ -188,6 +188,17 @@ class RestClient
     requestAllDocuments = (invoiceNumber) => {
         return this.get('document/readInvoiceDocuments/' + invoiceNumber);
     };
+
+    /**
+     * request all documents for an invoice for printing
+     *
+     * @param {string} invoiceNumber
+     *
+     * @returns {*|Promise}
+     */
+    requestMergedDocuments = (invoiceNumber) => {
+        return this.get('document/readMergedInvoiceDocuments/' + invoiceNumber);
+    };
     
     /**
      * request (batched) repair case documents

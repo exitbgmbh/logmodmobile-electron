@@ -51,6 +51,7 @@
     "defaultProductLabelPrinter": "PDF",
     "rotateProductLabel": true,
     "printAdditionalDocuments": true,
+    "requestInvoiceDocumentsMerged": false,
     "defaultInvoiceSlipPrintCountCC": 1,
     "defaultInvoiceSlipPrintCountEU": 1,
     "defaultInvoiceSlipPrintCountTC": 3,

@@ -143,6 +143,9 @@
         "printAdditionalDocuments": {
           "type": "boolean"
         },
+        "requestInvoiceDocumentsMerged": {
+          "type": "boolean"
+        },
         "defaultInvoiceSlipPrintCountCC": {
           "type": "integer"
         },
