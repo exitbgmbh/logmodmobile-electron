@@ -89,7 +89,12 @@ class ShippingHandler {
                     type: 'pickBox',
                     receiverUserId: 0,
                     receiverLogModIdent: '',
-                    data: {boxIdent: boxIdentification, shipOutType: shipOutType, shipOutPackageCount: packageCount}
+                    data: {
+                        boxIdent: boxIdentification,
+                        shipOutType: shipOutType,
+                        shipOutPackageCount: packageCount,
+                        shipmentTypeCode: shipmentTypeCode
+                    }
                 });
             })
             .catch((err) => {
