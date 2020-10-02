@@ -125,6 +125,10 @@ const authenticationSucceed = (event, arguments) => {
     logDebug('event', 'authenticationSucceed', 'start ' + JSON.stringify(arguments));
     restClientInstance.setAuthToken(arguments.authenticationToken);
     restClientInstance.parseBaseUrl(arguments.requestUrl);
+    
+    if (config.get('app.persistentLogin')) {
+        restClientInstance.enablePersistentLogin();
+    }
 };
 
 const websocketConnect = () => {

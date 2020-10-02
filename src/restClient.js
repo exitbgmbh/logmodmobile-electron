@@ -12,7 +12,16 @@ class RestClient
         'X-DEVICE-ID': 'Electron ' + os.hostname(),
         'X-APP-VERSION': version
     };
-
+    
+    enablePersistentLogin = () => {
+        setInterval(() => {
+            this.get('login/refreshLogin').then((response) => {
+                this.setAuthToken(response.response.jwt);
+                console.log(response);
+            });
+        }, 5000);
+    }
+    
     /**
      * set Bearer Authentication Token to axios
      *

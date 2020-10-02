@@ -22,6 +22,9 @@
         },
         "password": {
           "type": ["string", "null"]
+        },
+        "persistentLogin": {
+          "type": ["boolean"]
         }
       },
       "additionalProperties": false
