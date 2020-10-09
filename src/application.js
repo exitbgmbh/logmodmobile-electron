@@ -126,7 +126,7 @@ const authenticationSucceed = (event, arguments) => {
     restClientInstance.setAuthToken(arguments.authenticationToken);
     restClientInstance.parseBaseUrl(arguments.requestUrl);
     
-    if (config.get('app.persistentLogin')) {
+    if (config.has('app.persistentLogin') && config.get('app.persistentLogin')) {
         restClientInstance.enablePersistentLogin();
     }
 };
