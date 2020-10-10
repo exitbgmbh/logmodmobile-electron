@@ -17,9 +17,8 @@ class RestClient
         setInterval(() => {
             this.get('login/refreshLogin').then((response) => {
                 this.setAuthToken(response.response.jwt);
-                console.log(response);
             });
-        }, 5000);
+        }, 1000 * 60 * 60);
     }
     
     /**

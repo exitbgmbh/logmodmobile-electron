@@ -13,12 +13,11 @@ window.printer = printer;
 window.deviceId = 'EL-' + os.hostname();
 window.elVersion = version;
 
-if (isDevelopment) {
-    window.devData = {};
-    if (config.has('app.username')) {
-        window.devData = {...window.devData, userName: config.get('app.username')}
-    }
-    if (config.has('app.password')) {
-        window.devData = {...window.devData, password: config.get('app.password')}
-    }
+window.devData = {};
+if (config.has('app.username')) {
+    window.devData = {...window.devData, userName: config.get('app.username')}
 }
+if (config.has('app.password')) {
+    window.devData = {...window.devData, password: config.get('app.password')}
+}
+
