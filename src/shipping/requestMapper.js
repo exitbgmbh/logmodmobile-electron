@@ -30,6 +30,10 @@ const mapWebSocketMessage = (data) => {
                 requestPackage.products = shippingRequestPackage.products;
             }
 
+            if (shippingRequestPackage.hasOwnProperty('packagingProductId') && shippingRequestPackage.packagingProductId > 0) {
+                requestPackage.packagingProductId = shippingRequestPackage.packagingProductId;
+            }
+
             requestData.shippingData.shippingRequestPackages.push(requestPackage);
         });
     }
