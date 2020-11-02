@@ -5,6 +5,7 @@ const Rhewa82 = require('./type/rhewa82');
 const PCE_EP_E = require('./type/pce-ep-e');
 const Debug = require('./type/debug');
 const Random = require('./type/random');
+const PCE_PB_N = require("./type/pce-pb-n");
 const {logDebug, logInfo, logWarning} = require('./../logging');
 
 class ScaleHandler {
@@ -38,6 +39,10 @@ class ScaleHandler {
             }
             case 'PCE-EP-E': {
                 this.scale = new PCE_EP_E(scaleConfig);
+                break;
+            }
+            case 'PCE-PB-N': {
+                this.scale = new PCE_PB_N(scaleConfig);
                 break;
             }
             
