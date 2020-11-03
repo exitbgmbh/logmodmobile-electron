@@ -163,6 +163,9 @@ const bootApplication = () => {
         ipcMain.on('authentication-succeed', authenticationSucceed);
         ipcMain.on('authentication-succeed', windowOnLoadCompleted);
         ipcMain.on('websocket-connected', websocketConnect);
+        ipcMain.on('discardConfigChange', (event, arg) => {
+            showLogModMobile(windowInstance);
+        });
         ipcMain.on('saveConfig', (event, arg) => {
             const configFile = getApplicationConfigFile(app);
             fs.writeFileSync(configFile, arg);

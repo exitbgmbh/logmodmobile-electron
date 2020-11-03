@@ -64,7 +64,7 @@
     "shipping": {
       "type": "object",
       "patternProperties": {
-        "^([A-Z]*)([0-9]*)+$": {
+        "^([A-Za-z0-9]*)+$": {
           "description": "shipment type code from blisstribute",
           "type": "object",
           "properties": {

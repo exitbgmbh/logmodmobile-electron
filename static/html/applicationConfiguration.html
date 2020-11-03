@@ -35,6 +35,7 @@
 <p>Wenden Sie sich an per Email an den exitB Support (support@exitb.de), eröffnen Sie ein Ticket im <a href="#" id="ticket">exitB Ticketsystem</a> oder konsultieren Sie die <a href="#" id="documentation">Dokumenation</a>.</p>
 <input type="button" id="toggleRo" value="Entsperren" style="background-color: #3a3a3a; color: #ffffff; border: 0; padding: 5px 10px; font-weight: bold; text-align: center; width: 100px" />
 <input type="button" id="saveDocument" value="Speichern" disabled style=""/>
+<input type="button" id="discardChanges" value="Zurück" style="background-color: #3a3a3a; color: #ffffff; border: 0; padding: 5px 10px; font-weight: bold; text-align: center; width: 100px"/>
 <div id="jsoneditor"></div>
 
 <script>
@@ -56,6 +57,10 @@
 
     save = (config) => {
         window.ipcRenderer.send('saveConfig', config);
+    }
+
+    discard = () => {
+        window.ipcRenderer.send('discardConfigChange');
     }
 
     toggleRO = () => {
@@ -90,6 +95,7 @@
     }
 
     document.getElementById('saveDocument').onclick = () => { save(editor.getText()); }
+    document.getElementById('discardChanges').onclick = () => { discard(); }
     document.getElementById('ticket').onclick = () => { shell.openExternal('https://jira.exitb.de/servicedesk') }
     document.getElementById('documentation').onclick = () => { shell.openExternal('https://confluence.exitb.de/display/BLIS/Konfiguration') }
     document.getElementById('toggleRo').onclick = () => { toggleRO(); }

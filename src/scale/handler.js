@@ -45,7 +45,6 @@ class ScaleHandler {
                 this.scale = new PCE_PB_N(scaleConfig);
                 break;
             }
-            
             default: {
                 break;
             }
