@@ -132,7 +132,7 @@ class PollingProvider {
             }
             
             restClientInstance.reportTrackingFile(this.code, dayClosingData.toString()).then((response) => {
-                const archiveFileName = path.join(archivePath, parsedFile.base + '.done' + new Date().toISOString());
+                const archiveFileName = path.join(archivePath, parsedFile.base + '.done' + new Date().toISOString().replace(':', '-'));
                 logInfo('pollingProvider', '_fileWatcherGotFile', 'file processed successfully. moving to archive. ' + archiveFileName);
                 fs.renameSync(file, archiveFileName);
             }).catch(console.log);
