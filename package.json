@@ -38,6 +38,7 @@
     "chokidar": "^3.3.1",
     "config": "^3.2.5",
     "electron-is-running-in-asar": "^1.0.0",
+    "electron-log": "^4.3.0",
     "electron-promise-ipc": "^2.0.1",
     "electron-prompt": "^1.5.1",
     "electron-updater": "^4.2.0",
