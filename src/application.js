@@ -129,6 +129,10 @@ const authenticationSucceed = (event, arguments) => {
     if (config.has('app.persistentLogin') && config.get('app.persistentLogin')) {
         restClientInstance.enablePersistentLogin();
     }
+
+    shippingHandlerInstance.initialize();
+    printingHandlerInstance.initialize();
+    invoiceHandlerInstance.initialize();
 };
 
 const websocketConnect = () => {
@@ -175,10 +179,7 @@ const bootApplication = () => {
         promiseIpc.on('scale-package', () => {
             return scaleHandler.callScale();
         });
-        
-        shippingHandlerInstance.initialize();
-        printingHandlerInstance.initialize();
-        invoiceHandlerInstance.initialize();
+
         scaleHandler.initialize();
     } catch (err) {
         console.log(err);
