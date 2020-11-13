@@ -19,15 +19,22 @@ class PrintingHandler {
      */
     createdFilesCache = [];
 
+    initialized = false;
+
     /**
      * initializes the handler
      */
     initialize = () => {
+        if (this.initialized) {
+            return;
+        }
+
         if (!config.has('printing')) {
             throw new Error('no printing defined in config. invalid config?')
         }
 
         this._registerEventListener();
+        this.initialized = true;
     };
 
     /**

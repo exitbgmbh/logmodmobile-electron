@@ -13,7 +13,13 @@ class ShippingHandler {
     pollingProviders = {};
     pollingCounter = 0;
 
+    initialized = false;
+
     initialize = () => {
+        if (this.initialized) {
+            return;
+        }
+
         if (!config.has('shipping')) {
             throw new Error('no shipping defined in config. invalid config?')
         }
@@ -28,6 +34,7 @@ class ShippingHandler {
         }
 
         this._registerEventListener();
+        this.initialized = true;
     };
 
     _registerEventListener = () => {
