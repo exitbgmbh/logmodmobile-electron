@@ -39,6 +39,7 @@ class ShippingHandler {
 
     _registerEventListener = () => {
         eventEmitter.on('shipOut', this.handleShipping);
+        eventEmitter.on('shipOutPrevious', this.handlePreviousShipping);
     };
 
     _handlePolling = (shipmentTypeCode, pollingDataEncoded, invoiceNumber = '') => {
@@ -53,9 +54,78 @@ class ShippingHandler {
         eventEmitter.emit('shipmentLabelPrint', {shipmentTypeCode, shipmentLabelCollection});
     };
 
+    _handleResult = (res, boxIdentification, boxInvoice) => {
+        logDebug('shippingHandler', '_handleResult', 'requestShipOut response ' + JSON.stringify(res));
+        logDebug('shippingHandler', '_handleResult', 'boxIdentification ' + boxIdentification);
+        logDebug('shippingHandler', '_handleResult', 'boxInvoice ' + boxInvoice);
+        if (!res.success) {
+            throw new Error('request not successful');
+        }
+
+        const {
+            shipmentTypeCode = '',
+            shipOutType = '',
+            packageCount = 0,
+            invoiceNumber = '',
+            shipmentPollingData: pollingDataBase64Encoded = '',
+            shipmentLabels = []
+        } = res.response;
+
+        // we just need to handle label printing or polling export
+        if (shipmentLabels.length > 0) {
+            this._handlePrinting(shipmentTypeCode, shipmentLabels);
+        } else if (pollingDataBase64Encoded && pollingDataBase64Encoded.trim() !== '') {
+            this._handlePolling(shipmentTypeCode, pollingDataBase64Encoded, invoiceNumber);
+        } else if (shipOutType === 'SELF-COLLECTOR') {
+            logInfo('shippingHandler', 'handleShipping', boxIdentification + ' shipOut succeed with SELF-COLLECTOR');
+        } else if (shipOutType === 'VIRTUAL') {
+            logInfo('shippingHandler', 'handleShipping', boxIdentification + ' shipOut succeed with VIRTUAL');
+        } else {
+            throw new Error('unknown ship out type');
+        }
+
+        let data = {
+            boxIdent: boxIdentification,
+            boxInvoice: boxInvoice,
+            shipOutType: shipOutType,
+            shipOutPackageCount: packageCount,
+            shipmentTypeCode: shipmentTypeCode
+        };
+
+        eventEmitter.emit('shipOutSucceed', {
+            event: 'shipOutSucceed',
+            type: 'pickBox',
+            receiverUserId: 0,
+            receiverLogModIdent: '',
+            data: data
+        });
+    }
+
+    handlePreviousShipping = (data) => {
+        const {identification: invoiceNumber} = data;
+        if (!invoiceNumber || invoiceNumber === '') {
+            logWarning('shippingHandler', 'handlePreviousShipping', 'got no invoice number from data ' + JSON.stringify(data));
+            return;
+        }
+
+        restClientInstance.requestPreviousShipOut(invoiceNumber)
+            .then((res) => {
+                this._handleResult(res, null, invoiceNumber);
+            })
+            .catch((err) => {
+                logWarning('shippingHandler', 'handleShipping', 'requestShipOut failed ' + JSON.stringify(err));
+                eventEmitter.emit('shipOutFailed', {
+                    event: 'historicShipOutFailed',
+                    type: 'pickBox',
+                    receiverUserId: 0,
+                    receiverLogModIdent: '',
+                    data: {invoice: invoiceNumber}
+                });
+            });
+    };
+
     handleShipping = (data) => {
         const {identification: boxIdentification} = data;
-
         if (!boxIdentification || boxIdentification === '') {
             logWarning('shippingHandler', 'handleShipping', 'got no boxIdentification from data ' + JSON.stringify(data));
             return;
@@ -64,45 +134,7 @@ class ShippingHandler {
         const requestData = mapRequest(data);
         restClientInstance.requestShipOut(boxIdentification, requestData)
             .then((res) => {
-                logDebug('shippingHandler', 'handleShipping', 'requestShipOut response ' + JSON.stringify(res));
-                if (!res.success) {
-                    throw new Error('request not successful');
-                }
-    
-                const {
-                    shipmentTypeCode = '',
-                    shipOutType = '',
-                    packageCount = 0,
-                    invoiceNumber = '',
-                    shipmentPollingData: pollingDataBase64Encoded = '',
-                    shipmentLabels = []
-                } = res.response;
-    
-                // we just need to handle label printing or polling export
-                if (shipmentLabels.length > 0) {
-                    this._handlePrinting(shipmentTypeCode, shipmentLabels);
-                } else if (pollingDataBase64Encoded && pollingDataBase64Encoded.trim() !== '') {
-                    this._handlePolling(shipmentTypeCode, pollingDataBase64Encoded, invoiceNumber);
-                } else if (shipOutType === 'SELF-COLLECTOR') {
-                    logInfo('shippingHandler', 'handleShipping', boxIdentification + ' shipOut succeed with SELF-COLLECTOR');
-                } else if (shipOutType === 'VIRTUAL') {
-                    logInfo('shippingHandler', 'handleShipping', boxIdentification + ' shipOut succeed with VIRTUAL');
-                } else {
-                    throw new Error('unknown ship out type');
-                }
-    
-                eventEmitter.emit('shipOutSucceed', {
-                    event: 'shipOutSucceed',
-                    type: 'pickBox',
-                    receiverUserId: 0,
-                    receiverLogModIdent: '',
-                    data: {
-                        boxIdent: boxIdentification,
-                        shipOutType: shipOutType,
-                        shipOutPackageCount: packageCount,
-                        shipmentTypeCode: shipmentTypeCode
-                    }
-                });
+                this._handleResult(res, boxIdentification);
             })
             .catch((err) => {
                 console.log(err.message);

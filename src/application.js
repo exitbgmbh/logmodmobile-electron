@@ -82,6 +82,7 @@ const showApplicationConfig = () => {
 const instantiateApplicationWindow = (applicationBootError) => {
     windowInstance = new BrowserWindow({
         width: 1280,
+        minWidth: 1280,
         height: 800,
         show: applicationBootError || isDevelopment,
         icon: path.join(__dirname, '/../static/assets/logmodmobile-64.png'),

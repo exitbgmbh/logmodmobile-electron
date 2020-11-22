@@ -7,6 +7,7 @@ const eventEmitter = require('./eventEmitter');
 const {getLogModIdentification} = require("../helper");
 
 const SHIP_OUT_EVENT = 'LOGMODSHIPOUT';
+const PREVIOUS_SHIP_OUT_EVENT = 'LOGMODSHIPOUTPREVIOUS';
 const PRINT_EVENT = 'LOGMODPRINT';
 const PICK_BOX_READY = 'PICKBOXREADY';
 const PICK_LIST_FINISHED = 'PICKLISTFINISHED';
@@ -139,6 +140,10 @@ class WebSocketHandler
         logDebug('webSocketHandler', 'onMessage', 'message received: ' + JSON.stringify(socketEvent));
 
         switch(socketEvent.event.toUpperCase()) {
+            case PREVIOUS_SHIP_OUT_EVENT: {
+                eventEmitter.emit('shipOutPrevious', socketEvent.data);
+                break;
+            }
             case SHIP_OUT_EVENT: {
                 eventEmitter.emit('shipOut', socketEvent.data);
                 break;

@@ -131,6 +131,16 @@ class RestClient
     };
 
     /**
+     *
+     * @param {string} invoiceNumber
+     *
+     * @returns {*|Promise}
+     */
+    requestPreviousShipOut = (invoiceNumber) => {
+        return this.get('pickBox/readPreviousShipping/' + invoiceNumber);
+    };
+
+    /**
      * request a product label
      *
      * @param {string} productIdentification
