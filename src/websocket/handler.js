@@ -145,6 +145,10 @@ class WebSocketHandler
                 break;
             }
             case SHIP_OUT_EVENT: {
+                if (!this._isMessageForMe(socketEvent.data)) {
+                    return;
+                }
+
                 eventEmitter.emit('shipOut', socketEvent.data);
                 break;
             }
