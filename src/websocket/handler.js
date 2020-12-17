@@ -157,10 +157,6 @@ class WebSocketHandler
                 break;
             }
             case PRINT_EVENT: {
-                if (!this._isMessageForMe(socketEvent.data)) {
-                    return;
-                }
-
                 eventEmitter.emit('requestDocuments', socketEvent.data);
                 break;
             }
