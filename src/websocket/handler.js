@@ -141,7 +141,7 @@ class WebSocketHandler
 
         switch(socketEvent.event.toUpperCase()) {
             case PREVIOUS_SHIP_OUT_EVENT: {
-                if (!this._isMessageForMe(socketEvent.data)) {
+                if (!this._isMessageForMe(socketEvent)) {
                     return;
                 }
 
@@ -149,7 +149,7 @@ class WebSocketHandler
                 break;
             }
             case SHIP_OUT_EVENT: {
-                if (!this._isMessageForMe(socketEvent.data)) {
+                if (!this._isMessageForMe(socketEvent)) {
                     return;
                 }
 
@@ -161,7 +161,7 @@ class WebSocketHandler
                 break;
             }
             case PICK_BOX_READY: {
-                if (!this._isMessageForMe(socketEvent.data) || !this._isInvoicePrintingActive(socketEvent.data) || this._pickListNeedsAdditionalDocuments(socketEvent.data)) {
+                if (!this._isMessageForMe(socketEvent) || !this._isInvoicePrintingActive(socketEvent.data) || this._pickListNeedsAdditionalDocuments(socketEvent.data)) {
                     return;
                 }
                 
@@ -185,13 +185,16 @@ class WebSocketHandler
     /**
      * checks if socket message is for me
      *
-     * @param {{}} messageData
+     * @param {{}} socketMessage
      * @returns {boolean}
      * @private
      */
-    _isMessageForMe = (messageData) => {
+    _isMessageForMe = (socketMessage) => {
         const ident = getLogModIdentification();
-        return messageData.hasOwnProperty('logModIdent') && messageData.logModIdent === ident;
+        const { data: messageData, receiverLogModIdent } = socketMessage;
+        return (messageData.hasOwnProperty('logModIdent') && messageData.logModIdent === ident)
+            || (receiverLogModIdent === ident);
+
     };
     
     /**
