@@ -141,6 +141,10 @@ class WebSocketHandler
 
         switch(socketEvent.event.toUpperCase()) {
             case PREVIOUS_SHIP_OUT_EVENT: {
+                if (!this._isMessageForMe(socketEvent.data)) {
+                    return;
+                }
+
                 eventEmitter.emit('shipOutPrevious', socketEvent.data);
                 break;
             }
@@ -153,15 +157,15 @@ class WebSocketHandler
                 break;
             }
             case PRINT_EVENT: {
+                if (!this._isMessageForMe(socketEvent.data)) {
+                    return;
+                }
+
                 eventEmitter.emit('requestDocuments', socketEvent.data);
                 break;
             }
             case PICK_BOX_READY: {
-                if (!this._isMessageForMe(socketEvent.data) && !this._isInvoicePrintingActive(socketEvent.data)) {
-                    return;
-                }
-                
-                if (this._pickListNeedsAdditionalDocuments(socketEvent.data)) {
+                if (!this._isMessageForMe(socketEvent.data) || !this._isInvoicePrintingActive(socketEvent.data) || this._pickListNeedsAdditionalDocuments(socketEvent.data)) {
                     return;
                 }
                 
