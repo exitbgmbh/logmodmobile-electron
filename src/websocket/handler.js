@@ -161,7 +161,7 @@ class WebSocketHandler
                 break;
             }
             case PICK_BOX_READY: {
-                if (!this._isMessageForMe(socketEvent) || !this._isInvoicePrintingActive(socketEvent.data) || this._pickListNeedsAdditionalDocuments(socketEvent.data)) {
+                if (!this._isInvoicePrintingActive(socketEvent.data) || this._pickListNeedsAdditionalDocuments(socketEvent.data)) {
                     return;
                 }
                 
