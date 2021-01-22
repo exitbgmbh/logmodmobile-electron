@@ -208,6 +208,11 @@ class WebSocketHandler
         if (!config.has('invoicing.watchBoxes') || !messageData.pickBoxIdent) {
             return false;
         }
+
+        const ident = getLogModIdentification();
+        if (messageData.logModIdent === ident) {
+            return true;
+        }
         
         const watchPattern = new RegExp(config.get('invoicing.watchBoxes'));
         return watchPattern.test(messageData.pickBoxIdent);

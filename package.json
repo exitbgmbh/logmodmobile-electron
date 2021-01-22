@@ -45,7 +45,7 @@
     "encoding": "^0.1.12",
     "js-yaml": "^3.13.1",
     "node-fetch": "^2.6.1",
-    "pdf-to-printer": "git+https://github.com/ccarnivore/pdf-to-printer.git#feature_gsprint",
+    "pdf-to-printer": "git+https://github.com/ccarnivore/pdf-to-printer.git#master",
     "serialport": "8.0.1",
     "tmp": "^0.1.0",
     "websocket": "^1.0.31"
