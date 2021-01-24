@@ -93,6 +93,11 @@ const instantiateApplicationWindow = (applicationBootError) => {
     });
     
     windowInstance.setMenu(menu);
+
+    if (isDevelopment) {
+        windowInstance.webContents.openDevTools();
+    }
+
     if (applicationBootError) {
         showApplicationError(applicationBootError);
     } else {
@@ -155,7 +160,7 @@ const websocketConnect = () => {
  * @param {{bool}} downloaded
  */
 const notifyForUpdate = (updateInfo, downloaded) => {
-    console.log('handle update notification');
+    windowInstance.webContents.send('updateAvailable', {});
 }
 
 /**
@@ -176,6 +181,9 @@ const bootApplication = () => {
             notifyForUpdate(updateInfo, false);
         })
         autoUpdater.on('update-downloaded', (updateInfo) => {
+            notifyForUpdate(updateInfo, true);
+        })
+        autoUpdater.on('update-not-available', (updateInfo) => {
             notifyForUpdate(updateInfo, true);
         })
 

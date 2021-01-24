@@ -33,7 +33,7 @@ const disableAutoUpdateCheck = () => {
  */
 const _checkForUpdates = () => {
     autoUpdater.checkForUpdatesAndNotify().then((updateInfo) => {
-        updateInfo.versionInfo
+        console.log(updateInfo);
     });
 };
 
