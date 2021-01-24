@@ -1,5 +1,6 @@
 const eventEmitter = require('./../websocket/eventEmitter');
 const restClientInstance = require('./../restClient');
+const config = require('config');
 
 class InvoiceHandler {
 
@@ -20,19 +21,22 @@ class InvoiceHandler {
         let messageTemplate = {event: null, type: 'pickBox', receiverUserId: 0, logModIdent: null, data: {pickBoxIdent: pickBoxIdent, invoiceNumber: null}};
 
         restClientInstance
-          .requestInvoice(pickBoxIdent, forceInvoice)
-          .then((res) => {
-            if (!res.success) {
-              throw new Error('request not successful');
-            }
+              .requestInvoice(pickBoxIdent, forceInvoice)
+              .then((res) => {
+                if (!res.success) {
+                  throw new Error('request not successful');
+              }
 
-            const { response } = res;
-            let event = 'pickBoxInvoiceSuccess';
-            // event for lmm - toggle mask
-            eventEmitter.emit(event, {...messageTemplate, event: event, data: {...messageTemplate.data, invoiceNumber: response.invoiceNumber}});
+              const { response } = res;
+              let event = 'pickBoxInvoiceSuccess';
+              // event for lmm - toggle mask
+              eventEmitter.emit(event, {...messageTemplate, event: event, data: {...messageTemplate.data, invoiceNumber: response.invoiceNumber}});
 
-            // print documents
-            eventEmitter.emit('invoiceCreationSuccess', response);
+              if (config.has('printing.requestInvoiceDocumentsMerged') && config.get('printing.requestInvoiceDocumentsMerged') === true) {
+                  eventEmitter.emit('requestDocuments', {documentType: 'allDocs', invoiceNumber: response.invoiceNumber});
+              } else {
+                  eventEmitter.emit('invoiceCreationSuccess', response);
+              }
           })
           .catch((res) => {
             console.log(res);

@@ -7,7 +7,7 @@ const app = application.app;
 const path = require('path');
 const {logDebug, logInfo, logWarning} = require('./logging');
 const config = require('config');
-const { initializeAutoUpdateCheck } = require('./autoUpdateCheck');
+const { initializeAutoUpdateCheck, autoUpdater } = require('./autoUpdateCheck');
 const shippingHandlerInstance = require('./shipping');
 const printingHandlerInstance = require('./printing');
 const invoiceHandlerInstance = require('./invoice');
@@ -150,6 +150,15 @@ const websocketConnect = () => {
 }
 
 /**
+ *
+ * @param updateInfo
+ * @param {{bool}} downloaded
+ */
+const notifyForUpdate = (updateInfo, downloaded) => {
+    console.log('handle update notification');
+}
+
+/**
  * booting the application
  */
 const bootApplication = () => {
@@ -163,6 +172,13 @@ const bootApplication = () => {
     }
 
     try {
+        autoUpdater.on('update-available', (updateInfo) => {
+            notifyForUpdate(updateInfo, false);
+        })
+        autoUpdater.on('update-downloaded', (updateInfo) => {
+            notifyForUpdate(updateInfo, true);
+        })
+
         initializeAutoUpdateCheck();
 
         ipcMain.on('authentication-succeed', authenticationSucceed);

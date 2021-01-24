@@ -7,7 +7,7 @@ const printer = require('pdf-to-printer');
 const {getDocumentPrinter, getProductLabelPrinter, getShipmentLabelPrinter} = require('./printer');
 const {logDebug} = require('./../logging');
 
-const useGsPrint = config.has('app.gsPrintExecutable');
+const useGsPrint = config.has('app.gsPrintExecutable') && process.platform === 'win32';
 const gsPrintExecutable = useGsPrint ? config.get('app.gsPrintExecutable') : '';
 
 class PrintingHandler {
