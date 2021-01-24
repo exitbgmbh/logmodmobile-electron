@@ -179,13 +179,10 @@ const bootApplication = () => {
     try {
         autoUpdater.on('update-available', (updateInfo) => {
             notifyForUpdate(updateInfo, false);
-        })
+        });
         autoUpdater.on('update-downloaded', (updateInfo) => {
             notifyForUpdate(updateInfo, true);
-        })
-        autoUpdater.on('update-not-available', (updateInfo) => {
-            notifyForUpdate(updateInfo, true);
-        })
+        });
 
         initializeAutoUpdateCheck();
 
