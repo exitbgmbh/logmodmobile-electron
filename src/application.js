@@ -169,7 +169,9 @@ const notifyForUpdate = (updateInfo, downloaded) => {
 const bootApplication = () => {
     logInfo('application', 'bootApplication', 'start');
     menuEventEmitter.on('showConfig', () => showApplicationConfig(app));
-    
+    menuEventEmitter.on('testNewReleaseDownloaded', () => notifyForUpdate({}, false));
+    menuEventEmitter.on('testNewRelease', () => notifyForUpdate({}, false));
+
     if (!config.has('app.url')) {
         instantiateApplicationWindow({message: 'config not found or not valid'});
         logWarning('application', 'bootApplication', 'invalid config');

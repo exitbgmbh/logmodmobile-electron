@@ -17,12 +17,28 @@ const template = [
                 click: async () => {
                     menuEventEmitter.emit('showConfig');
                 }
-            },
-            { type: 'separator' },
+            }
+        ]
+    },
+    {
+        label: 'Test',
+        submenu: [
             {
                 label: 'Test scale',
                 click: async () => {
                     console.log('got scale result', await scaleHandler.callScale());
+                }
+            },
+            {
+                label: 'Test release available',
+                click: async () => {
+                    menuEventEmitter.emit('testNewRelease');
+                }
+            },
+            {
+                label: 'Test release downloaded',
+                click: async () => {
+                    menuEventEmitter.emit('testNewReleaseDownloaded');
                 }
             },
         ]
