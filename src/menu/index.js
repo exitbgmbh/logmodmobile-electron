@@ -34,13 +34,7 @@ const template = [
                 click: async () => {
                     menuEventEmitter.emit('testNewRelease');
                 }
-            },
-            {
-                label: 'Test release downloaded',
-                click: async () => {
-                    menuEventEmitter.emit('testNewReleaseDownloaded');
-                }
-            },
+            }
         ]
     },
     {

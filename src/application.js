@@ -154,13 +154,8 @@ const websocketConnect = () => {
     });
 }
 
-/**
- *
- * @param updateInfo
- * @param {{bool}} downloaded
- */
-const notifyForUpdate = (updateInfo, downloaded) => {
-    windowInstance.webContents.send('updateAvailable', {});
+const notifyForUpdate = () => {
+    windowInstance.webContents.send('updateAvailable');
 }
 
 /**
@@ -169,8 +164,7 @@ const notifyForUpdate = (updateInfo, downloaded) => {
 const bootApplication = () => {
     logInfo('application', 'bootApplication', 'start');
     menuEventEmitter.on('showConfig', () => showApplicationConfig(app));
-    menuEventEmitter.on('testNewReleaseDownloaded', () => notifyForUpdate({}, true));
-    menuEventEmitter.on('testNewRelease', () => notifyForUpdate({}, false));
+    menuEventEmitter.on('testNewRelease', () => notifyForUpdate());
 
     if (!config.has('app.url')) {
         instantiateApplicationWindow({message: 'config not found or not valid'});
@@ -179,11 +173,8 @@ const bootApplication = () => {
     }
 
     try {
-        autoUpdater.on('update-available', (updateInfo) => {
-            notifyForUpdate(updateInfo, false);
-        });
         autoUpdater.on('update-downloaded', (updateInfo) => {
-            notifyForUpdate(updateInfo, true);
+            notifyForUpdate();
         });
 
         initializeAutoUpdateCheck();
