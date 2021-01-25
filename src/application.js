@@ -169,7 +169,7 @@ const notifyForUpdate = (updateInfo, downloaded) => {
 const bootApplication = () => {
     logInfo('application', 'bootApplication', 'start');
     menuEventEmitter.on('showConfig', () => showApplicationConfig(app));
-    menuEventEmitter.on('testNewReleaseDownloaded', () => notifyForUpdate({}, false));
+    menuEventEmitter.on('testNewReleaseDownloaded', () => notifyForUpdate({}, true));
     menuEventEmitter.on('testNewRelease', () => notifyForUpdate({}, false));
 
     if (!config.has('app.url')) {
