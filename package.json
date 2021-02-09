@@ -7,7 +7,7 @@
     "electron-test": "electron .",
     "electron-dev": "NODE_ENV=development electron .",
     "electron-dev-local": "NODE_ENV=development ELECTRON_START_URL=http://localhost:3000 electron .",
-    "build": "electron-builder -l",
+    "build": "electron-builder -l -w",
     "publish": "electron-builder -l -w -p always",
     "after-publish": "rm ./node_modules/@serialport -Rf && rm ./node_modules/serialport -Rf && npm install && $(npm bin)/electron-rebuild",
     "version-patch": "npm version patch",
@@ -32,6 +32,7 @@
   },
   "homepage": "https://github.com/exitbgmbh/logmodmobile-electron#readme",
   "dependencies": {
+    "@thiagoelg/node-printer": "^0.5.3",
     "alert-node": "^2.1.3",
     "axios": "^0.19.2",
     "chalk": "^3.0.0",

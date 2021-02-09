@@ -4,11 +4,15 @@ const restClientInstance = require('./../restClient');
 const tmp = require('tmp');
 const fs = require('fs');
 const printer = require('pdf-to-printer');
+const labelPrinter = require('@thiagoelg/node-printer');
 const {getDocumentPrinter, getProductLabelPrinter, getShipmentLabelPrinter} = require('./printer');
-const {logDebug} = require('./../logging');
+const {logDebug, logWarning} = require('./../logging');
 
 const useGsPrint = config.has('app.gsPrintExecutable') && process.platform === 'win32';
 const gsPrintExecutable = useGsPrint ? config.get('app.gsPrintExecutable') : '';
+const printProductLabelRAW = config.has('printing.printProductLabelRAW') && config.get('printing.printProductLabelRAW') || false;
+const RAWTemplate = printProductLabelRAW ? config.get('printing.productLabelRAWTemplate') : '';
+// EPL2 Guide: https://www.servopack.de/support/zebra/EPL2_Manual.pdf
 
 class PrintingHandler {
     /**
@@ -164,7 +168,7 @@ class PrintingHandler {
                 }
 
                 restClientInstance.requestProductLabel(data.productEan, data.templateId).then((response) => {
-                    this._handleProductLabelPrinting(response.response.content, data.quantity);
+                    this._handleProductLabelPrinting(response.response, data.quantity);
                 }).catch(this._handleError);
                 break;
             }
@@ -278,19 +282,43 @@ class PrintingHandler {
     /**
      * printing product label
      *
-     * @param {string} contentToPrint
+     * @param {{}} responseData
      * @param {int} numberOfCopies
      *
      * @private
      */
-    _handleProductLabelPrinting = (contentToPrint, numberOfCopies) => {
-        if (!contentToPrint || contentToPrint.length < 100) {
+    _handleProductLabelPrinting = (responseData, numberOfCopies) => {
+        console.log(responseData);
+        const {content: labelContent, ean13, price, articleNumber, classification1, classification2} = responseData;
+        if (!labelContent || labelContent.length < 100) {
+            return;
+        }
+        const printerConfig = getProductLabelPrinter(numberOfCopies);
+        if (printProductLabelRAW) {
+            const command = RAWTemplate
+                .replace('{%quantity}', numberOfCopies.toString())
+                .replace('{%barcode}', ean13)
+                .replace('{%articleNumber}', articleNumber)
+                .replace('{%price}', price)
+                .replace('{%classification1}', classification1)
+                .replace('{%classification2}', classification2);
+
+            labelPrinter.printDirect({
+                data: command,
+                printer: printerConfig.printer,
+                type: "RAW",
+                success:function() {
+                    logDebug('printingHandler', '_handleProductLabelPrinting', 'RAW printed ' + ean13);
+                },
+                error:function(err) {
+                    logWarning('printingHandler', '_handleProductLabelPrinting', 'RAW printing failed with error ' + JSON.stringify(err));
+                }
+            });
+
             return;
         }
 
-        const tmpFileName = this._saveResultToPdf(contentToPrint);
-        
-        const printerConfig = getProductLabelPrinter(numberOfCopies);
+        const tmpFileName = this._saveResultToPdf(labelContent);
         const printingOptions = this._getOptionsForPrinting(printerConfig);
 
         logDebug('printingHandler', '_handleProductLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
