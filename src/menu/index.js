@@ -1,6 +1,8 @@
 const { Menu, shell } = require('electron');
 const scaleHandler = require('./../scale');
 const menuEventEmitter = require('./eventEmitter');
+const printHandler = require('./../printing');
+const config = require('config');
 
 const template = [
     {
@@ -33,6 +35,21 @@ const template = [
                 label: 'Test release available',
                 click: async () => {
                     menuEventEmitter.emit('testNewRelease');
+                }
+            },
+            {
+                label: 'Test RAW print',
+                click: async () => {
+                    printHandler.printRaw(
+                        config.get('printing.defaultProductLabelPrinter'),
+                        config.get('printing.productLabelRAWTemplate'),
+                        1,
+                        '4029764001807',
+                        '1,40EUR',
+                        'club-mate-123',
+                        'Club Mate',
+                        'Loscher KG'
+                    );
                 }
             }
         ]

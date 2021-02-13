@@ -52,7 +52,7 @@
     "rotateProductLabel": true,
     "printAdditionalDocuments": true,
     "printProductLabelRAW": false,
-    "productLabelRAWTemplate": "N\nS4\nD15\nq400\nR\nB20,10,0,1,2,30,173,B,\"{%barcode}\"\nP{%quantity}}\n",
+    "productLabelRAWTemplate": "N\nS4\nD15\nq400\nR\nB20,10,0,1,2,30,173,B,\"{%barcode}\"\nP{%quantity}\n",
     "requestInvoiceDocumentsMerged": false,
     "defaultInvoiceSlipPrintCountCC": 1,
     "defaultInvoiceSlipPrintCountEU": 1,

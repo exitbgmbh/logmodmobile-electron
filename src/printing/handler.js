@@ -279,6 +279,28 @@ class PrintingHandler {
         printer.print(tmpFileName, printingOptions).then(console.log).catch(console.log);
     };
 
+    printRaw = (printerName, template, numberOfCopies, ean13, price, articleNumber, classification1, classification2) => {
+        const command = template
+            .replace('{%quantity}', numberOfCopies.toString())
+            .replace('{%barcode}', ean13)
+            .replace('{%articleNumber}', articleNumber)
+            .replace('{%price}', price)
+            .replace('{%classification1}', classification1)
+            .replace('{%classification2}', classification2);
+
+        labelPrinter.printDirect({
+            data: command,
+            printer: printerName,
+            type: "RAW",
+            success:function() {
+                logDebug('printingHandler', '_handleProductLabelPrinting', 'RAW printed ' + ean13 + printerName + command);
+            },
+            error:function(err) {
+                logWarning('printingHandler', '_handleProductLabelPrinting', 'RAW printing failed with error ' + JSON.stringify(err));
+            }
+        });
+    };
+
     /**
      * printing product label
      *
@@ -295,27 +317,7 @@ class PrintingHandler {
         }
         const printerConfig = getProductLabelPrinter(numberOfCopies);
         if (printProductLabelRAW) {
-            const command = RAWTemplate
-                .replace('{%quantity}', numberOfCopies.toString())
-                .replace('{%barcode}', ean13)
-                .replace('{%articleNumber}', articleNumber)
-                .replace('{%price}', price)
-                .replace('{%classification1}', classification1)
-                .replace('{%classification2}', classification2);
-
-            labelPrinter.printDirect({
-                data: command,
-                printer: printerConfig.printer,
-                type: "RAW",
-                success:function() {
-                    logDebug('printingHandler', '_handleProductLabelPrinting', 'RAW printed ' + ean13);
-                },
-                error:function(err) {
-                    logWarning('printingHandler', '_handleProductLabelPrinting', 'RAW printing failed with error ' + JSON.stringify(err));
-                }
-            });
-
-            return;
+            return this.printRaw(printerConfig.printer, RAWTemplate, numberOfCopies, ean13, price, articleNumber, classification1, classification2);
         }
 
         const tmpFileName = this._saveResultToPdf(labelContent);
