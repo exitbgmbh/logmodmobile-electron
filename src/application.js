@@ -75,6 +75,17 @@ const showApplicationConfig = () => {
 };
 
 /**
+ * displaying json editor
+ */
+const showBatchPrint = () => {
+    windowInstance.loadFile(
+        'static/html/batchPrinting.html'
+    ).then(() => {});
+
+    windowInstance.webContents.on('did-finish-load', windowOnLoadCompleted);
+};
+
+/**
  * show the application main window
  *
  * @param applicationBootError an occurred error from application boot
@@ -164,6 +175,7 @@ const notifyForUpdate = () => {
 const bootApplication = () => {
     logInfo('application', 'bootApplication', 'start');
     menuEventEmitter.on('showConfig', () => showApplicationConfig(app));
+    menuEventEmitter.on('showBatchPrint', () => showBatchPrint(app));
     menuEventEmitter.on('testNewRelease', () => notifyForUpdate());
 
     if (!config.has('app.url')) {
@@ -182,13 +194,15 @@ const bootApplication = () => {
         ipcMain.on('authentication-succeed', authenticationSucceed);
         ipcMain.on('authentication-succeed', windowOnLoadCompleted);
         ipcMain.on('websocket-connected', websocketConnect);
-        ipcMain.on('discardConfigChange', (event, arg) => {
-            showLogModMobile(windowInstance);
-        });
+        ipcMain.on('back', () => showLogModMobile(windowInstance));
         ipcMain.on('saveConfig', (event, arg) => {
             const configFile = getApplicationConfigFile(app);
             fs.writeFileSync(configFile, arg);
             showLogModMobile(windowInstance);
+        });
+        ipcMain.on('batchPrinting', (event, arg) => {
+            console.log('arg', arg);
+            printingHandlerInstance.printDirectRaw(arg.printer, arg.command);
         });
 
         promiseIpc.on('scale-package', () => {

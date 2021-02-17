@@ -23,8 +23,15 @@ const template = [
         ]
     },
     {
-        label: 'Test',
+        label: 'Tools',
         submenu: [
+            {
+                label: 'Batch print',
+                click: async () => {
+                    menuEventEmitter.emit('showBatchPrint');
+                }
+            },
+            { type: 'separator' },
             {
                 label: 'Test scale',
                 click: async () => {

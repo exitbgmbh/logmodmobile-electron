@@ -41,6 +41,7 @@
     "electron-is-running-in-asar": "^1.0.0",
     "electron-log": "^4.3.0",
     "electron-promise-ipc": "^2.0.1",
+    "electron-prompt": "^1.6.1",
     "electron-updater": "^4.2.0",
     "encoding": "^0.1.12",
     "js-yaml": "^3.13.1",

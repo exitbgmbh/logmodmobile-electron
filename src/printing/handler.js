@@ -279,6 +279,20 @@ class PrintingHandler {
         printer.print(tmpFileName, printingOptions).then(console.log).catch(console.log);
     };
 
+    printDirectRaw = (printerName, command) => {
+        labelPrinter.printDirect({
+            data: command,
+            printer: printerName,
+            type: "RAW",
+            success:function() {
+                logDebug('printingHandler', '_handleProductLabelPrinting', 'RAW printed ' + printerName + command);
+            },
+            error:function(err) {
+                logWarning('printingHandler', '_handleProductLabelPrinting', 'RAW printing failed with error ' + err);
+            }
+        });
+    };
+
     printRaw = (printerName, template, numberOfCopies, ean13, price, articleNumber, classification1, classification2) => {
         const command = template
             .replace('{%quantity}', numberOfCopies.toString())
