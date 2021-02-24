@@ -324,7 +324,7 @@ class PrintingHandler {
      * @private
      */
     _handleProductLabelPrinting = (responseData, numberOfCopies) => {
-        console.log(responseData);
+        logDebug('printingHandler', '_handleProductLabelPrinting', 'start printing with options ' + JSON.stringify(responseData));
         const {content: labelContent, ean13, price, articleNumber, classification1, classification2} = responseData;
         if (!labelContent || labelContent.length < 100) {
             return;
