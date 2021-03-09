@@ -118,11 +118,13 @@ class PollingProvider {
                 logDebug('pollingProvider', '_fileWatcherGotFile', 'file does not match pattern. skipping.');
                 return;
             }
-            
-            const archivePath = path.join(parsedFile.dir, 'archive');
+
+            const date = new Date();
+            const monthArchive = date.getFullYear() + '-' + ("0" + (date.getMonth() + 1)).slice(-2);
+            const archivePath = path.join(parsedFile.dir, 'archive', monthArchive);
             if (!fs.existsSync(archivePath)) {
                 logDebug('pollingProvider', '_fileWatcherGotFile', 'archive path not existing. creating.');
-                fs.mkdirSync(archivePath);
+                fs.mkdirSync(archivePath, { recursive: true });
             }
         
             logInfo('pollingProvider', '_fileWatcherGotFile', 'processing file ' + file);
@@ -132,6 +134,10 @@ class PollingProvider {
             }
             
             restClientInstance.reportTrackingFile(this.code, dayClosingData.toString()).then((response) => {
+                if (!response.success) {
+                    return;
+                }
+
                 const archiveFileName = path.join(archivePath, parsedFile.base + '.' + Date.now() + '.done');
                 logInfo('pollingProvider', '_fileWatcherGotFile', 'file processed successfully. moving to archive. ' + archiveFileName);
                 fs.renameSync(file, archiveFileName);
