@@ -127,7 +127,7 @@ class RestClient
      * @returns {*|Promise}
      */
     requestShipOut = (boxIdentification, data) => {
-        return this.post('pickBox/processShipping/' + boxIdentification, data);
+        return this.post('shipOut/processShipping/' + boxIdentification, data);
     };
 
     /**
@@ -137,7 +137,7 @@ class RestClient
      * @returns {*|Promise}
      */
     requestPreviousShipOut = (invoiceNumber) => {
-        return this.get('pickBox/readPreviousShipping/' + invoiceNumber);
+        return this.get('shipOut/processPreviousShipping/' + invoiceNumber);
     };
 
     /**

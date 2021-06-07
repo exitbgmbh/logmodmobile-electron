@@ -137,14 +137,13 @@ class ShippingHandler {
                 this._handleResult(res, boxIdentification);
             })
             .catch((err) => {
-                console.log(err.message);
-                logWarning('shippingHandler', 'handleShipping', 'requestShipOut failed ' + JSON.stringify(err));
+                logWarning('shippingHandler', 'handleShipping', 'requestShipOut failed ' + err.message);
                 eventEmitter.emit('shipOutFailed', {
                     event: 'shipOutFailed',
                     type: 'pickBox',
                     receiverUserId: 0,
                     receiverLogModIdent: '',
-                    data: {boxIdent: boxIdentification}
+                    data: {boxIdent: boxIdentification, reason: err.message}
                 });
             });
     };

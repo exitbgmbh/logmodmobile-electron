@@ -11,6 +11,10 @@ const mapWebSocketMessage = (data) => {
         requestData.shippingData.overrideShipmentTypeId = data.overrideShipmentTypeId;
     }
 
+    if (data.hasOwnProperty('packagingProductTray')) {
+        requestData.shippingData.packagingProductTray = data.packagingProductTray;
+    }
+
     if (data.hasOwnProperty('packageData')) {
         requestData.shippingData.shippingRequestPackages = [];
         data.packageData.forEach((shippingRequestPackage) => {
