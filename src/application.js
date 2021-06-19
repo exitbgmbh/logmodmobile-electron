@@ -99,6 +99,11 @@ const instantiateApplicationWindow = (applicationBootError) => {
         icon: path.join(__dirname, '/../static/assets/logmodmobile-64.png'),
         webPreferences: {
             nodeIntegration: true,
+            nodeIntegrationInSubFrames: true,
+            nodeIntegrationsInWorker: true,
+            allowRunningInsecureContent: true,
+            enableRemoteModule: true,
+            contextIsolation: false,
             preload: __dirname + '/preload.js'
         }
     });

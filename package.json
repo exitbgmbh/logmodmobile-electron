@@ -47,7 +47,7 @@
     "js-yaml": "^3.13.1",
     "node-fetch": "^2.6.1",
     "pdf-to-printer": "git+https://github.com/ccarnivore/pdf-to-printer.git#master",
-    "serialport": "8.0.1",
+    "serialport": "9.2.0",
     "tmp": "^0.1.0",
     "websocket": "^1.0.31"
   },
@@ -75,7 +75,7 @@
     ]
   },
   "devDependencies": {
-    "electron": "^7.2.4",
+    "electron": "^13.1.2",
     "electron-builder": "^22.3.2",
     "electron-rebuild": "^1.10.0"
   }
