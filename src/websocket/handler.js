@@ -105,7 +105,7 @@ class WebSocketHandler
         this.socket.connect(socketLink);
     };
 
-    _connectionError = () => {
+    _connectionError = (error) => {
         logWarning('webSocketHandler', 'onError', 'error occurred: ' + error.toString());
         showNotification('LogModMobile - Fehler in der WebSocket-Verbindung: ' + error.toString());
     }
