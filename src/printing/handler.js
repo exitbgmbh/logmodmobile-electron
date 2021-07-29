@@ -388,15 +388,15 @@ class PrintingHandler {
             options.gsprint = {
                 executable: gsPrintExecutable
             }
-        
-            options.win32 = ['-color'];
-        
-            if (numberOfCopies) {
-                options.win32.push('-copies "' + numberOfCopies + '"');
-            }
-        
+
+            options.win32 = options.win32 || [];
             if (printerConfig.rotate) {
                 options.win32.push('-landscape');
+            }
+
+            if (numberOfCopies) {
+                options.win32.push('-copies');
+                options.win32.push(numberOfCopies);
             }
         } else {
             if (numberOfCopies) {
