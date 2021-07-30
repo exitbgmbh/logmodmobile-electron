@@ -395,8 +395,7 @@ class PrintingHandler {
             }
 
             if (numberOfCopies) {
-                options.win32.push('-copies');
-                options.win32.push(numberOfCopies);
+                options.win32.push('-copies ' + numberOfCopies);
             }
         } else {
             if (numberOfCopies) {
