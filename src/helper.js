@@ -1,7 +1,13 @@
 const os = require('os');
+const config = require('config');
 
 const getLogModIdentification = () => {
-  return 'ELOG-' + getHostname();
+  let identification;
+  if (config.has('app.identification')) {
+    identification = config.get('app.identification');
+  }
+
+  return identification || 'ELOG-' + getHostname();
 };
 
 const getHostname = () => {

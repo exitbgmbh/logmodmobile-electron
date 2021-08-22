@@ -4,6 +4,7 @@
     "autoUpdateCheckInterval": 600,
     "heartbeatInterval": 5,
     "gsPrintExecutable": "/bin/echo",
+    "identification": "",
     "username": "for debug purposes only",
     "password": "for debug purposes only"
   },
