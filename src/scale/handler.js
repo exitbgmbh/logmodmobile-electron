@@ -6,6 +6,7 @@ const PCE_EP_E = require('./type/pce-ep-e');
 const Debug = require('./type/debug');
 const Random = require('./type/random');
 const PCE_PB_N = require("./type/pce-pb-n");
+const BizerbaTis20 = require("./type/bizerba-tis-20");
 const {logDebug, logInfo, logWarning} = require('./../logging');
 
 class ScaleHandler {
@@ -39,6 +40,10 @@ class ScaleHandler {
             }
             case 'PCE-EP-E': {
                 this.scale = new PCE_EP_E(scaleConfig);
+                break;
+            }
+            case 'BIZERBATIS20': {
+                this.scale = new BizerbaTis20(scaleConfig);
                 break;
             }
             case 'PCE-PB-N': {
