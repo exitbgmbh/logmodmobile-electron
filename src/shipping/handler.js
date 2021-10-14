@@ -64,23 +64,49 @@ class ShippingHandler {
 
         const {
             shipmentTypeCode = '',
+            returnShipmentTypeCode = '', //tbd
             shipOutType = '',
+            returnShipOutType = '', //tbd
             packageCount = 0,
             invoiceNumber = '',
-            shipmentPollingData: pollingDataBase64Encoded = '',
-            shipmentLabels = []
+            shipmentPollingData: pollingDataBase64Encoded = '', //deprecated
+            shipmentPollingCollection = [],
+            shipmentLabels = [],
+            returnPollingCollection = [], //tbd
+            returnLabels = [] //tbd
         } = res.response;
 
+        let shipmentDone = false;
         // we just need to handle label printing or polling export
         if (shipmentLabels.length > 0) {
             this._handlePrinting(shipmentTypeCode, shipmentLabels);
-        } else if (pollingDataBase64Encoded && pollingDataBase64Encoded.trim() !== '') {
+            shipmentDone = true;
+        }
+
+        if (pollingDataBase64Encoded && pollingDataBase64Encoded.trim() !== '') {
             this._handlePolling(shipmentTypeCode, pollingDataBase64Encoded, invoiceNumber);
-        } else if (shipOutType === 'SELF-COLLECTOR') {
+            shipmentDone = true;
+        }
+
+        if (shipmentPollingCollection.length > 0) {
+            shipmentPollingCollection.forEach((pollingDataBase64Encoded) => {
+                this._handlePolling(shipmentTypeCode, pollingDataBase64Encoded, invoiceNumber);
+            });
+
+            shipmentDone = true;
+        }
+
+        if (shipOutType === 'SELF-COLLECTOR') {
             logInfo('shippingHandler', 'handleShipping', boxIdentification + ' shipOut succeed with SELF-COLLECTOR');
-        } else if (shipOutType === 'VIRTUAL') {
+            shipmentDone = true;
+        }
+
+        if (shipOutType === 'VIRTUAL') {
             logInfo('shippingHandler', 'handleShipping', boxIdentification + ' shipOut succeed with VIRTUAL');
-        } else {
+            shipmentDone = true;
+        }
+
+        if (!shipmentDone) {
             throw new Error('unknown ship out type');
         }
 
