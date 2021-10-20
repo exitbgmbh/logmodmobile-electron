@@ -15,7 +15,7 @@ class BizerbaTis20 extends AbstractScale {
         return this._scale(command, parser).then((data) => {
             logDebug('BizerbaTIS20', 'scale', 'got data from abstract ' + data);
             if (data) {
-                data = data.match(/\d+\,\d+[a-z]+/).toString().replace(/[+!\skg]+/, '');
+                data = data.match(/\d+,\d+[a-z]+/).toString().replace(/[+!\skg]+/, '').replace(/[,]/, '\.');
             }
             
             logDebug('BizerbaTIS20', 'scale', 'data after postprocessing ' + data);
