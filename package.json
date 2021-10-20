@@ -1,6 +1,6 @@
 {
   "name": "logmodmobile-electron",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "electron.js wrapper for exitB LogModMobile (blisstribute logistic module)",
   "main": "index.js",
   "scripts": {
