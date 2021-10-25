@@ -81,11 +81,11 @@ class ShippingHandler {
         if (shipmentLabels.length > 0) {
             this._handlePrinting(shipmentTypeCode, shipmentLabels);
             shipmentDone = true;
-        }
-
-        if (pollingDataBase64Encoded && pollingDataBase64Encoded.trim() !== '') {
-            this._handlePolling(shipmentTypeCode, pollingDataBase64Encoded, invoiceNumber);
-            shipmentDone = true;
+        } else {
+            if (pollingDataBase64Encoded && pollingDataBase64Encoded.trim() !== '') {
+                this._handlePolling(shipmentTypeCode, pollingDataBase64Encoded, invoiceNumber);
+                shipmentDone = true;
+            }
         }
 
         if (shipmentPollingCollection.length > 0) {

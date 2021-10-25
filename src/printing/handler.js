@@ -7,6 +7,7 @@ const printer = require('pdf-to-printer');
 const labelPrinter = require('@thiagoelg/node-printer');
 const {getDocumentPrinter, getProductLabelPrinter, getShipmentLabelPrinter} = require('./printer');
 const {logDebug, logWarning} = require('./../logging');
+const { exec } = require("child_process");
 
 const useGsPrint = config.has('app.gsPrintExecutable') && process.platform === 'win32';
 const gsPrintExecutable = useGsPrint ? config.get('app.gsPrintExecutable') : '';
@@ -276,7 +277,12 @@ class PrintingHandler {
         const printingOptions = this._getOptionsForPrinting(printerConfig);
 
         logDebug('printingHandler', '_handleDocumentPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-        printer.print(tmpFileName, printingOptions).then(console.log).catch(console.log);
+        printer.print(tmpFileName, printingOptions).then((r) => {
+            console.log('after print', r);
+            if (process.env.NODE_ENV === 'development') {
+                exec('xdg-open ' + tmpFileName);
+            }
+        }).catch(console.log);
     };
 
     printDirectRaw = (printerName, command) => {
