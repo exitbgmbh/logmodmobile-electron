@@ -64,6 +64,7 @@ class PrintingHandler {
         eventEmitter.on('invoiceCreationSuccess', this._printInvoiceCreationResultDocuments);
         eventEmitter.on('shipmentLabelPrint', this._handleShipmentLabelPrinting);
         eventEmitter.on('pickListNeedsAdditionalDocuments', this._requestAdditionalPickListDocuments);
+        eventEmitter.on('multiPackageSupplyNotePrint', this._requestMultiPackageSupplyNote);
     };
 
     /**
@@ -91,6 +92,12 @@ class PrintingHandler {
             this._handleDocumentPrinting('return', resultData, data.base64encodedReturnSlip);
         }
     };
+
+    _requestMultiPackageSupplyNote = (data) => {
+        restClientInstance.requestMultiPackageSupplyNote(data.identification).then((response) => {
+            this._handleDocumentPrinting('delivery', response.response, response.response.packageSupplyNote)
+        }).catch(this._handleError);
+    }
     
     /**
      *

@@ -8,6 +8,7 @@ const {getLogModIdentification} = require("../helper");
 
 const SHIP_OUT_EVENT = 'LOGMODSHIPOUT';
 const PREVIOUS_SHIP_OUT_EVENT = 'LOGMODSHIPOUTPREVIOUS';
+const MULTI_PACKAGE_SUPPLY_NOTE_EVENT = 'LOGMODMULTIPACKAGESUPPLYNOTE';
 const PRINT_EVENT = 'LOGMODPRINT';
 const PICK_BOX_READY = 'PICKBOXREADY';
 const PICK_LIST_FINISHED = 'PICKLISTFINISHED';
@@ -146,6 +147,14 @@ class WebSocketHandler
                 }
 
                 eventEmitter.emit('shipOutPrevious', socketEvent.data);
+                break;
+            }
+            case MULTI_PACKAGE_SUPPLY_NOTE_EVENT: {
+                if (!this._isMessageForMe(socketEvent)) {
+                    return;
+                }
+
+                eventEmitter.emit('multiPackageSupplyNotePrint', socketEvent.data);
                 break;
             }
             case SHIP_OUT_EVENT: {

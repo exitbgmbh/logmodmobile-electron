@@ -235,6 +235,15 @@ class RestClient
     requestRelocationDocuments = (identifier) => {
         return this.get('document/readRelocationDocument/' + identifier);
     }
+
+    /**
+     * request relocation document
+     *
+     * @param {string} identifier
+     */
+    requestMultiPackageSupplyNote = (identifier) => {
+        return this.get('document/readMultiPackageSupplyNote/' + identifier);
+    }
 }
 
 module.exports = new RestClient();
