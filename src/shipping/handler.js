@@ -77,15 +77,9 @@ class ShippingHandler {
         } = res.response;
 
         let shipmentDone = false;
-        // we just need to handle label printing or polling export
         if (shipmentLabels.length > 0) {
             this._handlePrinting(shipmentTypeCode, shipmentLabels);
             shipmentDone = true;
-        } else {
-            if (pollingDataBase64Encoded && pollingDataBase64Encoded.trim() !== '') {
-                this._handlePolling(shipmentTypeCode, pollingDataBase64Encoded, invoiceNumber);
-                shipmentDone = true;
-            }
         }
 
         if (shipmentPollingCollection.length > 0) {
@@ -93,6 +87,9 @@ class ShippingHandler {
                 this._handlePolling(shipmentTypeCode, pollingDataBase64Encoded, invoiceNumber);
             });
 
+            shipmentDone = true;
+        } else if (pollingDataBase64Encoded && pollingDataBase64Encoded.trim() !== '') {
+            this._handlePolling(shipmentTypeCode, pollingDataBase64Encoded, invoiceNumber);
             shipmentDone = true;
         }
 
