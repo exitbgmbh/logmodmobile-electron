@@ -93,6 +93,16 @@ class ShippingHandler {
             shipmentDone = true;
         }
 
+        if (returnLabels.length > 0) {
+            this._handlePrinting(returnShipmentTypeCode, returnLabels);
+        }
+
+        if (returnPollingCollection.length > 0) {
+            returnPollingCollection.forEach((pollingDataBase64Encoded) => {
+                this._handlePolling(returnShipmentTypeCode, pollingDataBase64Encoded, invoiceNumber);
+            });
+        }
+
         if (shipOutType === 'SELF-COLLECTOR') {
             logInfo('shippingHandler', 'handleShipping', boxIdentification + ' shipOut succeed with SELF-COLLECTOR');
             shipmentDone = true;
