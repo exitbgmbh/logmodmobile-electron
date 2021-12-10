@@ -4,20 +4,21 @@
     "autoUpdateCheckInterval": 600,
     "heartbeatInterval": 5,
     "gsPrintExecutable": "/bin/echo",
-    "identification": "",
-    "username": "for debug purposes only",
-    "password": "for debug purposes only"
+    "identification": "LogModMobile-Hostname",
+    "username": "for debug purposes and used in persistentLogin mode",
+    "password": "for debug purposes and used in persistentLogin mode",
+    "persistentLogin": false,
+    "restServer": {
+      "enable": false,
+      "port": 3005
+    }
   },
   "scale": {
-    "type": "Dummy",
+    "type": "None",
     "path": "/dev/ttyUSB0",
     "baud": 9600,
-    "command": [
-      "for debug scale only"
-    ],
-    "parserDelimiter": [
-      "for debug scale only"
-    ]
+    "command": [],
+    "parserDelimiter": []
   },
   "invoicing": {
     "watchBoxes": "$x"
@@ -54,7 +55,7 @@
     "printAdditionalDocuments": true,
     "printProductLabelRAW": false,
     "productLabelRAWTemplate": "N\nS4\nD15\nq400\nR\nB20,10,0,1,2,30,173,B,\"{%barcode}\"\nP{%quantity}\n",
-    "requestInvoiceDocumentsMerged": false,
+    "requestInvoiceDocumentsMerged": true,
     "defaultInvoiceSlipPrintCountCC": 1,
     "defaultInvoiceSlipPrintCountEU": 1,
     "defaultInvoiceSlipPrintCountTC": 3,

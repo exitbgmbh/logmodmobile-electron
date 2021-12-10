@@ -21,6 +21,7 @@ const promiseIpc = require('electron-promise-ipc');
 const menu = require('./menu');
 const { getApplicationConfigFile } = require('./../setupConfig');
 const fs = require('fs');
+const restSrvInstance = require('./rest');
 
 /**
  * the application main window instance
@@ -155,6 +156,7 @@ const authenticationSucceed = (event, arguments) => {
     shippingHandlerInstance.initialize();
     printingHandlerInstance.initialize();
     invoiceHandlerInstance.initialize();
+    restSrvInstance.initialize(windowInstance);
 };
 
 const websocketConnect = () => {
@@ -227,8 +229,7 @@ const bootApplication = () => {
 };
 
 const init = (app) => {
-    app.on('certificate-error', function(event, webContents, url, error,
-                                         certificate, callback) {
+    app.on('certificate-error', function(event, webContents, url, error, certificate, callback) {
         event.preventDefault();
         callback(true);
     });

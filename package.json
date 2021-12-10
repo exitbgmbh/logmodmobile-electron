@@ -44,6 +44,7 @@
     "electron-prompt": "^1.6.1",
     "electron-updater": "^4.2.0",
     "encoding": "^0.1.12",
+    "express": "^4.17.1",
     "js-yaml": "^3.13.1",
     "node-fetch": "^2.6.1",
     "pdf-to-printer": "github:ccarnivore/pdf-to-printer#master",
