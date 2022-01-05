@@ -34,6 +34,7 @@ class RestServerHandler
         this.windowInstance = windowInstance;
         this.server = express();
         this._initRoutes();
+        this.initialized = true;
 
         this.server.listen(serverPort, () => {
             console.log('server is running');
