@@ -180,6 +180,17 @@ class PrintingHandler {
                 }).catch(this._handleError);
                 break;
             }
+            case 'SHIPPINGREQUESTPACKAGELABEL': {
+                if (!data.hasOwnProperty('shippingRequestPackageNumber')) {
+                    this._handleError(new Error('invalid data, no shipping request package number given'));
+                    return;
+                }
+
+                restClientInstance.requestShippingRequestPackageLabel(data.shippingRequestPackageNumber).then((response) => {
+                    this._handleShippingRequestPackageLabelPrinting(response.response, data.quantity);
+                }).catch(this._handleError);
+                break;
+            }
             case 'INVOICE': {
                 if (!data.hasOwnProperty('invoiceNumber')) {
                     this._handleError(new Error('invalid data, no invoice number given'));
@@ -351,6 +362,28 @@ class PrintingHandler {
         const printingOptions = this._getOptionsForPrinting(printerConfig);
 
         logDebug('printingHandler', '_handleProductLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
+        printer.print(tmpFileName, printingOptions).then(console.log).catch(console.log);
+    };
+
+    /**
+     * printing product label
+     *
+     * @param {{}} responseData
+     * @param {int} numberOfCopies
+     *
+     * @private
+     */
+    _handleShippingRequestPackageLabelPrinting = (responseData, numberOfCopies) => {
+        logDebug('printingHandler', '_handleShippingRequestPackageLabelPrinting', 'start printing with options ' + JSON.stringify(responseData));
+        const {content: labelContent} = responseData;
+        if (!labelContent || labelContent.length < 100) {
+            return;
+        }
+        const printerConfig = getProductLabelPrinter(numberOfCopies);
+        const tmpFileName = this._saveResultToPdf(labelContent);
+        const printingOptions = this._getOptionsForPrinting(printerConfig);
+
+        logDebug('printingHandler', '_handleShippingRequestPackageLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
         printer.print(tmpFileName, printingOptions).then(console.log).catch(console.log);
     };
 

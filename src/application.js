@@ -136,6 +136,10 @@ const showLogModMobile = (windowInstance) => {
     windowInstance.webContents.on('did-finish-load', windowOnLoadCompleted);
 }
 
+const logout = () => {
+    process.exit();
+}
+
 /**
  * ipc event from logmodmobile
  * this informs us about successful authentication
@@ -201,6 +205,7 @@ const bootApplication = () => {
         ipcMain.on('authentication-succeed', authenticationSucceed);
         ipcMain.on('authentication-succeed', windowOnLoadCompleted);
         ipcMain.on('websocket-connected', websocketConnect);
+        ipcMain.on('logout', logout);
         ipcMain.on('back', () => showLogModMobile(windowInstance));
         ipcMain.on('saveConfig', (event, arg) => {
             const configFile = getApplicationConfigFile(app);

@@ -153,6 +153,17 @@ class RestClient
     };
 
     /**
+     * request a product label
+     *
+     * @param {string} shippingRequestPackageNumber
+     *
+     * @returns {*|Promise}
+     */
+    requestShippingRequestPackageLabel = (shippingRequestPackageNumber) => {
+        return this.get('document/readShippingRequestPackageLabel/' + shippingRequestPackageNumber);
+    };
+
+    /**
      *
      * @param {string} pickBoxIdentification
      * @param {boolean} forceInvoice
