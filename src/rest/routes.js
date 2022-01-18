@@ -1,4 +1,5 @@
 const {ipcMain} = require("electron");
+const eventEmitter = require('./../websocket/eventEmitter');
 
 const getResponse = (code = 200, message = '', responseData = []) => {
     return {
@@ -65,7 +66,14 @@ module.exports = (server, windowInstance) => {
         }
 
         ipcMain.once('got-batch-order', (event, args) => {
-            console.log('got-batch-order', event, args);
+            console.log('got-batch-order', args);
+            if (args.responseCode === 200 && args.responseData.packageId) {
+                eventEmitter.emit('requestDocuments', {
+                    documentType: 'shippingRequestPackageLabel',
+                    shippingRequestPackageNumber: args.responseData.packageId
+                });
+            }
+
             response.send(getResponse(args.responseCode, args.responseMessage, args.responseData));
         });
         windowInstance.webContents.send('get-batch-order');

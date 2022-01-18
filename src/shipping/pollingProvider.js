@@ -4,6 +4,7 @@ const chokidar = require('chokidar');
 const encoding = require('encoding');
 const path = require('path');
 const fs = require('fs');
+const async = require('async');
 
 class PollingProvider {
     /**
@@ -23,6 +24,8 @@ class PollingProvider {
      * @type {{dayClosingFileImportPattern: string, dayClosingFileImportEncoding: string}}
      */
     importConfig = {};
+
+    importFileQueue;
     
     /**
      * @param {string} code
@@ -63,6 +66,15 @@ class PollingProvider {
         logDebug('pollingProvider', '_initialize', 'initializing polling provider ' + this.code);
         logDebug('pollingProvider', '_initialize', 'using config ' + JSON.stringify(config));
 
+        let importRoutine = this._fileWatcherGotFile;
+        this.importFileQueue = async.queue(async function(file) {
+            logDebug('pollingProvider', 'importFileQueueProcess', 'handling ' + file);
+            importRoutine(file);
+        });
+        this.importFileQueue.error(function(err, file) {
+            logWarning('pollingProvider', 'importFileQueueError', err);
+        });
+
         if (dayClosingFileImportPath.trim() !== '' && dayClosingFileImportPattern.trim() !== '') {
             this._initializeFileWatcher(dayClosingFileImportPath, dayClosingFileImportPattern);
         }
@@ -94,9 +106,10 @@ class PollingProvider {
         }
 
         logInfo('pollingProvider', '_initializeFileWatcher', 'fileWatcher is active for ' + directoryToWatch + ' with pattern ' + filePattern);
+        let fileQueue = this.importFileQueue;
         chokidar
             .watch(directoryToWatch, {awaitWriteFinish: {stabilityThreshold: 2000, pollInterval: 500}, depth: 0})
-            .on('add', this._fileWatcherGotFile);
+            .on('add', function(file) { fileQueue.push(file); });
     };
     
     /**
