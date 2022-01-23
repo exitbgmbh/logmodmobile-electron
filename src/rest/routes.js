@@ -1,5 +1,6 @@
 const {ipcMain} = require("electron");
 const eventEmitter = require('./../websocket/eventEmitter');
+const {logDebug} = require("../logging");
 
 const getResponse = (code = 200, message = '', responseData = []) => {
     return {
@@ -61,43 +62,40 @@ const _handleConfirmArticleMock = (response, error) => {
 
 module.exports = (server, windowInstance) => {
     server.get('/batchOrder/getNext/:mock?/:error?', (request, response) => {
+        logDebug('restRouter', 'batchOrder/getNext', JSON.stringify(request.params));
         if (request.params.mock) {
             return _handleBatchOrderGetNextMock(response, request.params.error);
         }
 
         ipcMain.once('got-batch-order', (event, args) => {
-            console.log('got-batch-order', args);
-            if (args.responseCode === 200 && args.responseData.packageId) {
-                eventEmitter.emit('requestDocuments', {
-                    documentType: 'shippingRequestPackageLabel',
-                    shippingRequestPackageNumber: args.responseData.packageId
-                });
-            }
-
+            logDebug('restRouter', 'got-batch-order', JSON.stringify(args));
             response.send(getResponse(args.responseCode, args.responseMessage, args.responseData));
         });
         windowInstance.webContents.send('get-batch-order');
     });
 
     server.get('/batchOrder/confirm/:trayCode/:barcode/:mock?/:error?', (request, response) => {
+        logDebug('restRouter', 'batchOrder/confirm', JSON.stringify(request.params));
         if (request.params.mock) {
             return _handleConfirmArticleMock(response, request.params.error);
         }
 
+        const args = {barcode: request.params.barcode, trayCode: request.params.trayCode};
         ipcMain.once('article-confirmed', (event, args) => {
-            console.log('article-confirmed', event, args);
+            logDebug('restRouter', 'article-confirmed', JSON.stringify(args));
             response.send(getResponse(args.responseCode, args.responseMessage, args.responseData));
         });
-        windowInstance.webContents.send('confirm-article');
+        windowInstance.webContents.send('confirm-article', args);
     });
 
     server.patch('/batchOrder/finalize/:mock?/:error?', (request, response) => {
+        logDebug('restRouter', 'batchOrder/finalize', JSON.stringify(request.params));
         if (request.params.mock) {
             return _handleBatchOrderFinalizeMock(response, request.params.error);
         }
 
         ipcMain.once('finished-batch-order', (event, args) => {
-            console.log('finished-batch-order', event, args);
+            logDebug('restRouter', 'finished-batch-order', JSON.stringify(args));
             response.send(getResponse(args.responseCode, args.responseMessage, args.responseData));
         });
         windowInstance.webContents.send('finish-batch-order');
