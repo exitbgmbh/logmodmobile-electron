@@ -247,6 +247,8 @@ getAdditionalDocumentPrinter = () => {
   let printerConfig = _getConfigTemplate(defaultPrinter);
   if (_checkPrinterKey('printing.defaultAdditionalDocumentPrinter')) {
     printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultAdditionalDocumentPrinter'));
+  } else if (_checkPrinterKey('printing.defaultInvoiceSlipPrinter')) {  // backwards compatibility
+    printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultInvoiceSlipPrinter'));
   }
 
   if (config.has('printing.defaultAdditionalDocumentPrinterMode')) {

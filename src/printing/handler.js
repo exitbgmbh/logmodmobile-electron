@@ -154,7 +154,7 @@ class PrintingHandler {
                 }
     
                 restClientInstance.requestRepairCaseDocuments(data.pickBox).then((response) => {
-                    this._handleDocumentPrinting('invoice', response.response, response.response.repairCasePdf)
+                    this._handleDocumentPrinting('additional', response.response, response.response.repairCasePdf)
                 }).catch(this._handleError);
                 break;
             }
@@ -165,7 +165,7 @@ class PrintingHandler {
                 }
     
                 restClientInstance.requestRelocationDocuments(data.pickBox).then((response) => {
-                    this._handleDocumentPrinting('invoice', response.response, response.response.relocationPdf)
+                    this._handleDocumentPrinting('additional', response.response, response.response.relocationPdf)
                 }).catch(this._handleError);
                 break;
             }
