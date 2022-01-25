@@ -47,10 +47,17 @@
   },
   "printing": {
     "defaultInvoiceSlipPrinter": "PDF",
+    "defaultInvoiceSlipPrinterMode": "monochrome",
     "defaultDeliverySlipPrinter": "PDF",
+    "defaultDeliverySlipPrinterMode": "monochrome",
     "defaultReturnSlipPrinter": "PDF",
+    "defaultReturnSlipPrinterMode": "monochrome",
     "defaultShipmentLabelPrinter": "PDF",
+    "defaultShipmentLabelPrinterMode": "monochrome",
     "defaultProductLabelPrinter": "PDF",
+    "defaultProductLabelPrinterMode": "monochrome",
+    "defaultAdditionalDocumentPrinter": "PDF",
+    "defaultAdditionalDocumentPrinterMode": "monochrome",
     "rotateProductLabel": true,
     "printAdditionalDocuments": true,
     "printProductLabelRAW": false,
@@ -62,8 +69,11 @@
     "advertisingMediumConfig": {
       "EXB": {
         "invoiceSlipPrinter": "PDF",
-        "deliverySlipPrinter": "",
-        "returnSlipPrinter": "",
+        "invoiceSlipPrinterMode": "monochrome",
+        "deliverySlipPrinter": "PDF",
+        "deliverySlipPrinterMode": "monochrome",
+        "returnSlipPrinter": "PDF",
+        "returnSlipPrinterMode": "monochrome",
         "invoiceSlipPrintCountCC": 1,
         "invoiceSlipPrintCountEU": 1,
         "invoiceSlipPrintCountTC": 3

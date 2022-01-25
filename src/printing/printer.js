@@ -45,6 +45,22 @@ _checkPrinterKey = (printerKey) => {
 };
 
 /**
+ *
+ * @param defaultPrinter
+ * @returns {{color: boolean, numOfCopies: number, printer, monochrome: boolean}}
+ * @private
+ */
+_getConfigTemplate = (defaultPrinter) => {
+  return {
+    numOfCopies: 1,
+    printer: defaultPrinter,
+    rotate: false,
+    color: false,
+    monochrome: false
+  };
+}
+
+/**
  * evaluates the printer and printer settings for given documentType
  *
  * @param {string} documentType
@@ -59,6 +75,10 @@ getDocumentPrinter = (documentType, advertisingMedium = '', deliveryCountryCode=
   logDebug('printer', 'getDocumentPrinter', JSON.stringify({documentType, advertisingMedium, deliveryCountryIsEU, deliveryCountryCode}));
   let printerConfig = {};
   switch(documentType.toUpperCase()) {
+    case 'ADDITIONAL': {
+      printerConfig = getAdditionalDocumentPrinter();
+      break;
+    }
     case 'INVOICE': {
       printerConfig = getInvoicePrinter(advertisingMedium, deliveryCountryCode, deliveryCountryIsEU);
       break;
@@ -89,13 +109,21 @@ getDocumentPrinter = (documentType, advertisingMedium = '', deliveryCountryCode=
  * @param {string} deliveryCountryCode
  * @param {boolean} deliveryCountryIsEU
  *
- * @returns {{numOfCopies: number, printer: string}}
+ * @returns {{numOfCopies: number, printer: string, rotate: boolean, color: boolean, monochrome: boolean}}
  *
  */
 getInvoicePrinter = (advertisingMedium, deliveryCountryCode, deliveryCountryIsEU = false) => {
-  let printerConfig = { numOfCopies: 1, printer: defaultPrinter };
+  let printerConfig = _getConfigTemplate(defaultPrinter);
   if (_checkPrinterKey('printing.defaultInvoiceSlipPrinter')) {
     printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultInvoiceSlipPrinter'));
+  }
+
+  if (config.has('printing.defaultInvoiceSlipPrinterMode')) {
+    if (config.get('printing.defaultInvoiceSlipPrinterMode') === 'monochrome') {
+      printerConfig.monochrome = true;
+    } else {
+      printerConfig.color = true;
+    }
   }
 
   if (deliveryCountryCode === 'DE' && config.has('printing.defaultInvoiceSlipPrintCountCC')) {
@@ -109,6 +137,15 @@ getInvoicePrinter = (advertisingMedium, deliveryCountryCode, deliveryCountryIsEU
   const advertisingMediumConfigKey = 'printing.advertisingMediumConfig.' + advertisingMedium;
   if (_checkPrinterKey(advertisingMediumConfigKey + '.invoiceSlipPrinter')) {
     printerConfig.printer = _checkPrinterAndCorrect(config.get(advertisingMediumConfigKey + '.invoiceSlipPrinter'));
+  }
+
+  const advertisingMediumModeConfigKey = 'printing.advertisingMediumConfig.' + advertisingMedium + '.invoiceSlipPrinterMode';
+  if (_checkPrinterKey(advertisingMediumModeConfigKey)) {
+    if (config.get(advertisingMediumModeConfigKey) === 'monochrome') {
+      printerConfig.monochrome = true;
+    } else {
+      printerConfig.color = true;
+    }
   }
 
   if (deliveryCountryCode === 'DE' && config.has(advertisingMediumConfigKey + '.invoiceSlipPrintCountCC')) {
@@ -128,17 +165,34 @@ getInvoicePrinter = (advertisingMedium, deliveryCountryCode, deliveryCountryIsEU
  *
  * @param {string} advertisingMedium
  *
- * @returns {{numOfCopies: number, printer: string}}
+ * @returns {{numOfCopies: number, printer: string, rotate: boolean, color: boolean, monochrome: boolean}}
  */
 getDeliverySlipPrinter = (advertisingMedium) => {
-  let printerConfig = { numOfCopies: 1, printer: defaultPrinter };
+  let printerConfig = _getConfigTemplate(defaultPrinter);
   if (_checkPrinterKey('printing.defaultDeliverySlipPrinter')) {
     printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultDeliverySlipPrinter'));
+  }
+
+  if (config.has('printing.defaultDeliverySlipPrinterMode')) {
+    if (config.get('printing.defaultDeliverySlipPrinterMode') === 'monochrome') {
+      printerConfig.monochrome = true;
+    } else {
+      printerConfig.color = true;
+    }
   }
 
   const advertisingMediumConfigKey = 'printing.advertisingMediumConfig.' + advertisingMedium + '.deliverySlipPrinter';
   if (_checkPrinterKey(advertisingMediumConfigKey)) {
     printerConfig.printer = _checkPrinterAndCorrect(config.get(advertisingMediumConfigKey));
+  }
+
+  const advertisingMediumModeConfigKey = 'printing.advertisingMediumConfig.' + advertisingMedium + '.deliverySlipPrinterMode';
+  if (_checkPrinterKey(advertisingMediumModeConfigKey)) {
+    if (config.get(advertisingMediumModeConfigKey) === 'monochrome') {
+      printerConfig.monochrome = true;
+    } else {
+      printerConfig.color = true;
+    }
   }
 
   return printerConfig;
@@ -150,17 +204,57 @@ getDeliverySlipPrinter = (advertisingMedium) => {
  *
  * @param {string} advertisingMedium
  *
- * @returns {{numOfCopies: number, printer: string}}
+ * @returns {{numOfCopies: number, printer: string, rotate: boolean, color: boolean, monochrome: boolean}}
  */
 getReturnSlipPrinter = (advertisingMedium) => {
-  let printerConfig = { numOfCopies: 1, printer: defaultPrinter };
+  let printerConfig = _getConfigTemplate(defaultPrinter);
   if (_checkPrinterKey('printing.defaultReturnSlipPrinter')) {
     printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultReturnSlipPrinter'));
+  }
+
+  if (config.has('printing.defaultReturnSlipPrinterMode')) {
+    if (config.get('printing.defaultReturnSlipPrinterMode') === 'monochrome') {
+      printerConfig.monochrome = true;
+    } else {
+      printerConfig.color = true;
+    }
   }
 
   const advertisingMediumConfigKey = 'printing.advertisingMediumConfig.' + advertisingMedium + '.returnSlipPrinter';
   if (_checkPrinterKey(advertisingMediumConfigKey)) {
     printerConfig.printer = _checkPrinterAndCorrect(config.get(advertisingMediumConfigKey));
+  }
+
+  const advertisingMediumModeConfigKey = 'printing.advertisingMediumConfig.' + advertisingMedium + '.returnSlipPrinterMode';
+  if (_checkPrinterKey(advertisingMediumModeConfigKey)) {
+    if (config.get(advertisingMediumModeConfigKey) === 'monochrome') {
+      printerConfig.monochrome = true;
+    } else {
+      printerConfig.color = true;
+    }
+  }
+
+  return printerConfig;
+};
+
+/**
+ * load additional slip printer and number of copies
+ * this is configured by default and can be overwritten by additional configuration with advertising medium
+ *
+ * @returns {{numOfCopies: number, printer: string, rotate: boolean, color: boolean, monochrome: boolean}}
+ */
+getAdditionalDocumentPrinter = () => {
+  let printerConfig = _getConfigTemplate(defaultPrinter);
+  if (_checkPrinterKey('printing.defaultAdditionalDocumentPrinter')) {
+    printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultAdditionalDocumentPrinter'));
+  }
+
+  if (config.has('printing.defaultAdditionalDocumentPrinterMode')) {
+    if (config.get('printing.defaultAdditionalDocumentPrinterMode') === 'monochrome') {
+      printerConfig.monochrome = true;
+    } else {
+      printerConfig.color = true;
+    }
   }
 
   return printerConfig;
@@ -169,10 +263,10 @@ getReturnSlipPrinter = (advertisingMedium) => {
 /**
  * load product label printer
  *
- * @returns {{numOfCopies: number, printer: string, rotate: boolean}}
+ * @returns {{numOfCopies: number, printer: string, rotate: boolean, color: boolean, monochrome: boolean}}
  */
 getProductLabelPrinter = (numberOfCopies) => {
-  let printerConfig = { numOfCopies: numberOfCopies, printer: defaultPrinter, rotate: false };
+  let printerConfig = _getConfigTemplate(defaultPrinter);
   if (_checkPrinterKey('printing.defaultProductLabelPrinter')) {
     printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultProductLabelPrinter'));
   }
@@ -181,16 +275,24 @@ getProductLabelPrinter = (numberOfCopies) => {
     printerConfig.rotate = config.get('printing.rotateProductLabel');
   }
 
+  if (config.has('printing.defaultProductLabelPrinterMode')) {
+    if (config.get('printing.defaultProductLabelPrinterMode') === 'monochrome') {
+      printerConfig.monochrome = true;
+    } else {
+      printerConfig.color = true;
+    }
+  }
+
   return printerConfig;
 };
 
 /**
  * load shipment label printer
  *
- * @returns {{numOfCopies: number, printer: string, rotate: boolean}}
+ * @returns {{numOfCopies: number, printer: string, rotate: boolean, color: boolean, monochrome: boolean}}
  */
 getShipmentLabelPrinter = (shipmentTypeCode) => {
-  let printerConfig = { numOfCopies: 1, printer: defaultPrinter, rotate: false };
+  let printerConfig = _getConfigTemplate(defaultPrinter);
   const printerKey = 'shipping.' + shipmentTypeCode + '.printing.shipmentLabelPrinter';
   if (_checkPrinterKey(printerKey)) {
     printerConfig.printer = _checkPrinterAndCorrect(config.get(printerKey));

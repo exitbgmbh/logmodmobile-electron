@@ -440,13 +440,32 @@ class PrintingHandler {
                 options.win32.push('-landscape');
             }
 
+            if (printerConfig.color) {
+                options.win32.push('-color');
+            }
+
+            if (printerConfig.monochrome) {
+                options.win32.push('-mono');
+            }
+
             if (numberOfCopies) {
                 options.win32.push('-copies ' + numberOfCopies);
             }
+
         } else {
             if (numberOfCopies) {
                 options.unix = ['-n ' + numberOfCopies];
                 options.win32 = ['-print-settings "' + numberOfCopies + 'x"'];
+            }
+
+            if (printerConfig.color) {
+                logDebug('printingHandler', '_getOptionsForPrinting', 'color printing');
+            }
+            if (printerConfig.monochrome) {
+                logDebug('printingHandler', '_getOptionsForPrinting', 'monochrome printing');
+            }
+            if (printerConfig.rotate) {
+                logDebug('printingHandler', '_getOptionsForPrinting', 'rotated printing');
             }
         }
         

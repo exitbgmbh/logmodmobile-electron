@@ -51,6 +51,15 @@ const _handleBatchOrderFinalizeMock = (response, error) => {
     response.send(getResponse(200));
 }
 
+const _handleBatchOrderCancelMock = (response, error) => {
+    if (error) {
+        response.send(getResponse(500, 'some error message'));
+        return;
+    }
+
+    response.send(getResponse(200));
+}
+
 const _handleConfirmArticleMock = (response, error) => {
     if (error) {
         response.send(getResponse(500, 'some error message'));
@@ -99,6 +108,19 @@ module.exports = (server, windowInstance) => {
             response.send(getResponse(args.responseCode, args.responseMessage, args.responseData));
         });
         windowInstance.webContents.send('finish-batch-order');
+    });
+
+    server.patch('/batchOrder/cancel/:mock?/:error?', (request, response) => {
+        logDebug('restRouter', 'batchOrder/cancel', JSON.stringify(request.params));
+        if (request.params.mock) {
+            return _handleBatchOrderCancelMock(response, request.params.error);
+        }
+
+        ipcMain.once('cancelled-batch-order', (event, args) => {
+            logDebug('restRouter', 'cancelled-batch-order', JSON.stringify(args));
+            response.send(getResponse(args.responseCode, args.responseMessage, args.responseData));
+        });
+        windowInstance.webContents.send('cancel-batch-order');
     });
 
     // default route
