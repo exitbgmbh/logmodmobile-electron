@@ -22,6 +22,7 @@ const menu = require('./menu');
 const { getApplicationConfigFile } = require('./../setupConfig');
 const fs = require('fs');
 const restSrvInstance = require('./rest');
+const {nanoid} = require("nanoid");
 
 /**
  * the application main window instance
@@ -128,7 +129,7 @@ const instantiateApplicationWindow = (applicationBootError) => {
 
 const showLogModMobile = (windowInstance) => {
     const startUrl = process.env.ELECTRON_START_URL || config.get('app.url');
-    windowInstance.loadURL(startUrl).then(() => {
+    windowInstance.loadURL(startUrl+'?avoidCached=' + nanoid(4)).then(() => {
     
     }).catch((err) => {
         showApplicationError(err);
@@ -176,6 +177,10 @@ const websocketConnect = () => {
     });
 }
 
+const websocketDisconnect = () => {
+    webSocketHandler.disconnectFromWebSocket();
+}
+
 const notifyForUpdate = () => {
     windowInstance.webContents.send('updateAvailable');
 }
@@ -205,6 +210,7 @@ const bootApplication = () => {
         ipcMain.on('authentication-succeed', authenticationSucceed);
         ipcMain.on('authentication-succeed', windowOnLoadCompleted);
         ipcMain.on('websocket-connected', websocketConnect);
+        ipcMain.on('websocket-disconnected', websocketDisconnect);
         ipcMain.on('logout', logout);
         ipcMain.on('back', () => showLogModMobile(windowInstance));
         ipcMain.on('saveConfig', (event, arg) => {

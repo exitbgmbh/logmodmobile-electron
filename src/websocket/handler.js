@@ -68,6 +68,16 @@ class WebSocketHandler
         }
     };
 
+    disconnectFromWebSocket = () => {
+        if (!this.socket || !this.currentConnection || !this.currentConnection.connected) {
+            return;
+        }
+
+        this.currentConnection.close();
+        this.currentConnection = null;
+        this.socket = null;
+    }
+
     /**
      * open (or close an open) a connection to blisstribute websocket
      *
