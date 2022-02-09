@@ -141,6 +141,10 @@ const logout = () => {
     process.exit();
 }
 
+const directLog = (ev, arguments) => {
+    logInfo('application', 'directLog', JSON.stringify(arguments));
+}
+
 /**
  * ipc event from logmodmobile
  * this informs us about successful authentication
@@ -207,6 +211,7 @@ const bootApplication = () => {
 
         initializeAutoUpdateCheck();
 
+        ipcMain.on('direct-log', directLog);
         ipcMain.on('authentication-succeed', authenticationSucceed);
         ipcMain.on('authentication-succeed', windowOnLoadCompleted);
         ipcMain.on('websocket-connected', websocketConnect);
