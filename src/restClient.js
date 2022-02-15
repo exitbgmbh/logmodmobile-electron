@@ -255,6 +255,15 @@ class RestClient
     requestMultiPackageSupplyNote = (identifier) => {
         return this.get('document/readMultiPackageSupplyNote/' + identifier);
     }
+
+    /**
+     *
+     * @param {string} url
+     * @param {string} orderNumber
+     */
+    requestAdditionalDocument = (url, orderNumber) => {
+        return fetch(url.replaceAll('$ORDER_NUMBER$', orderNumber)).then(res => res.blob());
+    }
 }
 
 module.exports = new RestClient();

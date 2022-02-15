@@ -58,6 +58,7 @@
     "defaultProductLabelPrinterMode": "monochrome",
     "defaultAdditionalDocumentPrinter": "PDF",
     "defaultAdditionalDocumentPrinterMode": "monochrome",
+    "additionalDocumentUrl": "",
     "rotateProductLabel": true,
     "printAdditionalDocuments": true,
     "printProductLabelRAW": false,

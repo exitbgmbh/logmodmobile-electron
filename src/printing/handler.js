@@ -233,17 +233,39 @@ class PrintingHandler {
                 if (config.has('printing.requestInvoiceDocumentsMerged') && config.get('printing.requestInvoiceDocumentsMerged') === true) {
                     restClientInstance.requestMergedDocuments(data.invoiceNumber).then((response) => {
                         this._handleDocumentPrinting('invoiceMerge', response.response, response.response.mergedDocumentsPdf);
+
+                        this._handleAdditionalDocumentPrinting(response);
                     }).catch(this._handleError);
                 } else {
                     restClientInstance.requestAllDocuments(data.invoiceNumber).then((response) => {
                         this._handleDocumentPrinting('invoice', response.response, response.response.invoicePdf);
                         this._handleDocumentPrinting('delivery', response.response, response.response.deliverySlipPdf);
                         this._handleDocumentPrinting('return', response.response, response.response.returnSlipPdf);
+
+                        this._handleAdditionalDocumentPrinting(response);
                     }).catch(this._handleError);
                 }
                 break;
             }
         }
+    };
+
+    _handleAdditionalDocumentPrinting = (response) => {
+        if (!config.has('printing.additionalDocumentUrl')) {
+            return;
+        }
+
+        const additionalDocumentUrl = config.get('printing.additionalDocumentUrl');
+        if (!additionalDocumentUrl.length) {
+            return;
+        }
+
+        restClientInstance.requestAdditionalDocument(additionalDocumentUrl, response.orderNumber).then((responseBlob) => {
+            logDebug('printingHandler', '_requestDocuments', 'got additional response');
+            responseBlob.arrayBuffer().then((buffer) => {
+                this._handleDocumentPrinting('additional', {}, buffer, false);
+            });
+        });
     };
 
     /**
@@ -261,14 +283,16 @@ class PrintingHandler {
      * helper method to save base64encoded file content to temporary files
      *
      * @param {string} contentToPrint
+     * @param {boolean} isBase64
      *
      * @returns {string}
      *
      * @private
      */
-    _saveResultToPdf = (contentToPrint) => {
+    _saveResultToPdf = (contentToPrint, isBase64 = true) => {
         const tmpFile = tmp.fileSync({prefix: 'ellmm_', postfix: '.pdf'});
-        const documentEncoded = Buffer.from(contentToPrint, 'base64');
+        const encoding = isBase64 ? 'base64' : 'utf-8';
+        const documentEncoded = Buffer.from(contentToPrint, encoding);
         fs.writeFileSync(tmpFile.name, documentEncoded);
 
         this.createdFilesCache.push(tmpFile.name);
@@ -282,14 +306,15 @@ class PrintingHandler {
      * @param {string} type
      * @param {{advertisingMedium:string, deliveryCountry:string, isEU: boolean}} data
      * @param {string} contentToPrint
+     * @param {boolean} isBase64
      * @private
      */
-    _handleDocumentPrinting = (type, data, contentToPrint) => {
+    _handleDocumentPrinting = (type, data, contentToPrint, isBase64 = true) => {
         if (!contentToPrint || contentToPrint.length < 100) {
             return;
         }
 
-        const tmpFileName = this._saveResultToPdf(contentToPrint);
+        const tmpFileName = this._saveResultToPdf(contentToPrint, isBase64);
 
         const printerConfig = getDocumentPrinter(type, data.advertisingMedium, data.deliveryCountry, data.isEU);
         const printingOptions = this._getOptionsForPrinting(printerConfig);
