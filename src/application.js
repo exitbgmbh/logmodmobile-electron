@@ -1,5 +1,5 @@
 const application = require('electron');
-const { ipcMain, ipcRenderer } = require('electron');
+const { ipcMain, ipcRenderer, shell, dialog } = require('electron');
 const menuEventEmitter = require('./menu/eventEmitter');
 const version = require('./../package').version;
 const BrowserWindow = application.BrowserWindow;
@@ -23,6 +23,8 @@ const { getApplicationConfigFile } = require('./../setupConfig');
 const fs = require('fs');
 const restSrvInstance = require('./rest');
 const {nanoid} = require("nanoid");
+const {loadPlugins} = require("../pluginLoader");
+const LocalStorage = require('node-localstorage').LocalStorage;
 
 /**
  * the application main window instance
@@ -60,31 +62,40 @@ const showApplicationError = (error) => {
     ).then(() => {
 
     });
+
     windowInstance.webContents.on('did-finish-load', windowOnLoadCompleted);
 };
 
 /**
- * displaying json editor
+ * open system editor
  */
 const showApplicationConfig = () => {
-    const fileName = getApplicationConfigFile(app);
-    windowInstance.loadFile(
-        'static/html/applicationConfiguration.html',
-        { search: 'configFile=' + fileName }
-    ).then(() => {});
-    
-    windowInstance.webContents.on('did-finish-load', windowOnLoadCompleted);
+    const {name} = config.util.getConfigSources()[0];
+    logInfo('application', 'showApplicationConfig', name);
+    shell.openPath(name);
+};
+
+/**
+ * reload application config
+ */
+const reloadApplicationConfig = () => {
+    const sources = config.util.getConfigSources();
+    for (const { name } of sources) {
+        if (name === '$NODE_CONFIG' || name === '--NODE-CONFIG') {
+            continue;
+        }
+
+        delete require.cache[name];
+    }
+
+    delete require.cache[require.resolve('config')];
 };
 
 /**
  * displaying json editor
  */
 const showBatchPrint = () => {
-    windowInstance.loadFile(
-        'static/html/batchPrinting.html'
-    ).then(() => {});
-
-    windowInstance.webContents.on('did-finish-load', windowOnLoadCompleted);
+    windowInstance.loadFile('static/html/batchPrinting.html').then(() => {});
 };
 
 /**
@@ -112,9 +123,9 @@ const instantiateApplicationWindow = (applicationBootError) => {
     
     windowInstance.setMenu(menu);
 
-    if (isDevelopment) {
+    /*if (isDevelopment) {
         windowInstance.webContents.openDevTools();
-    }
+    }*/
 
     if (applicationBootError) {
         showApplicationError(applicationBootError);
@@ -129,11 +140,11 @@ const instantiateApplicationWindow = (applicationBootError) => {
 
 const showLogModMobile = (windowInstance) => {
     const startUrl = process.env.ELECTRON_START_URL || config.get('app.url');
-    windowInstance.loadURL(startUrl+'?avoidCached=' + nanoid(4)).then(() => {
-    
-    }).catch((err) => {
-        showApplicationError(err);
-    });
+    windowInstance.loadURL(startUrl+'?avoidCached=' + nanoid(4))
+        .then(() => {})
+        .catch((err) => {
+            showApplicationError(err);
+        });
     windowInstance.webContents.on('did-finish-load', windowOnLoadCompleted);
 }
 
@@ -194,9 +205,11 @@ const notifyForUpdate = () => {
  */
 const bootApplication = () => {
     logInfo('application', 'bootApplication', 'start');
-    menuEventEmitter.on('showConfig', () => showApplicationConfig(app));
-    menuEventEmitter.on('showBatchPrint', () => showBatchPrint(app));
+    menuEventEmitter.on('showConfig', () => showApplicationConfig());
+    menuEventEmitter.on('reloadConfig', () => reloadApplicationConfig());
+    menuEventEmitter.on('showBatchPrint', () => showBatchPrint());
     menuEventEmitter.on('testNewRelease', () => notifyForUpdate());
+    menuEventEmitter.on('showChangeLog', () => showChangeLog(true));
 
     if (!config.has('app.url')) {
         instantiateApplicationWindow({message: 'config not found or not valid'});
@@ -240,9 +253,38 @@ const bootApplication = () => {
         return;
     }
 
+    loadPlugins();
     instantiateApplicationWindow();
     logInfo('application', 'bootApplication', 'end');
+
+    showChangeLog();
 };
+
+const showChangeLog = (force = false) => {
+    let localStorage = new LocalStorage(path.join(app.getPath('userData'), 'storage.data'));
+
+    let show = false;
+    if (localStorage.getItem('LAST_VERSION') !== version) {
+        localStorage.setItem('LAST_VERSION', version);
+        show = true;
+    }
+
+    if (!show && !force) {
+        return;
+    }
+
+    const releaseNoteBrowserWindow = new BrowserWindow({
+        parent: windowInstance,
+        modal: true,
+        show: false,
+        titleBarStyle: "hidden",
+        title: 'ChangeLog für Version ' + version
+    });
+
+    releaseNoteBrowserWindow.setMenu(null);
+    releaseNoteBrowserWindow.loadFile('static/html/changeLog.html');
+    releaseNoteBrowserWindow.show();
+}
 
 const init = (app) => {
     app.on('certificate-error', function(event, webContents, url, error, certificate, callback) {
@@ -263,7 +305,7 @@ const init = (app) => {
         // On OS X it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
         if (windowInstance === null) {
-            bootApplication();
+            bootApplication(app);
         }
     });
 

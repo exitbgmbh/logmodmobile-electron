@@ -25,6 +25,7 @@ const _handleBatchOrderGetNextMock = (response, error) => {
             'shippingRequestNumber': '21511234567896', // numeric|(big)int
             'packingId': 'SRP-987654321', // alphanumeric|string
             'workstation': 'PRO-AP-123456', // alphanumeric|string
+            'pickMode': 0, // numeric|int
             'orderLines': [{ // object array
                 'vhsArticleNumber': '00202100001236', // alphanumeric|string
                 'barcode': '9001234567896', // alphanumeric|string

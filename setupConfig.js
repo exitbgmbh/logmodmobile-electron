@@ -28,6 +28,10 @@ const getApplicationConfigFile = (app) => {
     return getApplicationConfigPath(app) + path.sep + 'default.json';
 };
 
+const getPluginPath = (app) => {
+    return getApplicationConfigPath(app) + path.sep + 'Plugins'
+}
+
 /**
  * setting up default configuration
  *
@@ -70,5 +74,7 @@ const checkConfig = (app) => {
 
 module.exports = {
     checkConfig,
-    getApplicationConfigFile
+    getApplicationConfigFile,
+    getApplicationConfigPath,
+    getPluginPath
 };

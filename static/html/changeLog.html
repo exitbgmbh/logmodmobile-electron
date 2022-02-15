@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <!-- when using the mode "code", it's important to specify charset utf-8 -->
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>ChangeLog</title>
+</head>
+<style>
+    html, body {
+        font: 11pt sans-serif;
+        padding: 0 10px;
+    }
+</style>
+<body id="root">
+<p>Dieses Fenster wird nach jedem Versionupdate automatisch angezeigt.<br />
+Um das Fenster manuell zu öffnen, wählen Sie den Menüpunkt <span style="font-weight: bold">Hilfe - ChangeLog</span></p>
+</body>
+<script>
+    const changes = [{
+        'version': '2.1.4',
+        'changes': [
+            'ChangeLog wurde eingeführt',
+            'Die Möglichkeit für Custom-Plugins wurde geschaffen',
+            'Anpassungen im Hauptmenü',
+            'Die Konfiguration wird nun im (System-)Standardeditor geöffnet.'
+        ]
+    }];
+
+    changes.forEach((change) => {
+        console.log(change);
+        let changeDiv = document.createElement('div');
+        changeDiv.innerHTML = '<h4>Anpassungen in Version ' + change.version + '</h4>';
+        changeDiv.innerHTML += '<ul>';
+        change.changes.forEach((c) => {
+            changeDiv.innerHTML += '<li>' + c + '</li>';
+        });
+        changeDiv.innerHTML += '</ul>';
+
+        document.getElementById('root').appendChild(changeDiv);
+    })
+</script>
+</html>
