@@ -84,7 +84,7 @@ module.exports = (server, windowInstance) => {
         windowInstance.webContents.send('get-batch-order');
     });
 
-    server.get('/batchOrder/confirm/:trayCode/:barcode/:mock?/:error?', (request, response) => {
+    server.patch('/batchOrder/confirm/:trayCode/:barcode/:mock?/:error?', (request, response) => {
         logDebug('restRouter', 'batchOrder/confirm', JSON.stringify(request.params));
         if (request.params.mock) {
             return _handleConfirmArticleMock(response, request.params.error);

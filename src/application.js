@@ -286,7 +286,7 @@ const showChangeLog = (force = false) => {
     releaseNoteBrowserWindow.show();
 }
 
-const init = (app) => {
+const init = () => {
     app.on('certificate-error', function(event, webContents, url, error, certificate, callback) {
         event.preventDefault();
         callback(true);

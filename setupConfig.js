@@ -1,3 +1,4 @@
+const app = require('electron').app;
 const fs = require('fs');
 const path = require('path');
 const isRunningInAsar = require('electron-is-running-in-asar');
@@ -6,10 +7,9 @@ const {logDebug, logInfo} = require('./src/logging');
 /**
  * get the default user config path
  *
- * @param app Electron.App
  * @returns {string}
  */
-const getApplicationConfigPath = (app) => {
+const getApplicationConfigPath = () => {
     const appPath = app.getPath('userData');
     if (!fs.existsSync(appPath)) {
         fs.mkdirSync(appPath);
@@ -24,20 +24,18 @@ const getApplicationConfigPath = (app) => {
  * @param app Electron.App
  * @returns {string}
  */
-const getApplicationConfigFile = (app) => {
-    return getApplicationConfigPath(app) + path.sep + 'default.json';
+const getApplicationConfigFile = () => {
+    return getApplicationConfigPath() + path.sep + 'default.json';
 };
 
-const getPluginPath = (app) => {
-    return getApplicationConfigPath(app) + path.sep + 'Plugins'
+const getPluginPath = () => {
+    return getApplicationConfigPath() + path.sep + 'Plugins'
 }
 
 /**
  * setting up default configuration
- *
- * @param app Electron.App
  */
-const setupConfig = (app) => {
+const setupConfig = () => {
     logInfo('preCheckConfig', 'setupConfig', 'start');
 
     let srcFile, destFile;
@@ -47,7 +45,7 @@ const setupConfig = (app) => {
         srcFile = app.getAppPath() + path.sep + 'config' + path.sep + 'default.dist.json';
     }
 
-    destFile = getApplicationConfigFile(app);
+    destFile = getApplicationConfigFile();
 
     logDebug('setupConfig', 'setupConfig::fileSource', srcFile);
     logDebug('setupConfig', 'setupConfig::fileDestination', destFile);
@@ -57,17 +55,15 @@ const setupConfig = (app) => {
 
 /**
  * check if default config is available and update config path to user config path
- *
- * @param app Electron.App
  */
-const checkConfig = (app) => {
+const checkConfig = () => {
     logDebug('setupConfig', 'checkConfig', 'start');
-    if (!fs.existsSync(getApplicationConfigFile(app))) {
+    if (!fs.existsSync(getApplicationConfigFile())) {
         logInfo('preCheckConfig', 'setupConfig', 'could not find configuration path. setting up...');
-        setupConfig(app);
+        setupConfig();
     }
 
-    process.env.NODE_CONFIG_DIR = getApplicationConfigPath(app);
+    process.env.NODE_CONFIG_DIR = getApplicationConfigPath();
     logDebug('setupConfig', 'checkConfig', 'configuration path set ' + process.env.NODE_CONFIG_DIR);
     logDebug('setupConfig', 'checkConfig', 'done');
 };
