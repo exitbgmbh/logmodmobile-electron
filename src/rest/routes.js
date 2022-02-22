@@ -1,6 +1,7 @@
 const {ipcMain} = require("electron");
 const eventEmitter = require('./../websocket/eventEmitter');
 const {logDebug} = require("../logging");
+const {getHostname} = require("../helper");
 
 const getResponse = (code = 200, message = '', responseData = []) => {
     return {
@@ -79,7 +80,16 @@ module.exports = (server, windowInstance) => {
 
         ipcMain.once('got-batch-order', (event, args) => {
             logDebug('restRouter', 'got-batch-order', JSON.stringify(args));
-            response.send(getResponse(args.responseCode, args.responseMessage, args.responseData));
+
+            let responseData = {
+                orderNumber: args.responseData.orderNumber,
+                shippingRequestNumber: args.responseData.shippingRequestNumber,
+                packageId: args.responseData.packageId,
+                workstation: getHostname(),
+                pickMode: args.responseData.expertMode,
+                orderLines: args.responseData.orderLines
+            };
+            response.send(getResponse(args.responseCode, args.responseMessage, responseData));
         });
         windowInstance.webContents.send('get-batch-order');
     });
