@@ -141,7 +141,9 @@ const instantiateApplicationWindow = (applicationBootError) => {
 const showLogModMobile = (windowInstance) => {
     const startUrl = process.env.ELECTRON_START_URL || config.get('app.url');
     windowInstance.loadURL(startUrl+'?avoidCached=' + nanoid(4))
-        .then(() => {})
+        .then(() => {
+            showChangeLog();
+        })
         .catch((err) => {
             showApplicationError(err);
         });
@@ -256,8 +258,6 @@ const bootApplication = () => {
     loadPlugins();
     instantiateApplicationWindow();
     logInfo('application', 'bootApplication', 'end');
-
-    showChangeLog();
 };
 
 const showChangeLog = (force = false) => {
@@ -284,6 +284,7 @@ const showChangeLog = (force = false) => {
     releaseNoteBrowserWindow.setMenu(null);
     releaseNoteBrowserWindow.loadFile('static/html/changeLog.html');
     releaseNoteBrowserWindow.show();
+    releaseNoteBrowserWindow.focus();
 }
 
 const init = () => {
