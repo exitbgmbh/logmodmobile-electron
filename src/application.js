@@ -287,6 +287,13 @@ const showChangeLog = (force = false) => {
 }
 
 const init = () => {
+    const lock = app.requestSingleInstanceLock();
+    if (!lock) {
+        logWarning('application', 'init', 'prevent second instance startup. exiting.');
+        app.quit();
+        return;
+    }
+
     app.on('certificate-error', function(event, webContents, url, error, certificate, callback) {
         event.preventDefault();
         callback(true);

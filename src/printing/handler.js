@@ -322,7 +322,11 @@ class PrintingHandler {
         logDebug('printingHandler', '_handleDocumentPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
         printer.print(tmpFileName, printingOptions).then((r) => {
             console.log('after print', r);
-            if (process.env.NODE_ENV === 'development') {
+            if (
+                process.env.NODE_ENV === 'development' &&
+                config.has('printing.debugAutoOpenDocumentAfterPrint') &&
+                config.get('printing.debugAutoOpenDocumentAfterPrint')
+            ) {
                 exec('xdg-open ' + tmpFileName);
             }
         }).catch(console.log);
