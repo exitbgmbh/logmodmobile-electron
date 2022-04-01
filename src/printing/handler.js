@@ -234,7 +234,7 @@ class PrintingHandler {
                     restClientInstance.requestMergedDocuments(data.invoiceNumber).then((response) => {
                         this._handleDocumentPrinting('invoiceMerge', response.response, response.response.mergedDocumentsPdf);
 
-                        this._handleAdditionalDocumentPrinting(response);
+                        this._handleAdditionalDocumentPrinting(response.response);
                     }).catch(this._handleError);
                 } else {
                     restClientInstance.requestAllDocuments(data.invoiceNumber).then((response) => {
@@ -242,7 +242,7 @@ class PrintingHandler {
                         this._handleDocumentPrinting('delivery', response.response, response.response.deliverySlipPdf);
                         this._handleDocumentPrinting('return', response.response, response.response.returnSlipPdf);
 
-                        this._handleAdditionalDocumentPrinting(response);
+                        this._handleAdditionalDocumentPrinting(response.response);
                     }).catch(this._handleError);
                 }
                 break;
