@@ -105,9 +105,8 @@ const showBatchPrint = () => {
  */
 const instantiateApplicationWindow = (applicationBootError) => {
     windowInstance = new BrowserWindow({
-        width: 1280,
-        minWidth: isDevelopment ? 320 : 1280,
-        height: 800,
+        minWidth: isDevelopment ? 320 : 1024,
+        minHeight: 768,
         show: applicationBootError || isDevelopment,
         icon: path.join(__dirname, '/../static/assets/logmodmobile-64.png'),
         webPreferences: {
@@ -120,7 +119,8 @@ const instantiateApplicationWindow = (applicationBootError) => {
             preload: __dirname + '/preload.js'
         }
     });
-    
+
+    windowInstance.maximize();
     windowInstance.setMenu(menu);
 
     /*if (isDevelopment) {
