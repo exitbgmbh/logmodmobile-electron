@@ -51,7 +51,7 @@
     "glob": "^7.2.0",
     "js-yaml": "^3.13.1",
     "nanoid": "^3.2.0",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "node-localstorage": "^2.2.1",
     "pdf-to-printer": "github:ccarnivore/pdf-to-printer#master",
     "serialport": "9.2.0",
