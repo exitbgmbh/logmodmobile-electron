@@ -48,13 +48,16 @@
     "electron-updater": "^4.2.0",
     "encoding": "^0.1.12",
     "express": "^4.17.1",
+    "follow-redirects": "^1.14.9",
     "glob": "^7.2.0",
     "js-yaml": "^3.13.1",
     "nanoid": "^3.2.0",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "node-localstorage": "^2.2.1",
     "pdf-to-printer": "github:ccarnivore/pdf-to-printer#master",
+    "plist": "^3.0.5",
     "serialport": "9.2.0",
+    "tar": "^4.4.19",
     "tmp": "^0.1.0",
     "websocket": "^1.0.31"
   },
@@ -82,7 +85,7 @@
     ]
   },
   "devDependencies": {
-    "electron": "^13.1.2",
+    "electron": "^13.6.6",
     "electron-builder": "^22.3.2",
     "electron-rebuild": "^1.10.0"
   }
