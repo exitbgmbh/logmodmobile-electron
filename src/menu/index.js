@@ -45,6 +45,8 @@ buildMenu = () => {
             menuEventEmitter.emit('showBatchPrint');
         }
     });
+    tools.submenu.push({ role: 'toggledevtools' });
+
     tools.submenu.push({ type: 'separator' });
     tools.submenu.push({
         label: 'Waage testen',
@@ -52,6 +54,7 @@ buildMenu = () => {
             console.log('got scale result', await scaleHandler.callScale());
         }
     });
+
     if (isDevelopment) {
         tools.submenu.push({ type: 'separator' });
         tools.submenu.push({
@@ -84,7 +87,6 @@ buildMenu = () => {
             submenu: [
                 { role: 'reload' },
                 { role: 'forcereload' },
-                { role: 'toggledevtools' },
                 { type: 'separator' },
                 { role: 'resetzoom' },
                 { role: 'zoomin' },
