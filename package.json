@@ -1,12 +1,12 @@
 {
   "name": "logmodmobile-electron",
-  "version": "2.2.12",
+  "version": "2.2.14",
   "description": "electron.js wrapper for exitB LogModMobile (blisstribute logistic module)",
   "main": "index.js",
   "scripts": {
     "electron-test": "electron .",
     "electron-dev": "NODE_ENV=development electron .",
-    "electron-dev-local": "SHOW_DEV_TOOLS=1 NODE_ENV=development ELECTRON_START_URL=http://localhost:3000 electron .",
+    "electron-dev-local": "NODE_ENV=development ELECTRON_START_URL=http://localhost:3000 electron .",
     "build": "electron-builder -l -w",
     "buildLinux": "electron-builder -l",
     "publish": "electron-builder -l -w -p always",
@@ -36,7 +36,7 @@
     "@thiagoelg/node-printer": "^0.5.3",
     "alert-node": "^2.1.3",
     "async": "^3.2.3",
-    "axios": "^0.21.2",
+    "axios": "^0.21.1",
     "chalk": "^3.0.0",
     "chokidar": "^3.3.1",
     "config": "^3.2.5",
@@ -54,7 +54,7 @@
     "node-fetch": "^2.6.1",
     "node-localstorage": "^2.2.1",
     "pdf-to-printer": "github:ccarnivore/pdf-to-printer#master",
-    "serialport": "9.2.8",
+    "serialport": "9.2.0",
     "tmp": "^0.1.0",
     "websocket": "^1.0.31"
   },
@@ -63,9 +63,9 @@
     "productName": "exitB-LogModMobile",
     "artifactName": "${productName}.${ext}",
     "win": {
-      "target": {
-        "target": "nsis"
-      }
+      "target": [
+        "nsis"
+      ]
     },
     "linux": {
       "category": "Office",
@@ -82,7 +82,7 @@
     ]
   },
   "devDependencies": {
-    "electron": "13.6.6",
+    "electron": "^13.1.2",
     "electron-builder": "^22.3.2",
     "electron-rebuild": "^1.10.0"
   }
