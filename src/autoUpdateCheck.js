@@ -8,6 +8,8 @@ let updateCheckPID = null;
  * initializes the electron-updater auto updater mechanism, using update interval from application config
  */
 const initializeAutoUpdateCheck = () => {
+    autoUpdater.logger = console;
+
     const autoUpdateInterval = (config.has('app.autoUpdateCheckInterval') ? config.get('app.autoUpdateCheckInterval') : 600);
 
     _checkForUpdates();
