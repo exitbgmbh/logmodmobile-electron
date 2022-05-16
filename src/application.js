@@ -262,15 +262,13 @@ const bootApplication = () => {
 };
 
 const showChangeLog = (force = false) => {
-    // let localStorage = new LocalStorage(path.join(app.getPath('userData'), 'storage.data'));
-    //
-    // let show = false;
-    // if (localStorage.getItem('LAST_VERSION') !== version) {
-    //     localStorage.setItem('LAST_VERSION', version);
-    //     show = true;
-    // }
+    let localStorage = new LocalStorage(path.join(app.getPath('userData'), 'storage.data'));
 
-    let show = true;
+    let show = false;
+    if (localStorage.getItem('LAST_VERSION') !== version) {
+        localStorage.setItem('LAST_VERSION', version);
+        show = true;
+    }
 
     if (!show && !force) {
         return;
