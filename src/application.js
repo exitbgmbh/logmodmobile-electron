@@ -262,13 +262,15 @@ const bootApplication = () => {
 };
 
 const showChangeLog = (force = false) => {
-    let localStorage = new LocalStorage(path.join(app.getPath('userData'), 'storage.data'));
+    // let localStorage = new LocalStorage(path.join(app.getPath('userData'), 'storage.data'));
+    //
+    // let show = false;
+    // if (localStorage.getItem('LAST_VERSION') !== version) {
+    //     localStorage.setItem('LAST_VERSION', version);
+    //     show = true;
+    // }
 
-    let show = false;
-    if (localStorage.getItem('LAST_VERSION') !== version) {
-        localStorage.setItem('LAST_VERSION', version);
-        show = true;
-    }
+    let show = true;
 
     if (!show && !force) {
         return;
@@ -278,7 +280,6 @@ const showChangeLog = (force = false) => {
         parent: windowInstance,
         modal: true,
         show: false,
-        titleBarStyle: "hidden",
         title: 'ChangeLog für Version ' + version
     });
 
