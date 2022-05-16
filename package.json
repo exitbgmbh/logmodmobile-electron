@@ -7,14 +7,13 @@
     "electron-test": "electron .",
     "electron-dev": "NODE_ENV=development electron .",
     "electron-dev-local": "SHOW_DEV_TOOLS=1 NODE_ENV=development ELECTRON_START_URL=http://localhost:3000 electron .",
-    "build": "electron-builder -l -w --x64",
+    "build": "electron-builder -l -w",
     "buildLinux": "electron-builder -l",
-    "publish": "electron-builder -l -w --x64 -p always",
+    "publish": "electron-builder -l -w -p always",
     "after-publish": "rm ./node_modules/@thiagoelg -Rf && rm ./node_modules/@serialport -Rf && rm ./node_modules/serialport -Rf && npm install && $(npm bin)/electron-rebuild",
     "version-patch": "npm version patch",
     "version-minor": "npm version minor",
-    "version-major": "npm version major",
-    "postinstall": "electron-builder install-app-deps"
+    "version-major": "npm version major"
   },
   "repository": {
     "type": "git",
@@ -64,9 +63,9 @@
     "productName": "exitB-LogModMobile",
     "artifactName": "${productName}.${ext}",
     "win": {
-      "target": [
-        "nsis"
-      ]
+      "target": {
+        "target": "nsis"
+      }
     },
     "linux": {
       "category": "Office",
@@ -83,7 +82,7 @@
     ]
   },
   "devDependencies": {
-    "electron": "13.1.2",
+    "electron": "13.6.6",
     "electron-builder": "^22.3.2",
     "electron-rebuild": "^1.10.0"
   }
