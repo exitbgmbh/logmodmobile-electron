@@ -4,3 +4,4 @@ electron-builder.env
 auth.env
 config/default.json
 .idea
+dev-app-update.yml

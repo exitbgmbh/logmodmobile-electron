@@ -45,8 +45,16 @@ buildMenu = () => {
             menuEventEmitter.emit('showBatchPrint');
         }
     });
-    tools.submenu.push({ role: 'toggledevtools' });
+    if (isDevelopment) {
+        tools.submenu.push({
+            label: 'Auf Updates prüfen',
+            click: async () => {
+                menuEventEmitter.emit('checkForUpdate');
+            }
+        });
+    }
 
+    tools.submenu.push({ role: 'toggledevtools' });
     tools.submenu.push({ type: 'separator' });
     tools.submenu.push({
         label: 'Waage testen',

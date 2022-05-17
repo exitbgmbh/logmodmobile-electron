@@ -7,7 +7,7 @@ const app = application.app;
 const path = require('path');
 const {logDebug, logInfo, logWarning} = require('./logging');
 const config = require('config');
-const { initializeAutoUpdateCheck, autoUpdater } = require('./autoUpdateCheck');
+const { initializeAutoUpdateCheck, autoUpdater, manualCheckForUpdate} = require('./autoUpdateCheck');
 const shippingHandlerInstance = require('./shipping');
 const printingHandlerInstance = require('./printing');
 const invoiceHandlerInstance = require('./invoice');
@@ -211,6 +211,7 @@ const bootApplication = () => {
     menuEventEmitter.on('showConfig', () => showApplicationConfig());
     menuEventEmitter.on('reloadConfig', () => reloadApplicationConfig());
     menuEventEmitter.on('showBatchPrint', () => showBatchPrint());
+    menuEventEmitter.on('checkForUpdate', () => manualCheckForUpdate());
     menuEventEmitter.on('testNewRelease', () => notifyForUpdate());
     menuEventEmitter.on('showChangeLog', () => showChangeLog(true));
 
