@@ -74,7 +74,8 @@
       ]
     },
     "publish": {
-      "provider": "github"
+      "provider": "generic",
+      "url": "http://app-exitb-erp.blissdev.de/foobar-update"
     },
     "extraFiles": [
       "config/*",
