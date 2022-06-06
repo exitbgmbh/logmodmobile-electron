@@ -388,7 +388,7 @@ class PrintingHandler {
         }
 
         const tmpFileName = this._saveResultToPdf(labelContent);
-        const printingOptions = this._getOptionsForPrinting(printerConfig);
+        const printingOptions = this._getOptionsForPrinting(printerConfig, numberOfCopies);
 
         logDebug('printingHandler', '_handleProductLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
         printer.print(tmpFileName, printingOptions).then(console.log).catch(console.log);
@@ -456,9 +456,11 @@ class PrintingHandler {
         if (printerConfig.printer) {
             options.printer = printerConfig.printer;
         }
-        
-        numberOfCopies = printerConfig.numOfCopies || numberOfCopies;
-    
+
+        if (printerConfig.numberOfCopies && printerConfig.numberOfCopies > numberOfCopies) {
+            numberOfCopies = printerConfig.numberOfCopies;
+        }
+
         if (useGsPrint) {
             options.gsprint = {
                 executable: gsPrintExecutable
