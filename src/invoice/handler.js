@@ -11,9 +11,9 @@ class InvoiceHandler {
         if (this.initialized) {
             return;
         }
+        this.initialized = true;
 
         eventEmitter.on('pickBoxReady', this.requestInvoiceForPickBox);
-        this.initialized = true;
     };
 
       requestInvoiceForPickBox = (requestData) => {

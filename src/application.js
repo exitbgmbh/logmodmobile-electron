@@ -229,8 +229,8 @@ const bootApplication = () => {
         initializeAutoUpdateCheck();
 
         ipcMain.on('direct-log', directLog);
-        ipcMain.on('authentication-succeed', authenticationSucceed);
-        ipcMain.on('authentication-succeed', windowOnLoadCompleted);
+        ipcMain.on('authentication-succeed', (event, arguments) => {console.log('authentication-succeed', 'authenticationSucceed()'); authenticationSucceed(event, arguments);});
+        ipcMain.on('authentication-succeed', (event, arguments) => {console.log('authentication-succeed', 'windowOnLoadCompleted()'); windowOnLoadCompleted(event, arguments);});
         ipcMain.on('websocket-connected', websocketConnect);
         ipcMain.on('websocket-disconnected', websocketDisconnect);
         ipcMain.on('logout', logout);
