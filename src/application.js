@@ -17,7 +17,7 @@ const showNotification = require('./notificationHelper');
 const webSocketHandler = require('./websocket');
 const scaleHandler = require('./scale');
 const isDevelopment = process.env.NODE_ENV === 'development';
-const showDevTools = process.env.SHOW_DEV_TOOLS === '1';
+const showDevTools = true; //process.env.SHOW_DEV_TOOLS === '1';
 const promiseIpc = require('electron-promise-ipc');
 const menu = require('./menu');
 const { getApplicationConfigFile } = require('./../setupConfig');
@@ -243,6 +243,18 @@ const bootApplication = () => {
         ipcMain.on('batchPrinting', (event, arg) => {
             console.log('arg', arg);
             printingHandlerInstance.printDirectRaw(arg.printer, arg.command);
+        });
+        ipcMain.on('await-authentication', (event, arg) => {
+            if (!config.has('app.username') || !config.has('app.password')) {
+                return;
+            }
+
+            console.debug('got awaiting authentication event');
+            windowInstance.webContents.send('auth-request', {
+                username: config.get('app.username'),
+                password: config.get('app.password')
+            });
+            console.debug('auth event answered');
         });
 
         promiseIpc.on('scale-package', () => {

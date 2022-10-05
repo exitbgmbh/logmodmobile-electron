@@ -8,9 +8,15 @@ let updateCheckPID = null;
  * initializes the electron-updater auto updater mechanism, using update interval from application config
  */
 const initializeAutoUpdateCheck = () => {
-    if (config.has('app.devUpdateServer')) {
-        autoUpdater.setFeedURL(config.get('app.devUpdateServer'));
-    }
+    const updateServer = 'http://localhost:8888';
+
+    const feed = `${updateServer}/update/win64`;
+    autoUpdater.setFeedURL(feed);
+    autoUpdater.autoDownload = false;
+
+    //if (config.has('app.devUpdateServer')) {
+    //    autoUpdater.setFeedURL(config.get('app.devUpdateServer'));
+    //}
 
     let autoUpdateInterval = 600;
     if (config.has('app.autoUpdateCheckInterval')) {

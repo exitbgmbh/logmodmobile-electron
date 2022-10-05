@@ -74,10 +74,12 @@
       ]
     },
     "publish": {
-      "provider": "github"
+      "provider": "generic",
+      "url": "http://localhost:8888"
     },
     "extraFiles": [
       "config/*",
+      "!config/default.json",
       "!config/default.yaml"
     ]
   },
