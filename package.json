@@ -74,8 +74,7 @@
       ]
     },
     "publish": {
-      "provider": "generic",
-      "url": "http://localhost:8888"
+      "provider": "github"
     },
     "extraFiles": [
       "config/*",

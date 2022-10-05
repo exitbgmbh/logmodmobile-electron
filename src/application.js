@@ -17,7 +17,7 @@ const showNotification = require('./notificationHelper');
 const webSocketHandler = require('./websocket');
 const scaleHandler = require('./scale');
 const isDevelopment = process.env.NODE_ENV === 'development';
-const showDevTools = true; //process.env.SHOW_DEV_TOOLS === '1';
+const showDevTools = process.env.SHOW_DEV_TOOLS === '1';
 const promiseIpc = require('electron-promise-ipc');
 const menu = require('./menu');
 const { getApplicationConfigFile } = require('./../setupConfig');
