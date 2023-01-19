@@ -133,7 +133,7 @@ const instantiateApplicationWindow = (applicationBootError) => {
     } else {
         showLogModMobile(windowInstance);
     }
-    
+
     windowInstance.on('closed', function () {
         windowInstance = null
     });
@@ -171,7 +171,7 @@ const authenticationSucceed = (event, arguments) => {
     logDebug('event', 'authenticationSucceed', 'start ' + JSON.stringify(arguments));
     restClientInstance.setAuthToken(arguments.authenticationToken);
     restClientInstance.parseBaseUrl(arguments.requestUrl);
-    
+
     if (config.has('app.persistentLogin') && config.get('app.persistentLogin')) {
         restClientInstance.enablePersistentLogin();
     }
@@ -229,6 +229,15 @@ const bootApplication = () => {
         initializeAutoUpdateCheck();
 
         ipcMain.on('direct-log', directLog);
+        ipcMain.on('package-id-label-print', (event, arg) => {
+            if (config.has('printing.printShippingRequestPackageLabel') && !config.get('printing.printShippingRequestPackageLabel')) {
+                return;
+            }
+
+            const template = config.get('printing.shippingRequestPackageLabelRAWTemplate');
+            const command = template.replaceAll('{%packageId}', arg.packageId);
+            printingHandlerInstance.printDirectRaw(config.get('printing.defaultProductLabelPrinter'), command);
+        });
         ipcMain.on('authentication-succeed', (event, arguments) => {console.log('authentication-succeed', 'authenticationSucceed()'); authenticationSucceed(event, arguments);});
         ipcMain.on('authentication-succeed', (event, arguments) => {console.log('authentication-succeed', 'windowOnLoadCompleted()'); windowOnLoadCompleted(event, arguments);});
         ipcMain.on('websocket-connected', websocketConnect);
@@ -241,7 +250,6 @@ const bootApplication = () => {
             showLogModMobile(windowInstance);
         });
         ipcMain.on('batchPrinting', (event, arg) => {
-            console.log('arg', arg);
             printingHandlerInstance.printDirectRaw(arg.printer, arg.command);
         });
         ipcMain.on('await-authentication', (event, arg) => {
@@ -312,7 +320,7 @@ const init = () => {
         event.preventDefault();
         callback(true);
     });
-    
+
     app.on('ready', bootApplication);
     app.on('window-all-closed', function () {
         // On OS X it is common for applications and their menu bar

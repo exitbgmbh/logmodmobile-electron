@@ -98,7 +98,7 @@ class PrintingHandler {
             this._handleDocumentPrinting('delivery', response.response, response.response.packageSupplyNote)
         }).catch(this._handleError);
     }
-    
+
     /**
      *
      * @param {{pickListNumber: string, pickListId: int, pickListType: int}} data
@@ -109,7 +109,7 @@ class PrintingHandler {
         if (!data || !data.pickListNumber || !data.pickListType || data.pickListType === 1) {
             return;
         }
-        
+
         switch (data.pickListType) {
             case 2: {
                 // relocation list
@@ -130,7 +130,7 @@ class PrintingHandler {
                 // replenishment
                 break;
             }
-            
+
         }
     }
 
@@ -152,7 +152,7 @@ class PrintingHandler {
                     this._handleError(new Error('invalid data, no pick box given'));
                     return;
                 }
-    
+
                 restClientInstance.requestRepairCaseDocuments(data.pickBox).then((response) => {
                     this._handleDocumentPrinting('additional', response.response, response.response.repairCasePdf)
                 }).catch(this._handleError);
@@ -163,7 +163,7 @@ class PrintingHandler {
                     this._handleError(new Error('invalid data, no pick box given'));
                     return;
                 }
-    
+
                 restClientInstance.requestRelocationDocuments(data.pickBox).then((response) => {
                     this._handleDocumentPrinting('additional', response.response, response.response.relocationPdf)
                 }).catch(this._handleError);
@@ -260,12 +260,15 @@ class PrintingHandler {
             return;
         }
 
+        logDebug('printingHandler', '_requestDocuments', 'requesting' + additionalDocumentUrl + response.orderNumber);
         restClientInstance.requestAdditionalDocument(additionalDocumentUrl, response.orderNumber).then((responseBlob) => {
             logDebug('printingHandler', '_requestDocuments', 'got additional response');
             responseBlob.arrayBuffer().then((buffer) => {
                 this._handleDocumentPrinting('additional', {}, buffer, false);
             });
-        });
+        }).catch((err) => {
+            logWarning('printingHandler', '_requestDocuments', 'got error' + err);
+        })
     };
 
     /**
@@ -348,12 +351,12 @@ class PrintingHandler {
 
     printRaw = (printerName, template, numberOfCopies, ean13, price, articleNumber, classification1, classification2) => {
         const command = template
-            .replace('{%quantity}', numberOfCopies.toString())
-            .replace('{%barcode}', ean13)
-            .replace('{%articleNumber}', articleNumber)
-            .replace('{%price}', price)
-            .replace('{%classification1}', classification1)
-            .replace('{%classification2}', classification2);
+            .replaceAll('{%quantity}', numberOfCopies.toString())
+            .replaceAll('{%barcode}', ean13)
+            .replaceAll('{%articleNumber}', articleNumber)
+            .replaceAll('{%price}', price)
+            .replaceAll('{%classification1}', classification1)
+            .replaceAll('{%classification2}', classification2);
 
         labelPrinter.printDirect({
             data: command,
@@ -430,7 +433,7 @@ class PrintingHandler {
         data.shipmentLabelCollection.forEach((label) => {
             if (label.shipmentLabel && label.shipmentLabel.trim() !== '') {
                 let shipmentTmpFile = this._saveResultToPdf(label.shipmentLabel);
-    
+
                 logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
                 printer.print(shipmentTmpFile, printingOptions).then(console.log).catch(console.log);
             }
@@ -442,7 +445,7 @@ class PrintingHandler {
             }
         });
     };
-    
+
     /**
      * map printer configuration to pdf-to-printer options
      *
@@ -499,7 +502,7 @@ class PrintingHandler {
                 logDebug('printingHandler', '_getOptionsForPrinting', 'rotated printing');
             }
         }
-        
+
         return options;
     }
 }

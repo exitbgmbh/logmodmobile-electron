@@ -54,6 +54,7 @@
     "node-fetch": "^2.6.1",
     "node-localstorage": "^2.2.1",
     "pdf-to-printer": "github:ccarnivore/pdf-to-printer#master",
+    "react-json-editor": "^0.3.0",
     "serialport": "9.2.0",
     "tmp": "^0.1.0",
     "websocket": "^1.0.31"

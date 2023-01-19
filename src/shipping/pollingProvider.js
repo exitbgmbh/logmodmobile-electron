@@ -18,7 +18,7 @@ class PollingProvider {
      * @type {{pollingFileExportPath: string, pollingFileExportPattern: string, pollingFileExportEncoding}}
      */
     exportConfig = {};
-    
+
     /**
      * file import configuration
      * @type {{dayClosingFileImportPattern: string, dayClosingFileImportEncoding: string}}
@@ -26,7 +26,7 @@ class PollingProvider {
     importConfig = {};
 
     importFileQueue;
-    
+
     /**
      * @param {string} code
      * @param {{}} config
@@ -35,7 +35,7 @@ class PollingProvider {
         this.code = code;
         this._initialize(config);
     }
-    
+
     /**
      * initializing the polling provider
      *
@@ -78,7 +78,7 @@ class PollingProvider {
         if (dayClosingFileImportPath.trim() !== '' && dayClosingFileImportPattern.trim() !== '') {
             this._initializeFileWatcher(dayClosingFileImportPath, dayClosingFileImportPattern);
         }
-        
+
         this.importConfig = {
             dayClosingFileImportPattern,
             dayClosingFileImportEncoding
@@ -108,10 +108,10 @@ class PollingProvider {
         logInfo('pollingProvider', '_initializeFileWatcher', 'fileWatcher is active for ' + directoryToWatch + ' with pattern ' + filePattern);
         let fileQueue = this.importFileQueue;
         chokidar
-            .watch(directoryToWatch, {awaitWriteFinish: {stabilityThreshold: 2000, pollInterval: 500}, depth: 0})
+            .watch(directoryToWatch, {awaitWriteFinish: {stabilityThreshold: 500, pollInterval: 500}, depth: 0})
             .on('add', function(file) { fileQueue.push(file); });
     };
-    
+
     /**
      * handling routine for attended files
      *
@@ -123,9 +123,9 @@ class PollingProvider {
         fs.readFile(file, (err, data) => {
             logDebug('pollingProvider', '_fileWatcherGotFile', 'got file ' + file);
             if (err) throw err;
-            
+
             const { dayClosingFileImportPattern: filePattern, dayClosingFileImportEncoding: fileEncoding } = this.importConfig;
-    
+
             const parsedFile = path.parse(file);
             if (!parsedFile.base.match(filePattern)) {
                 logDebug('pollingProvider', '_fileWatcherGotFile', 'file does not match pattern. skipping.');
@@ -139,13 +139,13 @@ class PollingProvider {
                 logDebug('pollingProvider', '_fileWatcherGotFile', 'archive path not existing. creating.');
                 fs.mkdirSync(archivePath, { recursive: true });
             }
-        
+
             logInfo('pollingProvider', '_fileWatcherGotFile', 'processing file ' + file);
             let dayClosingData = data;
             if (fileEncoding) {
                 dayClosingData = encoding.convert(dayClosingData, 'utf-8', fileEncoding);
             }
-            
+
             restClientInstance.reportTrackingFile(this.code, dayClosingData.toString()).then((response) => {
                 if (!response.success) {
                     return;
@@ -169,7 +169,7 @@ class PollingProvider {
             logWarning('pollingProvider', 'handlePolling', 'no polling content given');
             return;
         }
-        
+
         const { pollingFileExportPath: exportPath, pollingFileExportEncoding: exportEncoding, pollingFileExportPattern: exportPattern } = this.exportConfig;
 
         if (this.exportConfig.pollingFileExportPath.trim() === '') {
@@ -181,7 +181,7 @@ class PollingProvider {
         if (exportEncoding) {
             decodedContent = encoding.convert(decodedContent, exportEncoding);
         }
-        
+
         const targetFileName = exportPattern
             .replace('{COUNTER}', pollingFileCounter.toString())
             .replace('{INVOICE_NUMBER}', invoiceNumber);

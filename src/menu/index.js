@@ -15,25 +15,25 @@ buildMenu = () => {
         ]
     });
 
-    let config = {
+    let c = {
         label: 'Konfiguration',
         submenu: []
     };
-    config.submenu.push({
+    c.submenu.push({
         label: '... bearbeiten',
         click: async () => {
             menuEventEmitter.emit('showConfig');
         }
     });
     if (isDevelopment) {
-        config.submenu.push({
+        c.submenu.push({
             label: '... neu laden',
             click: async () => {
                 menuEventEmitter.emit('reloadConfig');
             }
         });
     }
-    template.push(config);
+    template.push(c);
 
     let tools = {
         label: 'Tools',
