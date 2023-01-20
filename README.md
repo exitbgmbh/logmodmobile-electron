@@ -16,3 +16,5 @@ electron.js wrapper for exitB LogModMobile (blisstribute logistic module)
 # autoupdate for testing
 - `default.json` -> `app.devUpdateServer` -> valid url endpoint 
 - run build (see above) and copy output to webroot
+
+https://github.com/thiagoelg/node-printer/issues/45#issuecomment-1141526189

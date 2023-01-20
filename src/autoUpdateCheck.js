@@ -18,8 +18,10 @@ const initializeAutoUpdateCheck = () => {
     }
 
     _checkForUpdates();
-    updateCheckPID = setInterval(_checkForUpdates, autoUpdateInterval * 1000);
-    logInfo('application', 'initAutoUpdate', 'auto update started with interval %interval'.replace('%interval', autoUpdateInterval.toString()))
+    if (autoUpdateInterval > 0) {
+        updateCheckPID = setInterval(_checkForUpdates, autoUpdateInterval * 1000);
+        logInfo('application', 'initAutoUpdate', 'auto update started with interval %interval'.replace('%interval', autoUpdateInterval.toString()))
+    }
 };
 
 /**
