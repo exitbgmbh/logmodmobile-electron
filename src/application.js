@@ -230,7 +230,10 @@ const bootApplication = () => {
 
         ipcMain.on('direct-log', directLog);
         ipcMain.on('package-id-label-print', (event, arg) => {
-            if (config.has('printing.printShippingRequestPackageLabel') && !config.get('printing.printShippingRequestPackageLabel')) {
+            if (!config.has('printing.printShippingRequestPackageLabel')
+                || !config.get('printing.printShippingRequestPackageLabel')
+                || !config.has('printing.shippingRequestPackageLabelRAWTemplate')
+            ) {
                 return;
             }
 
