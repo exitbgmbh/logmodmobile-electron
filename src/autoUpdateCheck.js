@@ -8,19 +8,17 @@ let updateCheckPID = null;
  * initializes the electron-updater auto updater mechanism, using update interval from application config
  */
 const initializeAutoUpdateCheck = () => {
-    //if (config.has('app.devUpdateServer')) {
-    //    autoUpdater.setFeedURL(config.get('app.devUpdateServer'));
-    //}
-
-    let autoUpdateInterval = 600;
+    let autoUpdateInterval = 0;
     if (config.has('app.autoUpdateCheckInterval')) {
         autoUpdateInterval = config.get('app.autoUpdateCheckInterval');
     }
 
-    _checkForUpdates();
     if (autoUpdateInterval > 0) {
+        _checkForUpdates();
         updateCheckPID = setInterval(_checkForUpdates, autoUpdateInterval * 1000);
         logInfo('application', 'initAutoUpdate', 'auto update started with interval %interval'.replace('%interval', autoUpdateInterval.toString()))
+    } else {
+        logInfo('application', 'initAutoUpdate', 'auto update disabled')
     }
 };
 
