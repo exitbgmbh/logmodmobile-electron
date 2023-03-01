@@ -1,8 +1,96 @@
 const app = require('electron').app;
 const fs = require('fs');
 const path = require('path');
-const isRunningInAsar = require('electron-is-running-in-asar');
 const {logDebug, logInfo} = require('./src/logging');
+
+const defaultConfig = new Buffer(`{
+    "app": {
+        "url": "https://your-logmod-mobile-instance-url",
+        "autoUpdateCheckInterval": 600,
+        "heartbeatInterval": 5,
+        "gsPrintExecutable": "/bin/echo",
+        "identification": "LogModMobile-Hostname",
+        "username": "for debug purposes and used in persistentLogin mode",
+        "password": "for debug purposes and used in persistentLogin mode",
+        "persistentLogin": false,
+        "restServer": {
+            "enable": false,
+            "port": 3005
+        }
+    },
+    "scale": {
+        "type": "None",
+        "path": "/dev/ttyUSB0",
+        "baud": 9600,
+        "command": [],
+        "parserDelimiter": []
+    },
+    "invoicing": {
+        "directPrinting": false,
+        "watchBoxes": "$x"
+    },
+    "shipping": {
+        "DPD": {
+            "printing": {
+                "shipmentLabelPrinter": "PDF",
+                "rotate": true
+            }
+        },
+        "DHL": {
+            "polling": {
+                "fileExport": {
+                    "path": "PATH",
+                    "pattern": "Poll-{COUNTER}.csv",
+                    "encoding": "iso-8859-1"
+                },
+                "fileImport": {
+                    "path": "PATH",
+                    "pattern": "^ELSendEx.*.txt$",
+                    "encoding": "utf-8"
+                }
+            }
+        }
+    },
+    "printing": {
+        "defaultInvoiceSlipPrinter": "PDF",
+        "defaultInvoiceSlipPrinterMode": "monochrome",
+        "defaultDeliverySlipPrinter": "PDF",
+        "defaultDeliverySlipPrinterMode": "monochrome",
+        "defaultReturnSlipPrinter": "PDF",
+        "defaultReturnSlipPrinterMode": "monochrome",
+        "defaultShipmentLabelPrinter": "PDF",
+        "defaultShipmentLabelPrinterMode": "monochrome",
+        "defaultProductLabelPrinter": "PDF",
+        "defaultProductLabelPrinterMode": "monochrome",
+        "defaultAdditionalDocumentPrinter": "PDF",
+        "defaultAdditionalDocumentPrinterMode": "monochrome",
+        "additionalDocumentUrl": "",
+        "rotateProductLabel": true,
+        "printAdditionalDocuments": true,
+        "printProductLabelRAW": false,
+        "productLabelRAWTemplate": "N\\nS4\\nD15\\nq400\\nR\\nB20,10,0,1,2,30,173,B,\\"{%barcode}\\"\\nP{%quantity}\\n",
+        "requestInvoiceDocumentsMerged": true,
+        "printShippingRequestPackageLabel": true,
+        "shippingRequestPackageLabelRAWTemplate": "N\\nS4\\nD15\\nq400\\nR\\nB10,10,0,1,3,20,100,N,\\"{%packageId}\\"\\nA10,150,0,1,3,3,N,\\"{%packageId}\\"\\nP1\\n",
+        "defaultInvoiceSlipPrintCountCC": 1,
+        "defaultInvoiceSlipPrintCountEU": 1,
+        "defaultInvoiceSlipPrintCountTC": 3,
+        "advertisingMediumConfig": {
+            "EXB": {
+                "invoiceSlipPrinter": "PDF",
+                "invoiceSlipPrinterMode": "monochrome",
+                "deliverySlipPrinter": "PDF",
+                "deliverySlipPrinterMode": "monochrome",
+                "returnSlipPrinter": "PDF",
+                "returnSlipPrinterMode": "monochrome",
+                "invoiceSlipPrintCountCC": 1,
+                "invoiceSlipPrintCountEU": 1,
+                "invoiceSlipPrintCountTC": 3
+            }
+        }
+    }
+}`);
+
 
 /**
  * get the default user config path
@@ -37,20 +125,10 @@ const getPluginPath = () => {
  */
 const setupConfig = () => {
     logInfo('preCheckConfig', 'setupConfig', 'start');
+    const fileDestination = getApplicationConfigFile();
+    logDebug('setupConfig', 'setupConfig::fileDestination', fileDestination);
 
-    let srcFile, destFile;
-    if (isRunningInAsar()) {
-        srcFile = path.join(app.getAppPath(), '..', '..', 'config', 'default.dist.json');
-    } else {
-        srcFile = app.getAppPath() + path.sep + 'config' + path.sep + 'default.dist.json';
-    }
-
-    destFile = getApplicationConfigFile();
-
-    logDebug('setupConfig', 'setupConfig::fileSource', srcFile);
-    logDebug('setupConfig', 'setupConfig::fileDestination', destFile);
-
-    fs.copyFileSync(srcFile, destFile);
+    fs.writeFileSync(fileDestination, defaultConfig);
 };
 
 /**

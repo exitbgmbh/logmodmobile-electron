@@ -272,6 +272,10 @@ const bootApplication = () => {
             return scaleHandler.callScale();
         });
 
+        promiseIpc.on('autoupdate-status', () => {
+            return 1;
+        });
+
         scaleHandler.initialize();
     } catch (err) {
         console.log(err);

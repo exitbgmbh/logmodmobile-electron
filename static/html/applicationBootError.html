@@ -3,16 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <title>Anwendungsfehler</title>
+    <style>
+        code {
+            display: block;
+            padding: 10px;
+            background-color: #b7b7b7;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            font-size: 12px;
+            color: #333;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+            border-radius: 3px;
+        }
+        code.information {
+            display: block;
+            padding: 10px;
+            background-color: #7fb4c8;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            font-size: 12px;
+            color: #3d3d3d;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+        }
+        code span.header {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        code span.headerOnly {
+            display: block;
+            font-weight: bold;
+        }
+    </style>
 </head>
-<body>
-<h2>Die Anwendung konnte nicht gestartet werden.</h2>
-<p id="errormsg" style="font-family: 'Courier 10 Pitch',monospace">
-</p>
-<p id="configHint"></p>
+<body style="font-family: Ubuntu,serif; background-color: #e3e3e3">
+<h2>Der exitB LogMod kann nicht gestartet werden</h2>
+<code class="information"><span class="headerOnly">Sollte es sich um eine Neuinstallation des LogMod handeln, ist diese Meldung kein Grund zur Sorge. Die initiale Konfiguration muss vorgenommen werden.</span></code>
+<code><span class="header">Fehlermeldung:</span><span id="errormsg">Fehlermeldung</span></code>
+<code><span class="header">Bitte prüfen Sie Ihren Konfigurationsdatei. Diese finden Sie hier:</span><span id="confighint"></span></code>
+<code><span class="header">Sie können die Konfiguration auch direkt im LogMod durchführen. Nutzen Sie dazu das Menü. Nach Anpassungen der Konfigurationsdatei, muss der LogMod neu gestartet werden.</span>Konfiguration -> ...bearbeiten</code>
+<code><span class="header">Schritt für Schritt Anleitung:</span><ul><li>Öffnen Sie die Konfigurationsdatei, entweder über den LogMod selbst, oder über den Editor</li><li>Ändern Sie den Wert im Schlüssel "url" in die entsprechende LogModMobile-URL Ihrer Instanz.</li><li>Speichern Sie die Datei und starten Sie den LogMod neu.</li><li>Sie können nun mit der Einrichtung des LogMod fortfahren.</li></ul><br /><br />Wenn Sie auf Probleme bei der Einrichtung stossen, wenden Sie sich gern an Ihre IT-Abteilung oder den exitB Support.</code>
 </body>
 <script type="text/javascript">
     const url = new URL(window.location);
     document.getElementById('errormsg').innerHTML = url.searchParams.get('error');
-    document.getElementById('configHint').innerHTML = 'Bitte prüfen Sie Ihre Konfigurationsdatei "<b>default.json</b>" ("<b>' + process.env.NODE_CONFIG_DIR + '</b>")';
+    document.getElementById('confighint').innerHTML = process.env.NODE_CONFIG_DIR + '/default.json';
 </script>
 </html>
