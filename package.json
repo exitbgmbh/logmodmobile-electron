@@ -45,7 +45,7 @@
     "electron-log": "^4.3.0",
     "electron-promise-ipc": "^2.0.1",
     "electron-prompt": "^1.6.1",
-    "electron-updater": "^4.2.0",
+    "electron-updater": "^4.6.5",
     "encoding": "^0.1.12",
     "express": "^4.17.1",
     "glob": "^7.2.0",
@@ -62,7 +62,7 @@
   "build": {
     "appId": "de.exitb.logmodmobile",
     "productName": "exitB-LogModMobile",
-    "artifactName": "${productName}.${ext}",
+    "artifactName": "LogModMobile-Setup.${ext}",
     "win": {
       "target": [
         "nsis"
@@ -74,6 +74,9 @@
         "AppImage"
       ]
     },
+    "nsis": {
+      "oneClick": true
+    },
     "publish": {
       "provider": "github"
     },
@@ -84,8 +87,8 @@
     ]
   },
   "devDependencies": {
-    "electron": "^13.1.2",
-    "electron-builder": "^22.3.2",
+    "electron": "^13.3.0",
+    "electron-builder": "^22.13.1",
     "electron-rebuild": "^1.10.0"
   }
 }
