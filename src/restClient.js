@@ -12,7 +12,7 @@ class RestClient
         'X-DEVICE-ID': 'Electron ' + os.hostname(),
         'X-APP-VERSION': version
     };
-    
+
     enablePersistentLogin = () => {
         setInterval(() => {
             this.get('login/refreshLogin').then((response) => {
@@ -20,7 +20,7 @@ class RestClient
             });
         }, 1000 * 60 * 60);
     }
-    
+
     /**
      * set Bearer Authentication Token to axios
      *
@@ -228,7 +228,7 @@ class RestClient
     requestMergedDocuments = (invoiceNumber) => {
         return this.get('document/readMergedInvoiceDocuments/' + invoiceNumber);
     };
-    
+
     /**
      * request (batched) repair case documents
      *
@@ -237,7 +237,7 @@ class RestClient
     requestRepairCaseDocuments = (identifier) => {
         return this.get('document/readRepairCaseDocument/' + identifier);
     }
-    
+
     /**
      * request relocation document
      *
@@ -250,10 +250,17 @@ class RestClient
     /**
      * request relocation document
      *
-     * @param {string} identifier
+     * @param {string} invoiceNumber
+     * @param {string} additionalIdentifier
      */
-    requestMultiPackageSupplyNote = (identifier) => {
-        return this.get('document/readMultiPackageSupplyNote/' + identifier);
+    requestMultiPackageSupplyNote = (invoiceNumber, additionalIdentifier ) => {
+        let params = [];
+        const url = `document/readMultiPackageSupplyNote/${invoiceNumber}`;
+        if (additionalIdentifier) {
+            params['additionalIdentifier'] = additionalIdentifier;
+        }
+
+        return this.get(url, params);
     }
 
     /**
@@ -262,7 +269,14 @@ class RestClient
      * @param {string} orderNumber
      */
     requestAdditionalDocument = (url, orderNumber) => {
-        return fetch(url.replaceAll('$ORDER_NUMBER$', orderNumber)).then(res => res.blob());
+        return this.get(url.replaceAll('$ORDER_NUMBER$', orderNumber)).then(res => res.blob());
+    }
+
+    /**
+     * @param {string} invoiceNumber
+     */
+    requestShippingRequestPackages = (invoiceNumber) => {
+        return this.get(`shipOut/readPreviousShippingData/${invoiceNumber}`).then(res => res.response.shippingRequestPackageCollection)
     }
 }
 

@@ -203,6 +203,82 @@ const notifyForUpdate = () => {
     windowInstance.webContents.send('updateAvailable');
 }
 
+const bindIpcEvents = () => {
+    // log from renderer
+    ipcMain.on('direct-log', directLog);
+
+    // print shipping request package (id) label on demand
+    ipcMain.on('package-id-label-print', (event, arg) => {
+        if (!config.has('printing.printShippingRequestPackageLabel')
+            || !config.get('printing.printShippingRequestPackageLabel')
+            || !config.has('printing.shippingRequestPackageLabelRAWTemplate')
+        ) {
+            return;
+        }
+
+        const template = config.get('printing.shippingRequestPackageLabelRAWTemplate');
+        const command = template.replaceAll('{%packageId}', arg.packageId);
+        printingHandlerInstance.printDirectRaw(config.get('printing.defaultProductLabelPrinter'), command);
+    });
+
+    // authentication succeed in renderer
+    ipcMain.on('authentication-succeed', (event, arguments) => {
+        console.log('authentication-succeed', 'authenticationSucceed()');
+        authenticationSucceed(event, arguments);
+
+        console.log('authentication-succeed', 'windowOnLoadCompleted()');
+        windowOnLoadCompleted(event, arguments);
+    });
+
+    // websocket connected in renderer
+    ipcMain.on('websocket-connected', websocketConnect);
+
+    // websocket disconnected in renderer
+    ipcMain.on('websocket-disconnected', websocketDisconnect);
+
+    // logout from renderer
+    ipcMain.on('logout', logout);
+
+    // print from electron batchPrinting form (directly to Zebra API)
+    ipcMain.on('batchPrinting', (event, arg) => {
+        printingHandlerInstance.printDirectRaw(arg.printer, arg.command);
+    });
+
+    // login form has been loaded in renderer, if configured, send credentials and login automatically
+    ipcMain.on('await-authentication', (event, arg) => {
+        if (!config.has('app.username') || !config.has('app.password')) {
+            return;
+        }
+
+        console.debug('got awaiting authentication event');
+        windowInstance.webContents.send('auth-request', {
+            username: config.get('app.username'),
+            password: config.get('app.password')
+        });
+        console.debug('auth event answered');
+    });
+
+    // promiseIpc is an advanced ipc package - it returns promised
+    // calling rs232 connected scale
+    promiseIpc.on('scale-package', () => {
+        return scaleHandler.callScale();
+    });
+
+    // call for electron version
+    promiseIpc.on('version-call', () => {
+        return version;
+    });
+
+    // deprecated - not used anymore
+    ipcMain.on('back', () => showLogModMobile(windowInstance));
+    // deprecated - not used anymore
+    ipcMain.on('saveConfig', (event, arg) => {
+        const configFile = getApplicationConfigFile();
+        fs.writeFileSync(configFile, arg);
+        showLogModMobile(windowInstance);
+    });
+}
+
 /**
  * booting the application
  */
@@ -227,54 +303,7 @@ const bootApplication = () => {
         });
 
         initializeAutoUpdateCheck();
-
-        ipcMain.on('direct-log', directLog);
-        ipcMain.on('package-id-label-print', (event, arg) => {
-            if (!config.has('printing.printShippingRequestPackageLabel')
-                || !config.get('printing.printShippingRequestPackageLabel')
-                || !config.has('printing.shippingRequestPackageLabelRAWTemplate')
-            ) {
-                return;
-            }
-
-            const template = config.get('printing.shippingRequestPackageLabelRAWTemplate');
-            const command = template.replaceAll('{%packageId}', arg.packageId);
-            printingHandlerInstance.printDirectRaw(config.get('printing.defaultProductLabelPrinter'), command);
-        });
-        ipcMain.on('authentication-succeed', (event, arguments) => {console.log('authentication-succeed', 'authenticationSucceed()'); authenticationSucceed(event, arguments);});
-        ipcMain.on('authentication-succeed', (event, arguments) => {console.log('authentication-succeed', 'windowOnLoadCompleted()'); windowOnLoadCompleted(event, arguments);});
-        ipcMain.on('websocket-connected', websocketConnect);
-        ipcMain.on('websocket-disconnected', websocketDisconnect);
-        ipcMain.on('logout', logout);
-        ipcMain.on('back', () => showLogModMobile(windowInstance));
-        ipcMain.on('saveConfig', (event, arg) => {
-            const configFile = getApplicationConfigFile(app);
-            fs.writeFileSync(configFile, arg);
-            showLogModMobile(windowInstance);
-        });
-        ipcMain.on('batchPrinting', (event, arg) => {
-            printingHandlerInstance.printDirectRaw(arg.printer, arg.command);
-        });
-        ipcMain.on('await-authentication', (event, arg) => {
-            if (!config.has('app.username') || !config.has('app.password')) {
-                return;
-            }
-
-            console.debug('got awaiting authentication event');
-            windowInstance.webContents.send('auth-request', {
-                username: config.get('app.username'),
-                password: config.get('app.password')
-            });
-            console.debug('auth event answered');
-        });
-
-        promiseIpc.on('scale-package', () => {
-            return scaleHandler.callScale();
-        });
-
-        promiseIpc.on('version-call', () => {
-            return version;
-        });
+        bindIpcEvents();
 
         scaleHandler.initialize();
     } catch (err) {

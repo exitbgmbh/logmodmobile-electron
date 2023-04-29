@@ -9,14 +9,6 @@ const defaultConfig = new Buffer(`{
         "autoUpdateCheckInterval": 600,
         "heartbeatInterval": 5,
         "gsPrintExecutable": "/bin/echo",
-        "identification": "LogModMobile-Hostname",
-        "username": "for debug purposes and used in persistentLogin mode",
-        "password": "for debug purposes and used in persistentLogin mode",
-        "persistentLogin": false,
-        "restServer": {
-            "enable": false,
-            "port": 3005
-        }
     },
     "scale": {
         "type": "None",
@@ -64,14 +56,24 @@ const defaultConfig = new Buffer(`{
         "defaultProductLabelPrinterMode": "monochrome",
         "defaultAdditionalDocumentPrinter": "PDF",
         "defaultAdditionalDocumentPrinterMode": "monochrome",
-        "additionalDocumentUrl": "",
-        "rotateProductLabel": true,
-        "printAdditionalDocuments": true,
-        "printProductLabelRAW": false,
-        "productLabelRAWTemplate": "N\\nS4\\nD15\\nq400\\nR\\nB20,10,0,1,2,30,173,B,\\"{%barcode}\\"\\nP{%quantity}\\n",
+    
         "requestInvoiceDocumentsMerged": true,
-        "printShippingRequestPackageLabel": true,
+    
+        "rotateProductLabel": true,
+    
+        "printProductLabelRAW": false,
+        "productLabelRAWTemplate": "N\\nS4\\nD15\\nq400\\nR\\nB10,10,0,1,3,20,100,N,\\"{%barcode}\\"\\nA10,150,0,1,3,3,N,\\"{%barcode}\\"\\nP{%quantity}\\n",
+    
+        "printAdditionalDocuments": false,
+        "additionalDocumentUrl": "",
+    
+        "printShippingRequestPackageLabel": false,
         "shippingRequestPackageLabelRAWTemplate": "N\\nS4\\nD15\\nq400\\nR\\nB10,10,0,1,3,20,100,N,\\"{%packageId}\\"\\nA10,150,0,1,3,3,N,\\"{%packageId}\\"\\nP1\\n",
+    
+        "autoPrintMultiPackageSupplyNote": false,
+        "alwaysPrintMultiPackageSupplyNote": false,
+        "requestMultiPackageSupplyNoteOnDemand": false,
+    
         "defaultInvoiceSlipPrintCountCC": 1,
         "defaultInvoiceSlipPrintCountEU": 1,
         "defaultInvoiceSlipPrintCountTC": 3,

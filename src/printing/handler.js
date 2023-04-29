@@ -94,9 +94,52 @@ class PrintingHandler {
     };
 
     _requestMultiPackageSupplyNote = (data) => {
-        restClientInstance.requestMultiPackageSupplyNote(data.identification).then((response) => {
-            this._handleDocumentPrinting('delivery', response.response, response.response.packageSupplyNote)
-        }).catch(this._handleError);
+        const { identification : invoiceNumber, force, packageData } = data; // invoice number
+        logDebug('printingHandler', '_requestMultiPackageSupplyNote', `requesting ${invoiceNumber} forced ${force}`);
+
+        if (packageData) {
+            if (!config.has('printing.requestMultiPackageSupplyNoteOnDemand') || !config.get('printing.requestMultiPackageSupplyNoteOnDemand')) {
+                logDebug('printingHandler', '_requestMultiPackageSupplyNote', 'canceling request due to requestOnDemand is not activated');
+                return;
+            }
+
+            restClientInstance.requestMultiPackageSupplyNote(invoiceNumber, JSON.stringify(packageData)).then((response) => {
+                this._handleDocumentPrinting('delivery', response.response, response.response.packageSupplyNote)
+            }).catch(this._handleError);
+        } else {
+            // force means, the request is triggered manually
+            if (!force) {
+                if (!config.has('printing.autoPrintMultiPackageSupplyNote') || !config.get('printing.autoPrintMultiPackageSupplyNote')) {
+                    logDebug('printingHandler', '_requestMultiPackageSupplyNote', 'canceling request due to autoprinting not enabled');
+                    return;
+                }
+
+                // if only one package created, option 'alwaysPrintMultiPackageSupplyNote' needs to be true to trigger print
+                const numberOfPackages = 1;
+                if (numberOfPackages === 1 && (!config.has('printing.alwaysPrintMultiPackageSupplyNote') || !config.get('printing.alwaysPrintMultiPackageSupplyNote'))) {
+                    logDebug('printingHandler', '_requestMultiPackageSupplyNote', 'canceling request due to single package');
+                    return;
+                }
+
+                // if requestMultiPackageSupplyNoteOnDemand is configured and set to 'true' we have had printed the document before. so we don't want it to be printed again
+                if (config.has('printing.requestMultiPackageSupplyNoteOnDemand') && config.get('printing.requestMultiPackageSupplyNoteOnDemand')) {
+                    logDebug('printingHandler', '_requestMultiPackageSupplyNote', 'canceling request due to requestOnDemand is activated');
+                    return;
+                }
+            }
+
+            restClientInstance.requestShippingRequestPackages(invoiceNumber).then((shippingRequestPackages) => {
+                if (!Array.isArray(shippingRequestPackages)) {
+                    return;
+                }
+
+                shippingRequestPackages.forEach((pkg) => {
+                    restClientInstance.requestMultiPackageSupplyNote(invoiceNumber, pkg.id).then((response) => {
+                        this._handleDocumentPrinting('delivery', response.response, response.response.packageSupplyNote)
+                    }).catch(this._handleError);
+                })
+            });
+        }
     }
 
     /**

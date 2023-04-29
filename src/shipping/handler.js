@@ -146,7 +146,7 @@ class ShippingHandler {
                 this._handleResult(res, null, invoiceNumber);
             })
             .catch((err) => {
-                logWarning('shippingHandler', 'handleShipping', 'requestShipOut failed ' + JSON.stringify(err));
+                logWarning('shippingHandler', 'requestPreviousShipOut', 'requestShipOut failed ' + JSON.stringify(err));
                 eventEmitter.emit('shipOutFailed', {
                     event: 'historicShipOutFailed',
                     type: 'pickBox',
@@ -170,7 +170,7 @@ class ShippingHandler {
                 this._handleResult(res, boxIdentification);
             })
             .catch((err) => {
-                logWarning('shippingHandler', 'handleShipping', 'requestShipOut failed ' + err.message);
+                logWarning('shippingHandler', 'handleShipping', 'requestShipOut failed ' + JSON.stringify(err));
                 eventEmitter.emit('shipOutFailed', {
                     event: 'shipOutFailed',
                     type: 'pickBox',
