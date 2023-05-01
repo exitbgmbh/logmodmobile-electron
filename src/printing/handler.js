@@ -128,16 +128,21 @@ class PrintingHandler {
                 }
             }
 
-            restClientInstance.requestShippingRequestPackages(invoiceNumber).then((shippingRequestPackages) => {
+            restClientInstance.requestShippingRequestPackages(invoiceNumber).then(async (shippingRequestPackages) => {
                 if (!Array.isArray(shippingRequestPackages)) {
                     return;
                 }
 
-                shippingRequestPackages.forEach((pkg) => {
-                    restClientInstance.requestMultiPackageSupplyNote(invoiceNumber, pkg.id).then((response) => {
-                        this._handleDocumentPrinting('delivery', response.response, response.response.packageSupplyNote)
-                    }).catch(this._handleError);
-                })
+                for (let i = 0; i < shippingRequestPackages.length; i++) {
+                    const pkg = shippingRequestPackages[i];
+                    try {
+                        const res = await restClientInstance.requestMultiPackageSupplyNote(invoiceNumber, pkg.id)
+                        this._handleDocumentPrinting('delivery', res.response, res.response.packageSupplyNote)
+                    } catch (e) {
+                        this._handleError(e)
+                    }
+
+                }
             });
         }
     }
