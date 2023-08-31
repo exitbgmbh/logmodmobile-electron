@@ -269,7 +269,8 @@ class RestClient
      * @param {string} orderNumber
      */
     requestAdditionalDocument = (url, orderNumber) => {
-        return this.get(url.replaceAll('$ORDER_NUMBER$', orderNumber)).then(res => res.blob());
+        // fetch() is required to be able to use absolute urls
+        return fetch(url.replaceAll('$ORDER_NUMBER$', orderNumber)).then(res => res.blob())
     }
 
     /**
