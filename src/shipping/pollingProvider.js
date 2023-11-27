@@ -70,7 +70,9 @@ class PollingProvider {
         this.importFileQueue = async.queue(async function(file) {
             logDebug('pollingProvider', 'importFileQueueProcess', 'handling ' + file);
             importRoutine(file);
-        });
+
+            await new Promise(r => setTimeout(r, 500)); // wait 500ms before next worker starts working to avoid heavy load
+        }, 2);
         this.importFileQueue.error(function(err, file) {
             logWarning('pollingProvider', 'importFileQueueError', err);
         });
