@@ -6,7 +6,7 @@
   "scripts": {
     "electron-test": "electron .",
     "electron-dev": "NODE_ENV=development electron .",
-    "electron-dev-local": "NODE_ENV=development ELECTRON_START_URL=http://lmmdev-exitb-erp.blissdev.de electron .",
+    "electron-dev-local": "NODE_ENV=development ELECTRON_START_URL=http://lmmdev-exitb-erp.blissdev.de electron . --no-sandbox",
     "build": "electron-builder -l -w",
     "buildLinux": "electron-builder -l",
     "publish": "electron-builder -l -w -p always",
