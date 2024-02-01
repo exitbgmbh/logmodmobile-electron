@@ -41,7 +41,7 @@ _checkPrinterKey = (printerKey) => {
   }
 
   const printerConfig = config.get(printerKey);
-  return printerConfig && printerConfig.trim() !== '';
+  return printerConfig && (typeof printerConfig == "boolean" || printerConfig.trim() !== '');
 };
 
 /**
