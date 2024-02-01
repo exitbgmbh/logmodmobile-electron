@@ -41,7 +41,7 @@ _checkPrinterKey = (printerKey) => {
   }
 
   const printerConfig = config.get(printerKey);
-  return printerConfig && (typeof printerConfig == "boolean" || printerConfig.trim() !== '');
+  return printerConfig && printerConfig.trim() !== '';
 };
 
 /**
@@ -148,6 +148,11 @@ getInvoicePrinter = (advertisingMedium, deliveryCountryCode, deliveryCountryIsEU
     }
   }
 
+  const advertisingMediumRotateConfigKey = 'printing.advertisingMediumConfig.' + advertisingMedium + '.invoiceSlipPrinterRotate';
+  if (config.has(advertisingMediumRotateConfigKey)) {
+    printerConfig.rotate = config.get(advertisingMediumRotateConfigKey);
+  }
+
   if (deliveryCountryCode === 'DE' && config.has(advertisingMediumConfigKey + '.invoiceSlipPrintCountCC')) {
     printerConfig.numOfCopies = config.get(advertisingMediumConfigKey + '.invoiceSlipPrintCountCC');
   } else if (deliveryCountryIsEU && config.has(advertisingMediumConfigKey + '.invoiceSlipPrintCountEU')) {
@@ -196,10 +201,8 @@ getDeliverySlipPrinter = (advertisingMedium) => {
   }
 
   const advertisingMediumRotateConfigKey = 'printing.advertisingMediumConfig.' + advertisingMedium + '.deliverySlipPrinterRotate';
-  if (_checkPrinterKey(advertisingMediumRotateConfigKey)) {
-    if (config.get(advertisingMediumRotateConfigKey) === true) {
-      printerConfig.rotate = true;
-    }
+  if (config.has(advertisingMediumRotateConfigKey)) {
+    printerConfig.rotate = config.get(advertisingMediumRotateConfigKey);
   }
 
   return printerConfig;
@@ -239,6 +242,11 @@ getReturnSlipPrinter = (advertisingMedium) => {
     } else {
       printerConfig.color = true;
     }
+  }
+
+  const advertisingMediumRotateConfigKey = 'printing.advertisingMediumConfig.' + advertisingMedium + '.returnSlipPrinterRotate';
+  if (config.has(advertisingMediumRotateConfigKey)) {
+    printerConfig.rotate = config.get(advertisingMediumRotateConfigKey);
   }
 
   return printerConfig;
