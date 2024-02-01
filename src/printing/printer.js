@@ -195,6 +195,13 @@ getDeliverySlipPrinter = (advertisingMedium) => {
     }
   }
 
+  const advertisingMediumRotateConfigKey = 'printing.advertisingMediumConfig.' + advertisingMedium + '.deliverySlipPrinterRotate';
+  if (_checkPrinterKey(advertisingMediumRotateConfigKey)) {
+    if (config.get(advertisingMediumRotateConfigKey) === true) {
+      printerConfig.rotate = true;
+    }
+  }
+
   return printerConfig;
 };
 
