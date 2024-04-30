@@ -13,6 +13,7 @@ const useGsPrint = config.has('app.gsPrintExecutable') && process.platform === '
 const gsPrintExecutable = useGsPrint ? config.get('app.gsPrintExecutable') : '';
 const printProductLabelRAW = config.has('printing.printProductLabelRAW') && config.get('printing.printProductLabelRAW') || false;
 const RAWTemplate = printProductLabelRAW ? config.get('printing.productLabelRAWTemplate') : '';
+const printAdditionalDocumentsFirst = config.has('app.printAdditionalDocumentsFirst') && config.get('printAdditionalDocumentsFirst') === true;
 // EPL2 Guide: https://www.servopack.de/support/zebra/EPL2_Manual.pdf
 
 class PrintingHandler {
@@ -280,17 +281,28 @@ class PrintingHandler {
 
                 if (config.has('printing.requestInvoiceDocumentsMerged') && config.get('printing.requestInvoiceDocumentsMerged') === true) {
                     restClientInstance.requestMergedDocuments(data.invoiceNumber).then((response) => {
+                        if (printAdditionalDocumentsFirst) {
+                            this._handleAdditionalDocumentPrinting(response.response);
+                        }
                         this._handleDocumentPrinting('invoiceMerge', response.response, response.response.mergedDocumentsPdf);
 
-                        this._handleAdditionalDocumentPrinting(response.response);
+                        if (!printAdditionalDocumentsFirst) {
+                            this._handleAdditionalDocumentPrinting(response.response);
+                        }
                     }).catch(this._handleError);
                 } else {
                     restClientInstance.requestAllDocuments(data.invoiceNumber).then((response) => {
+                        if (printAdditionalDocumentsFirst) {
+                            this._handleAdditionalDocumentPrinting(response.response);
+                        }
+
                         this._handleDocumentPrinting('invoice', response.response, response.response.invoicePdf);
                         this._handleDocumentPrinting('delivery', response.response, response.response.deliverySlipPdf);
                         this._handleDocumentPrinting('return', response.response, response.response.returnSlipPdf);
 
-                        this._handleAdditionalDocumentPrinting(response.response);
+                        if (!printAdditionalDocumentsFirst) {
+                            this._handleAdditionalDocumentPrinting(response.response);
+                        }
                     }).catch(this._handleError);
                 }
                 break;

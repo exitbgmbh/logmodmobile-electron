@@ -60,6 +60,7 @@
     "defaultAdditionalDocumentPrinter": "PDF",
     "defaultAdditionalDocumentPrinterMode": "monochrome",
     "additionalDocumentUrl": "",
+    "printAdditionalDocumentsFirst": false,
     "rotateProductLabel": true,
     "printAdditionalDocuments": true,
     "printProductLabelRAW": false,
