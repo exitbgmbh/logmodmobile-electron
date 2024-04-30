@@ -13,7 +13,7 @@ const useGsPrint = config.has('app.gsPrintExecutable') && process.platform === '
 const gsPrintExecutable = useGsPrint ? config.get('app.gsPrintExecutable') : '';
 const printProductLabelRAW = config.has('printing.printProductLabelRAW') && config.get('printing.printProductLabelRAW') || false;
 const RAWTemplate = printProductLabelRAW ? config.get('printing.productLabelRAWTemplate') : '';
-const printAdditionalDocumentsFirst = config.has('app.printAdditionalDocumentsFirst') && config.get('printAdditionalDocumentsFirst') === true;
+const printAdditionalDocumentsFirst = config.has('printing.printAdditionalDocumentsFirst') && config.get('printing.printAdditionalDocumentsFirst') === true;
 // EPL2 Guide: https://www.servopack.de/support/zebra/EPL2_Manual.pdf
 
 class PrintingHandler {
