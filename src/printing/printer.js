@@ -322,9 +322,24 @@ getShipmentLabelPrinter = (shipmentTypeCode) => {
 
   return printerConfig;
 };
+/**
+ * load shipment label printer
+ *
+ * @returns {string}
+ */
+getRawLabelPrinter = (shipmentTypeCode) => {
+  let printerConfig = _getConfigTemplate(defaultPrinter);
+  const printerKey = 'shipping.' + shipmentTypeCode + '.raw.shipmentLabelPrinter';
+  if (_checkPrinterKey(printerKey)) {
+    printerConfig.printer = _checkPrinterAndCorrect(config.get(printerKey));
+  }
+
+  return printerConfig.printer;
+};
 
 module.exports = {
   getDocumentPrinter,
   getProductLabelPrinter,
+  getRawLabelPrinter,
   getShipmentLabelPrinter
 };

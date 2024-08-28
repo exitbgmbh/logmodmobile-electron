@@ -5,7 +5,7 @@ const tmp = require('tmp');
 const fs = require('fs');
 const printer = require('pdf-to-printer');
 const labelPrinter = require('@thiagoelg/node-printer');
-const {getDocumentPrinter, getProductLabelPrinter, getShipmentLabelPrinter} = require('./printer');
+const {getDocumentPrinter, getProductLabelPrinter, getShipmentLabelPrinter, getRawLabelPrinter} = require('./printer');
 const {logDebug, logWarning} = require('./../logging');
 const { exec } = require("child_process");
 
@@ -64,6 +64,7 @@ class PrintingHandler {
         eventEmitter.on('requestDocuments', this._requestDocuments);
         eventEmitter.on('invoiceCreationSuccess', this._printInvoiceCreationResultDocuments);
         eventEmitter.on('shipmentLabelPrint', this._handleShipmentLabelPrinting);
+        eventEmitter.on('shipmentRawPrint', this._handleRawLabelPrinting);
         eventEmitter.on('pickListNeedsAdditionalDocuments', this._requestAdditionalPickListDocuments);
         eventEmitter.on('multiPackageSupplyNotePrint', this._requestMultiPackageSupplyNote);
     };
@@ -478,6 +479,22 @@ class PrintingHandler {
         logDebug('printingHandler', '_handleShippingRequestPackageLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
         printer.print(tmpFileName, printingOptions).then(console.log).catch(console.log);
     };
+
+    _handleRawLabelPrinting = (data) => {
+        const printerName = getRawLabelPrinter(data.shipmentTypeCode);
+        labelPrinter.printDirect({
+            data: data.command,
+            printer: printerName,
+            type: 'RAW',
+            success:function() {
+                logDebug('printingHandler', '_handleRawLabelPrinting', `RAW printed ${printerName}`);
+            },
+            error:function(err) {
+                logWarning('printingHandler', '_handleRawLabelPrinting', `RAW printing failed with error ${err}`);
+            }
+        });
+
+    }
 
     /**
      * printing labels got from shipping handler

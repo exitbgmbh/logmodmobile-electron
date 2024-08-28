@@ -54,6 +54,10 @@ class ShippingHandler {
         eventEmitter.emit('shipmentLabelPrint', {shipmentTypeCode, shipmentLabelCollection});
     };
 
+    _handleRawPrinting = (shipmentTypeCode, command) => {
+        eventEmitter.emit('shipmentRawPrint', {shipmentTypeCode, command});
+    };
+
     _handleResult = (res, boxIdentification, boxInvoice) => {
         logDebug('shippingHandler', '_handleResult', 'requestShipOut response ' + JSON.stringify(res));
         logDebug('shippingHandler', '_handleResult', 'boxIdentification ' + boxIdentification);
@@ -72,14 +76,23 @@ class ShippingHandler {
             shipmentPollingData: pollingDataBase64Encoded = '', //deprecated
             shipmentPollingCollection = [],
             shipmentLabels = [],
-            returnPollingCollection = [], //tbd
-            returnLabels = [] //tbd
+            returnPollingCollection = [],
+            returnLabels = [],
+            shipmentRawCollection = [],
+            returnRawCollection = []
         } = res.response;
 
         let shipmentDone = false;
         if (shipmentLabels.length > 0) {
             this._handlePrinting(shipmentTypeCode, shipmentLabels);
             shipmentDone = true;
+        }
+
+        if (shipmentRawCollection.length > 0) {
+            shipmentRawCollection.forEach((rawLabel) => {
+                let decodedContent = Buffer.from(rawLabel, 'base64');
+                this._handleRawPrinting(shipmentTypeCode, decodedContent);
+            })
         }
 
         if (shipmentPollingCollection.length > 0) {
@@ -101,6 +114,13 @@ class ShippingHandler {
             returnPollingCollection.forEach((pollingDataBase64Encoded) => {
                 this._handlePolling(returnShipmentTypeCode, pollingDataBase64Encoded, invoiceNumber);
             });
+        }
+
+        if (returnRawCollection.length > 0) {
+            returnRawCollection.forEach((rawLabel) => {
+                let decodedContent = Buffer.from(rawLabel, 'base64');
+                this._handleRawPrinting(shipmentTypeCode, decodedContent);
+            })
         }
 
         if (shipOutType === 'SELF-COLLECTOR') {
