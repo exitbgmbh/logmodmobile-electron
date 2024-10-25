@@ -55,6 +55,8 @@ class ShippingHandler {
     };
 
     _handleRawPrinting = (shipmentTypeCode, command) => {
+        logDebug('shipmentRawPrint', '_handleRawPrinting', shipmentTypeCode);
+        logDebug('shipmentRawPrint', '_handleRawPrinting', command);
         eventEmitter.emit('shipmentRawPrint', {shipmentTypeCode, command});
     };
 
