@@ -18,3 +18,6 @@ electron.js wrapper for exitB LogModMobile (blisstribute logistic module)
 - run build (see above) and copy output to webroot
 
 https://github.com/thiagoelg/node-printer/issues/45#issuecomment-1141526189
+
+node-printer prebuild downloaded from
+https://github.com/grandchef/node-printer/releases/tag/v0.8.0

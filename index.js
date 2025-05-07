@@ -1,5 +1,13 @@
 const log = require('electron-log');
 
+console.log(process.versions)
+console.log(process.version)
+console.log(`Node.js ABI version: ${process.versions.modules}`);
+
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+});
+
 log.transports.file.maxSize = 104857600;
 log.variables.pid = process.pid;
 

@@ -5,12 +5,13 @@
   "main": "index.js",
   "scripts": {
     "electron-test": "electron .",
-    "electron-dev-lmm": "NODE_ENV=development ELECTRON_START_URL=https://lmm-shopcartel.exitb.de electron .",
-    "electron-dev-lmmdev": "NODE_ENV=development ELECTRON_START_URL=http://lmmdev-exitb-erp.blissdev.de electron . --no-sandbox",
+    "electron-dev-lmm": "NODE_ENV=development ELECTRON_START_URL=https://lmm-profitack.exitb.de electron .",
+    "electron-dev-lmmdev": "SHOW_DEV_TOOLS=1 NODE_ENV=development ELECTRON_START_URL=http://lmmdev-exitb-erp.blissdev.de electron . --no-sandbox",
     "build": "electron-builder -l -w",
+    "buildWindows": "electron-builder -w",
     "buildLinux": "electron-builder -l",
     "publish": "electron-builder -l -w -p always",
-    "after-publish": "rm ./node_modules/@thiagoelg -Rf && rm ./node_modules/@serialport -Rf && rm ./node_modules/serialport -Rf && npm install && node_modules/.bin/electron-rebuild",
+    "after-publish": "rm ./node_modules -Rf && NODE_OPTIONS=--openssl-legacy-provider npm install && node_modules/.bin/electron-rebuild install-app-deps",
     "version-patch": "npm version patch",
     "version-minor": "npm version minor",
     "version-major": "npm version major"
@@ -33,7 +34,12 @@
   },
   "homepage": "https://github.com/exitbgmbh/logmodmobile-electron#readme",
   "dependencies": {
-    "@thiagoelg/node-printer": "^0.6.2",
+    "@grandchef/node-printer": "^0.8.0",
+    "@mapbox/node-pre-gyp": "^2.0.0",
+    "@serialport/bindings": "^10.0.1",
+    "@serialport/bindings-cpp": "^13.0.1",
+    "@serialport/parser-delimiter": "^10.0.0",
+    "@serialport/parser-readline": "^10.0.0",
     "alert-node": "^2.1.3",
     "async": "^3.2.3",
     "axios": "^0.21.1",
@@ -42,21 +48,23 @@
     "config": "^3.2.5",
     "config-reloadable": "^1.0.9",
     "electron-is-running-in-asar": "^1.0.0",
-    "electron-log": "^4.3.0",
-    "electron-promise-ipc": "^2.0.1",
+    "electron-log": "^5.3.4",
+    "electron-promise-ipc": "^2.2.4",
     "electron-prompt": "^1.6.1",
-    "electron-updater": "^4.6.5",
+    "electron-updater": "^6.3.2",
     "encoding": "^0.1.12",
     "express": "^4.17.1",
     "glob": "^7.2.0",
     "js-yaml": "^3.13.1",
     "nanoid": "^3.2.0",
+    "node-abi": "^3.75.0",
     "node-fetch": "^2.6.1",
     "node-localstorage": "^2.2.1",
-    "pdf-to-printer": "github:ccarnivore/pdf-to-printer#master",
+    "pdf-to-printer": "^5.6.0",
     "react-json-editor": "^0.3.0",
-    "serialport": "9.2.1",
+    "serialport": "^10.0.0",
     "tmp": "^0.1.0",
+    "unix-print": "^1.3.2",
     "websocket": "^1.0.31"
   },
   "build": {
@@ -68,6 +76,8 @@
         "nsis"
       ]
     },
+    "icon": "./static/assets/logmodmobile-512.png",
+    "afterPack": "./afterPackWin.js",
     "linux": {
       "category": "Office",
       "target": [
@@ -87,8 +97,8 @@
     ]
   },
   "devDependencies": {
-    "electron": "^13.2.0",
-    "electron-builder": "^22.13.1",
-    "electron-rebuild": "^1.10.0"
+    "electron": "^30.5.1",
+    "electron-builder": "^25.1.8",
+    "electron-prebuilt": "^1.4.13"
   }
 }

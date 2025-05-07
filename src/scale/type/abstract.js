@@ -1,5 +1,5 @@
 const {logDebug, logInfo, logWarning} = require('./../../logging');
-const SerialPort = require('serialport');
+const { SerialPort } = require('serialport');
 
 class AbstractScale {
     scaleConfig = null;
@@ -14,9 +14,7 @@ class AbstractScale {
     
     _scale = (command, parser) => {
         logDebug('abstractScale', '_scale', 'start');
-        const connector = new SerialPort(this.scaleConfig.path, {
-            baudRate: this.scaleConfig.baud
-        });
+        const connector = new SerialPort({ path: this.scaleConfig.path, baudRate: this.scaleConfig.baud });
         connector.on('open', (err) => {
             if (err) {
                 logWarning('abstractScale', '_scale', 'could not connect scale ' + err.message);

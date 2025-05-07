@@ -1,6 +1,6 @@
 const AbstractScale = require('./abstract');
 const {logDebug, logInfo, logWarning} = require('./../../logging');
-const SerialPort = require('serialport');
+const { ReadlineParser } = require('@serialport/parser-readline');
 
 class PCE_PB_N extends AbstractScale {
     constructor(scaleConfig) {
@@ -9,7 +9,7 @@ class PCE_PB_N extends AbstractScale {
     
     scale = () => {
         logDebug('PCE-PB-N', 'scale', 'start');
-        const parser = new SerialPort.parsers.Readline();
+        const parser = new ReadlineParser();
         const command = Buffer.from([0x53, 0x78, 0x0d, 0x0a]);
         
         return this._scale(command, parser).then((data) => {

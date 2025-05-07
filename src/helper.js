@@ -14,6 +14,14 @@ const getHostname = () => {
   return os.hostname();
 };
 
+const isWindows = () => {
+  return process.platform === 'win32';
+}
+
+const isLinux = () => {
+  return process.platform === 'linux';
+}
+
 module.exports = {
-  getLogModIdentification, getHostname
+  getLogModIdentification, getHostname, isLinux, isWindows
 };

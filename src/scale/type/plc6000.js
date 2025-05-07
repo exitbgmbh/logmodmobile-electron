@@ -1,6 +1,6 @@
 const AbstractScale = require('./abstract');
 const {logDebug, logInfo, logWarning} = require('./../../logging');
-const SerialPort = require('serialport');
+const { ReadlineParser } = require('@serialport/parser-readline');
 
 class PLC6000 extends AbstractScale {
     constructor(scaleConfig) {
@@ -9,7 +9,7 @@ class PLC6000 extends AbstractScale {
     
     scale = () => {
         logDebug('PLC6000', 'scale', 'start');
-        const parser = new SerialPort.parsers.Readline();
+        const parser = new ReadlineParser();
         const command = Buffer.from([0x1b, 0x70]);
         
         return this._scale(command, parser).then((data) => {

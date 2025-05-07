@@ -3,8 +3,10 @@ const eventEmitter = require('./../websocket/eventEmitter');
 const restClientInstance = require('./../restClient');
 const tmp = require('tmp');
 const fs = require('fs');
-const printer = require('pdf-to-printer');
-const labelPrinter = require('@thiagoelg/node-printer');
+const printer = require('@grandchef/node-printer')
+const printerWin = require('pdf-to-printer');
+const printerUnix = require('unix-print')
+const {isLinux, isWindows} = require('../helper')
 const {getDocumentPrinter, getProductLabelPrinter, getShipmentLabelPrinter, getRawLabelPrinter} = require('./printer');
 const {logDebug, logWarning} = require('./../logging');
 const { exec } = require("child_process");
@@ -15,6 +17,17 @@ const printProductLabelRAW = config.has('printing.printProductLabelRAW') && conf
 const RAWTemplate = printProductLabelRAW ? config.get('printing.productLabelRAWTemplate') : '';
 const printAdditionalDocumentsFirst = config.has('printing.printAdditionalDocumentsFirst') && config.get('printing.printAdditionalDocumentsFirst') === true;
 // EPL2 Guide: https://www.servopack.de/support/zebra/EPL2_Manual.pdf
+
+function pdfPrinter() {
+    if (isWindows()) return printerWin;
+    if (isLinux()) return printerUnix;
+
+    throw new Error(`unsupported platform. ${process.platform}`)
+}
+
+function labelPrinter() {
+    return printer;
+}
 
 class PrintingHandler {
     /**
@@ -384,7 +397,7 @@ class PrintingHandler {
         const printingOptions = this._getOptionsForPrinting(printerConfig);
 
         logDebug('printingHandler', '_handleDocumentPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-        printer.print(tmpFileName, printingOptions).then((r) => {
+        pdfPrinter().print(tmpFileName, printingOptions).then((r) => {
             console.log('after print', r);
             if (
                 process.env.NODE_ENV === 'development' &&
@@ -396,40 +409,40 @@ class PrintingHandler {
         }).catch(console.log);
     };
 
-    printDirectRaw = (printerName, command) => {
-        labelPrinter.printDirect({
+    _handleRawPrint = (printerName, command) => {
+        logDebug('printingHandler', '_handleRawPrint', `started for printer ${printerName} with comman ${command}`)
+        labelPrinter().printDirect({
             data: command,
             printer: printerName,
             type: "RAW",
             success:function() {
-                logDebug('printingHandler', '_handleProductLabelPrinting', 'RAW printed ' + printerName + command);
+                logDebug('printingHandler', '_handleProductLabelPrinting', 'succeed');
             },
             error:function(err) {
-                logWarning('printingHandler', '_handleProductLabelPrinting', 'RAW printing failed with error ' + err);
+                logWarning('printingHandler', '_handleProductLabelPrinting', `printing failed with error ${err}`);
             }
         });
+    }
+
+    _handleRawLabelPrinting = (data) => {
+        const printerName = getRawLabelPrinter(data.shipmentTypeCode);
+        this._handleRawPrint(printerName, data.command)
+    }
+
+    printDirectRaw = (printerName, command) => {
+        this._handleRawPrint(printerName, command)
     };
 
     printRaw = (printerName, template, numberOfCopies, ean13, price, articleNumber, classification1, classification2) => {
         const command = template
-            .replaceAll('{%quantity}', numberOfCopies.toString())
-            .replaceAll('{%barcode}', ean13)
-            .replaceAll('{%articleNumber}', articleNumber)
-            .replaceAll('{%price}', price)
-            .replaceAll('{%classification1}', classification1)
-            .replaceAll('{%classification2}', classification2);
+        .replaceAll('{%quantity}', numberOfCopies.toString())
+        .replaceAll('{%barcode}', ean13)
+        .replaceAll('{%articleNumber}', articleNumber)
+        .replaceAll('{%price}', price)
+        .replaceAll('{%classification1}', classification1)
+        .replaceAll('{%classification2}', classification2);
 
-        labelPrinter.printDirect({
-            data: command,
-            printer: printerName,
-            type: "RAW",
-            success:function() {
-                logDebug('printingHandler', '_handleProductLabelPrinting', 'RAW printed ' + ean13 + printerName + command);
-            },
-            error:function(err) {
-                logWarning('printingHandler', '_handleProductLabelPrinting', 'RAW printing failed with error ' + JSON.stringify(err));
-            }
-        });
+        this._handleRawPrint(printerName, command)
     };
 
     /**
@@ -455,7 +468,7 @@ class PrintingHandler {
         const printingOptions = this._getOptionsForPrinting(printerConfig, numberOfCopies);
 
         logDebug('printingHandler', '_handleProductLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-        printer.print(tmpFileName, printingOptions).then(console.log).catch(console.log);
+        pdfPrinter().print(tmpFileName, printingOptions).then(console.log).catch(console.log);
     };
 
     /**
@@ -477,24 +490,8 @@ class PrintingHandler {
         const printingOptions = this._getOptionsForPrinting(printerConfig);
 
         logDebug('printingHandler', '_handleShippingRequestPackageLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-        printer.print(tmpFileName, printingOptions).then(console.log).catch(console.log);
+        pdfPrinter().print(tmpFileName, printingOptions).then(console.log).catch(console.log);
     };
-
-    _handleRawLabelPrinting = (data) => {
-        const printerName = getRawLabelPrinter(data.shipmentTypeCode);
-        labelPrinter.printDirect({
-            data: data.command,
-            printer: printerName,
-            type: 'RAW',
-            success:function() {
-                logDebug('printingHandler', '_handleRawLabelPrinting', `RAW printed ${printerName}`);
-            },
-            error:function(err) {
-                logWarning('printingHandler', '_handleRawLabelPrinting', `RAW printing failed with error ${err}`);
-            }
-        });
-
-    }
 
     /**
      * printing labels got from shipping handler
@@ -512,13 +509,13 @@ class PrintingHandler {
                 let shipmentTmpFile = this._saveResultToPdf(label.shipmentLabel);
 
                 logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-                printer.print(shipmentTmpFile, printingOptions).then(console.log).catch(console.log);
+                pdfPrinter().print(shipmentTmpFile, printingOptions).then(console.log).catch(console.log);
             }
 
             if (label.returnLabel && label.returnLabel.trim() !== '') {
                 let returnTmpFile = this._saveResultToPdf(label.returnLabel);
                 logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-                printer.print(returnTmpFile, printingOptions).then(console.log).catch(console.log);
+                pdfPrinter().print(returnTmpFile, printingOptions).then(console.log).catch(console.log);
             }
         });
     };
@@ -582,6 +579,7 @@ class PrintingHandler {
 
         return options;
     }
+
 }
 
 module.exports = PrintingHandler;

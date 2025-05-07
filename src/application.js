@@ -146,7 +146,7 @@ const showLogModMobile = (windowInstance) => {
             showChangeLog();
         })
         .catch((err) => {
-            showApplicationError(err);
+            console.log(err)
         });
     windowInstance.webContents.on('did-finish-load', windowOnLoadCompleted);
 }

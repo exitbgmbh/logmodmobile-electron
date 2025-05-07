@@ -1,6 +1,6 @@
 const AbstractScale = require('./abstract');
 const {logDebug, logInfo, logWarning} = require('./../../logging');
-const SerialPort = require('serialport');
+const { DelimiterParser } = require('@serialport/parser-delimiter');
 
 class PCE_EP_E extends AbstractScale {
     constructor(scaleConfig) {
@@ -9,7 +9,7 @@ class PCE_EP_E extends AbstractScale {
     
     scale = () => {
         logDebug('PCE-EP-E', 'scale', 'start');
-        const parser = new SerialPort.parsers.Delimiter({delimiter: [0x0d, 0x0a, 0x0d, 0x0a]});
+        const parser = new DelimiterParser({delimiter: [0x0d, 0x0a, 0x0d, 0x0a]});
         const command = Buffer.from([0x50]);
         
         return this._scale(command, parser).then((data) => {

@@ -1,6 +1,6 @@
 const AbstractScale = require('./abstract');
 const {logDebug, logInfo, logWarning} = require('./../../logging');
-const SerialPort = require('serialport');
+const { DelimiterParser } = require('@serialport/parser-delimiter');
 
 class BizerbaTis20 extends AbstractScale {
     constructor(scaleConfig) {
@@ -9,7 +9,7 @@ class BizerbaTis20 extends AbstractScale {
     
     scale = () => {
         logDebug('BizerbaTis20', 'scale', 'start');
-        const parser = new SerialPort.parsers.Delimiter({delimiter: [0x0D, 0x0A]});
+        const parser = new DelimiterParser({delimiter: [0x0D, 0x0A]});
         const command = Buffer.from([0x71, 0x25, 0x0D, 0x0A]);
         
         return this._scale(command, parser).then((data) => {
