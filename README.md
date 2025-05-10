@@ -2,8 +2,7 @@
 electron.js wrapper for exitB LogModMobile (blisstribute logistic module)
 
 # dev
-- node14
-- git+https://github.com/ccarnivore/pdf-to-printer.git#master
+- using electron ^30.5.1 equals modules version 123 which is hard coded by now, regardless the locally installed nodejs/electron version 
 
 # autoupdate for dev (UX/UI only)
 - copy `dev-app-update.yml.dist` to `dev-app-update.yml` 
@@ -21,3 +20,4 @@ https://github.com/thiagoelg/node-printer/issues/45#issuecomment-1141526189
 
 node-printer prebuild downloaded from
 https://github.com/grandchef/node-printer/releases/tag/v0.8.0
+https://releases.electronjs.org/releases.json

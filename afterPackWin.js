@@ -6,8 +6,10 @@ module.exports = {
     // ... dein bisheriger Build-Config
     afterPack: async (context) => {
         console.log('building for: ', context.packager?.platform?.name)
+        console.log('node version: ', process.version)
 
-        const abiVersion = process.versions.modules
+        //const abiVersion = process.versions.modules
+        const abiVersion = 123
         console.log('abi versions: ', abiVersion)
 
         if (context.packager.platform.name !== 'windows') {

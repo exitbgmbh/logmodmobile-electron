@@ -57,7 +57,6 @@
     "glob": "^7.2.0",
     "js-yaml": "^3.13.1",
     "nanoid": "^3.2.0",
-    "node-abi": "^3.75.0",
     "node-fetch": "^2.6.1",
     "node-localstorage": "^2.2.1",
     "pdf-to-printer": "^5.6.0",
