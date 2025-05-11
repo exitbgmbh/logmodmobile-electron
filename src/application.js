@@ -140,8 +140,9 @@ const instantiateApplicationWindow = (applicationBootError) => {
 };
 
 const showLogModMobile = (windowInstance) => {
-    const startUrl = process.env.ELECTRON_START_URL || config.get('app.url');
-    windowInstance.loadURL(startUrl+'?avoidCached=' + nanoid(4))
+    let startUrl = process.env.ELECTRON_START_URL || config.get('app.url');
+    startUrl += `?avoidCached=${nanoid(4)}`
+    windowInstance.loadURL(startUrl)
         .then(() => {
             showChangeLog();
         })
@@ -228,6 +229,10 @@ const bindIpcEvents = () => {
 
         console.log('authentication-succeed', 'windowOnLoadCompleted()');
         windowOnLoadCompleted(event, arguments);
+
+        if (config.has('app.dashboardOnlyMode') && config.get('app.dashboardOnlyMode') === true) {
+            windowInstance.webContents.send('full-dashboard', {});
+        }
     });
 
     // websocket connected in renderer

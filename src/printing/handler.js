@@ -11,8 +11,6 @@ const {getDocumentPrinter, getProductLabelPrinter, getShipmentLabelPrinter, getR
 const {logDebug, logWarning} = require('./../logging');
 const { exec } = require("child_process");
 
-const useGsPrint = config.has('app.gsPrintExecutable') && process.platform === 'win32';
-const gsPrintExecutable = useGsPrint ? config.get('app.gsPrintExecutable') : '';
 const printProductLabelRAW = config.has('printing.printProductLabelRAW') && config.get('printing.printProductLabelRAW') || false;
 const RAWTemplate = printProductLabelRAW ? config.get('printing.productLabelRAWTemplate') : '';
 const printAdditionalDocumentsFirst = config.has('printing.printAdditionalDocumentsFirst') && config.get('printing.printAdditionalDocumentsFirst') === true;
@@ -529,51 +527,35 @@ class PrintingHandler {
      * @private
      */
     _getOptionsForPrinting = (printerConfig, numberOfCopies = 1) => {
-        let options = {};
-        if (printerConfig.printer) {
-            options.printer = printerConfig.printer;
-        }
-
-        if (printerConfig.numberOfCopies && printerConfig.numberOfCopies > numberOfCopies) {
-            numberOfCopies = printerConfig.numberOfCopies;
-        }
-
-        if (useGsPrint) {
-            options.gsprint = {
-                executable: gsPrintExecutable
+        const options = {}
+        if (isWindows()) {
+            if (printerConfig.printer) {
+                options.printer = printerConfig.printer;
             }
 
-            options.win32 = options.win32 || [];
-            if (printerConfig.rotate) {
-                options.win32.push('-landscape');
+            options.copies = numberOfCopies;
+            if (printerConfig.numberOfCopies && printerConfig.numberOfCopies > numberOfCopies) {
+                options.copies = printerConfig.numberOfCopies;
             }
 
-            if (printerConfig.color) {
-                options.win32.push('-color');
+            if (printerConfig.color) { // nothing to do, this is default
+                logDebug('printingHandler', '_getOptionsForPrinting', `color printing ${printerConfig.color}`);
+                options.monochrome = !printerConfig.color
             }
 
             if (printerConfig.monochrome) {
-                options.win32.push('-mono');
+                logDebug('printingHandler', '_getOptionsForPrinting', `monochrome printing ${printerConfig.monochrome}`);
+                options.monochrome = printerConfig.monochrome
             }
 
-            if (numberOfCopies) {
-                options.win32.push('-copies ' + numberOfCopies);
-            }
-
-        } else {
-            if (numberOfCopies) {
-                options.unix = ['-n ' + numberOfCopies];
-                options.win32 = ['-print-settings "' + numberOfCopies + 'x"'];
-            }
-
-            if (printerConfig.color) {
-                logDebug('printingHandler', '_getOptionsForPrinting', 'color printing');
-            }
-            if (printerConfig.monochrome) {
-                logDebug('printingHandler', '_getOptionsForPrinting', 'monochrome printing');
-            }
             if (printerConfig.rotate) {
                 logDebug('printingHandler', '_getOptionsForPrinting', 'rotated printing');
+                options.orientation = 'landscape'
+            }
+
+            if (printerConfig.bin) {
+                logDebug('printingHandler', '_getOptionsForPrinting', `using printer bin ${printerConfig.bin}`);
+                options.bin = printerConfig.bin
             }
         }
 

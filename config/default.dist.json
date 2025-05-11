@@ -3,7 +3,7 @@
     "url": "https://your-logmod-mobile-instance-url",
     "autoUpdateCheckInterval": 600,
     "heartbeatInterval": 5,
-    "gsPrintExecutable": "/bin/echo",
+    "dashboardOnlyMode": false,
     "identification": "LogModMobile-Hostname",
     "username": "for debug purposes and used in persistentLogin mode",
     "password": "for debug purposes and used in persistentLogin mode",
