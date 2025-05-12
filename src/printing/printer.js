@@ -3,10 +3,16 @@ const config = require('config');
 const printer = require('pdf-to-printer');
 
 let printerList = [];
-printer.getPrinters().then(res => printerList = res);
+printer.getPrinters().then((res) => {
+  console.log('printer.js', 'getPrinters', res)
+  printerList = res
+});
 
 let defaultPrinter = '';
-printer.getDefaultPrinter().then(res => defaultPrinter = res.trim());
+printer.getDefaultPrinter().then((res) => {
+  console.log('printer.js', 'getDefaultPrinter', res)
+  defaultPrinter = res
+});
 
 /**
  * checks if given printer name is existent in system
@@ -19,8 +25,9 @@ printer.getDefaultPrinter().then(res => defaultPrinter = res.trim());
  * @private
  */
 _checkPrinterAndCorrect = (printerName) => {
-  if (printerList.indexOf(printerName) === -1) {
-    return defaultPrinter;
+  const foundPrinter = printerList.filter((i) => { return i.name === printerName })
+  if (foundPrinter.length === 0) {
+    return defaultPrinter
   }
 
   return printerName;

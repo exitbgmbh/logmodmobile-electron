@@ -13,6 +13,21 @@ const initializeAutoUpdateCheck = () => {
         autoUpdateInterval = config.get('app.autoUpdateCheckInterval');
     }
 
+    if (config.has('app.autoUpdateAllowPrerelease')) {
+        const allowPrereleases = config.get('app.autoUpdateAllowPrerelease') ?? false
+        if (!allowPrereleases) {
+            logInfo('application', 'initAutoUpdate', `prereleases are not allowed`)
+        } else {
+            logInfo('application', 'initAutoUpdate', `prereleases are allowed`)
+        }
+
+        autoUpdater.allowPrerelease = allowPrereleases
+    } else {
+        logInfo('application', 'initAutoUpdate', `prereleases are not allowed`)
+        autoUpdater.allowPrerelease = false
+    }
+
+
     if (autoUpdateInterval > 0) {
         _checkForUpdates();
         updateCheckPID = setInterval(_checkForUpdates, autoUpdateInterval * 1000);
