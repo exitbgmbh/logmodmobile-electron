@@ -557,6 +557,12 @@ class PrintingHandler {
                 logDebug('printingHandler', '_getOptionsForPrinting', `using printer bin ${printerConfig.bin}`);
                 options.bin = printerConfig.bin
             }
+
+            if (printerConfig.paper) {
+                logDebug('printingHandler', '_getOptionsForPrinting', `using paperSize ${printerConfig.paper}`);
+                options.paperSize = printerConfig.paper
+            }
+
         }
 
         return options;

@@ -299,6 +299,14 @@ getProductLabelPrinter = (numberOfCopies) => {
     printerConfig.rotate = config.get('printing.rotateProductLabel');
   }
 
+  if (config.has('printing.productLabelFormatName')) {
+    printerConfig.paper = config.get('printing.productLabelFormatName');
+  }
+
+  if (config.has('printing.productLabelOptions')) {
+    printerConfig.specialOptions = config.get('printing.productLabelOptions');
+  }
+
   if (config.has('printing.defaultProductLabelPrinterMode')) {
     if (config.get('printing.defaultProductLabelPrinterMode') === 'monochrome') {
       printerConfig.monochrome = true;
@@ -323,8 +331,12 @@ getShipmentLabelPrinter = (shipmentTypeCode) => {
   }
 
   const rotateKey = 'shipping.' + shipmentTypeCode + '.printing.rotate';
+  const paperFormatName = 'shipping.' + shipmentTypeCode + '.printing.paperFormatName';
   if (config.has(rotateKey)) {
     printerConfig.rotate = config.get(rotateKey);
+  }
+  if (config.has(paperFormatName)) {
+    printerConfig.paper = config.get(paperFormatName);
   }
 
   return printerConfig;
