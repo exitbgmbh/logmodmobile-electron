@@ -28,7 +28,8 @@
     "DHL3": {
       "printing": {
         "shipmentLabelPrinter": "PDF",
-        "rotate": true
+        "rotate": false,
+        "paperFormatName": ""
       }
     },
     "DHL": {
@@ -47,36 +48,52 @@
     }
   },
   "printing": {
+    "requestInvoiceDocumentsMerged": true,
+
     "defaultInvoiceSlipPrinter": "PDF",
     "defaultInvoiceSlipPrinterMode": "monochrome",
+
     "defaultDeliverySlipPrinter": "PDF",
     "defaultDeliverySlipPrinterMode": "monochrome",
+
     "defaultReturnSlipPrinter": "PDF",
     "defaultReturnSlipPrinterMode": "monochrome",
+
     "defaultShipmentLabelPrinter": "PDF",
     "defaultShipmentLabelPrinterMode": "monochrome",
+
     "defaultProductLabelPrinter": "PDF",
     "defaultProductLabelPrinterMode": "monochrome",
+
     "defaultAdditionalDocumentPrinter": "PDF",
     "defaultAdditionalDocumentPrinterMode": "monochrome",
+    "printAdditionalDocuments": true,
     "additionalDocumentUrl": "",
     "printAdditionalDocumentsFirst": false,
-    "rotateProductLabel": true,
-    "printAdditionalDocuments": true,
+
+    "rotateProductLabel": false,
+    "productLabelFormatName": "",
     "printProductLabelRAW": false,
     "productLabelRAWTemplate": "N\nS4\nD15\nq400\nR\nB20,10,0,1,2,30,173,B,\"{%barcode}\"\nP{%quantity}\n",
-    "requestInvoiceDocumentsMerged": true,
+
     "defaultInvoiceSlipPrintCountCC": 1,
     "defaultInvoiceSlipPrintCountEU": 1,
     "defaultInvoiceSlipPrintCountTC": 3,
+
     "advertisingMediumConfig": {
       "EXB": {
         "invoiceSlipPrinter": "PDF",
         "invoiceSlipPrinterMode": "monochrome",
+
         "deliverySlipPrinter": "PDF",
         "deliverySlipPrinterMode": "monochrome",
+
         "returnSlipPrinter": "PDF",
         "returnSlipPrinterMode": "monochrome",
+
+        "invoiceSlipPrinterRotate": false,
+        "invoiceSlipPrinterFormatName": "",
+
         "invoiceSlipPrintCountCC": 1,
         "invoiceSlipPrintCountEU": 1,
         "invoiceSlipPrintCountTC": 3
