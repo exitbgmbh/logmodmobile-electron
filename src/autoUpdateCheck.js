@@ -27,7 +27,6 @@ const initializeAutoUpdateCheck = () => {
         autoUpdater.allowPrerelease = false
     }
 
-
     if (autoUpdateInterval > 0) {
         _checkForUpdates();
         updateCheckPID = setInterval(_checkForUpdates, autoUpdateInterval * 1000);

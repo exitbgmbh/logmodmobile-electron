@@ -1,6 +1,7 @@
 const { logDebug } = require('./../logging');
 const config = require('config');
 const printer = require('pdf-to-printer');
+const {isLinux} = require("../helper");
 
 let printerList = [];
 printer.getPrinters().then((res) => {
@@ -25,6 +26,10 @@ printer.getDefaultPrinter().then((res) => {
  * @private
  */
 _checkPrinterAndCorrect = (printerName) => {
+  if (isLinux()) {
+    return printerName;
+  }
+
   const foundPrinter = printerList.filter((i) => { return i.name === printerName })
   if (foundPrinter.length === 0) {
     return defaultPrinter
@@ -156,6 +161,7 @@ getInvoicePrinter = (advertisingMedium, deliveryCountryCode, deliveryCountryIsEU
   }
 
   const advertisingMediumRotateConfigKey = 'printing.advertisingMediumConfig.' + advertisingMedium + '.invoiceSlipPrinterRotate';
+  const advertisingMediumPaperFormatNameConfigKey = 'printing.advertisingMediumConfig.' + advertisingMedium + '.invoiceSlipPrinterFormatName';
   if (config.has(advertisingMediumRotateConfigKey)) {
     printerConfig.rotate = config.get(advertisingMediumRotateConfigKey);
   }

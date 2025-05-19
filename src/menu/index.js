@@ -72,9 +72,9 @@ buildMenu = () => {
             }
         });
         tools.submenu.push({
-            label: 'RAW Druck (EPL/ZPL)',
+            label: 'Produkt-Label RAW Druck (EPL/ZPL)',
             click: async () => {
-                printHandler.printRaw(
+                printHandler.productLabelPrintRaw(
                     config.get('printing.defaultProductLabelPrinter'),
                     config.get('printing.productLabelRAWTemplate'),
                     1,
@@ -83,6 +83,18 @@ buildMenu = () => {
                     'club-mate-123',
                     'Club Mate',
                     'Loscher KG'
+                );
+            }
+        });
+        tools.submenu.push({
+            label: 'ShippingRequestPackage-Label RAW Druck (EPL/ZPL)',
+            click: async () => {
+                printHandler.shippingRequestPackageLabelPrintRaw(
+                    config.get('printing.defaultProductLabelPrinter'),
+                    config.get('printing.shippingRequestPackageLabelRAWTemplate'),
+                    1,
+                    '25203590970-1',
+                    '25203590970'
                 );
             }
         });

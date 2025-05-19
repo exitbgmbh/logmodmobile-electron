@@ -12,7 +12,9 @@ const {logDebug, logWarning} = require('./../logging');
 const { exec } = require("child_process");
 
 const printProductLabelRAW = config.has('printing.printProductLabelRAW') && config.get('printing.printProductLabelRAW') || false;
-const RAWTemplate = printProductLabelRAW ? config.get('printing.productLabelRAWTemplate') : '';
+const productLabelRAWTemplate = printProductLabelRAW ? config.get('printing.productLabelRAWTemplate') : '';
+const printShippingRequestPackageLabelRaw = config.has('printing.printShippingRequestPackageLabelRaw') && config.get('printing.printShippingRequestPackageLabelRaw') || false;
+const shippingRequestPackageLabelRAWTemplate = printShippingRequestPackageLabelRaw ? config.get('printing.shippingRequestPackageLabelRAWTemplate') : '';
 const printAdditionalDocumentsFirst = config.has('printing.printAdditionalDocumentsFirst') && config.get('printing.printAdditionalDocumentsFirst') === true;
 // EPL2 Guide: https://www.servopack.de/support/zebra/EPL2_Manual.pdf
 
@@ -408,16 +410,16 @@ class PrintingHandler {
     };
 
     _handleRawPrint = (printerName, command) => {
-        logDebug('printingHandler', '_handleRawPrint', `started for printer ${printerName} with comman ${command}`)
+        logDebug('printingHandler', '_handleRawPrint', `started for printer ${printerName} with command ${command}`)
         labelPrinter().printDirect({
             data: command,
             printer: printerName,
             type: "RAW",
             success:function() {
-                logDebug('printingHandler', '_handleProductLabelPrinting', 'succeed');
+                logDebug('printingHandler', '_handleRawPrint', 'succeed');
             },
             error:function(err) {
-                logWarning('printingHandler', '_handleProductLabelPrinting', `printing failed with error ${err}`);
+                logWarning('printingHandler', '_handleRawPrint', `printing failed with error ${err}`);
             }
         });
     }
@@ -431,7 +433,7 @@ class PrintingHandler {
         this._handleRawPrint(printerName, command)
     };
 
-    printRaw = (printerName, template, numberOfCopies, ean13, price, articleNumber, classification1, classification2) => {
+    productLabelPrintRaw = (printerName, template, numberOfCopies, ean13, price, articleNumber, classification1, classification2) => {
         const command = template
         .replaceAll('{%quantity}', numberOfCopies.toString())
         .replaceAll('{%barcode}', ean13)
@@ -439,6 +441,17 @@ class PrintingHandler {
         .replaceAll('{%price}', price)
         .replaceAll('{%classification1}', classification1)
         .replaceAll('{%classification2}', classification2);
+
+        this._handleRawPrint(printerName, command)
+    };
+
+    shippingRequestPackageLabelPrintRaw = (printerName, template, numberOfCopies, shippingRequestPackageNumber, shippingRequestNumber) => {
+        const command = template
+        .replaceAll('{%quantity}', numberOfCopies.toString())
+        .replaceAll('{%packageId}', shippingRequestPackageNumber)
+        .replaceAll('{%shippingRequest}', shippingRequestNumber);
+
+        console.log('foooooo', printerName, command)
 
         this._handleRawPrint(printerName, command)
     };
@@ -459,7 +472,7 @@ class PrintingHandler {
         }
         const printerConfig = getProductLabelPrinter(numberOfCopies);
         if (printProductLabelRAW) {
-            return this.printRaw(printerConfig.printer, RAWTemplate, numberOfCopies, ean13, price, articleNumber, classification1, classification2);
+            return this.productLabelPrintRaw(printerConfig.printer, productLabelRAWTemplate, numberOfCopies, ean13, price, articleNumber, classification1, classification2);
         }
 
         const tmpFileName = this._saveResultToPdf(labelContent);
@@ -477,13 +490,17 @@ class PrintingHandler {
      *
      * @private
      */
-    _handleShippingRequestPackageLabelPrinting = (responseData, numberOfCopies) => {
+    _handleShippingRequestPackageLabelPrinting = (responseData, numberOfCopies = 1) => {
         logDebug('printingHandler', '_handleShippingRequestPackageLabelPrinting', 'start printing with options ' + JSON.stringify(responseData));
-        const {content: labelContent} = responseData;
+        const {content: labelContent, shippingRequestPackageNumber, shippingRequestNumber} = responseData;
         if (!labelContent || labelContent.length < 100) {
             return;
         }
         const printerConfig = getProductLabelPrinter(numberOfCopies);
+        if (printShippingRequestPackageLabelRaw) {
+            return this.shippingRequestPackageLabelPrintRaw(printerConfig.printer, shippingRequestPackageLabelRAWTemplate, numberOfCopies, shippingRequestPackageNumber, shippingRequestNumber);
+        }
+
         const tmpFileName = this._saveResultToPdf(labelContent);
         const printingOptions = this._getOptionsForPrinting(printerConfig);
 
