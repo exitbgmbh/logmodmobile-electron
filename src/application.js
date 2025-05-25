@@ -293,8 +293,6 @@ const bindIpcEvents = () => {
  */
 const bootApplication = () => {
     logInfo('application', 'bootApplication', 'start');
-    initRFIDReader();
-    logInfo('application', 'bootApplication', 'reach out to RFID reader')
     menuEventEmitter.on('showConfig', () => showApplicationConfig());
     menuEventEmitter.on('reloadConfig', () => reloadApplicationConfig());
     menuEventEmitter.on('showBatchPrint', () => showBatchPrint());
