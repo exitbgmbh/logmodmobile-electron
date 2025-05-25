@@ -55,6 +55,10 @@ class ScaleHandler {
             }
         }
     };
+
+    scaleAvailable = () => {
+        return config.has('scale') && config.has('scale.type');
+    }
     
     callScale = () => {
         logDebug('ScaleHandler', 'callScale', 'start');
