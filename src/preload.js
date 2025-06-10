@@ -12,4 +12,4 @@ window.promiseIpc = promiseIpc;
 window.printer = printer;
 window.deviceId = 'EL-' + os.hostname();
 window.elVersion = version;
-
+window.invoiceDirectPrinting = config.get('invoicing.directPrinting') || false;
