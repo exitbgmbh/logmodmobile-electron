@@ -25,6 +25,7 @@ const fs = require('fs');
 const restSrvInstance = require('./rest');
 const {nanoid} = require("nanoid");
 const {loadPlugins} = require("../pluginLoader");
+const webSocketEventEmitter = require("./websocket/eventEmitter");
 const LocalStorage = require('node-localstorage').LocalStorage;
 
 /**
@@ -222,13 +223,31 @@ const bindIpcEvents = () => {
         printingHandlerInstance.printDirectRaw(config.get('printing.defaultProductLabelPrinter'), command);
     });
 
+    // direct print of invoices on demand
+    ipcMain.on('direct-print-invoice', (event, arg) => {
+        if (!config.has('invoicing.directPrinting')) {
+            return;
+        }
+
+        webSocketEventEmitter.emit('requestDocuments', arg);
+    });
+
+    // direct print of invoices on pickBox ready
+    ipcMain.on('direct-print-pick-box-ready', (event, arg) => {
+        if (!config.has('invoicing.directPrinting') || webSocketHandler.pickListNeedsAdditionalDocuments(arg)) {
+            return;
+        }
+
+        webSocketEventEmitter.emit('pickBoxReady', arg);
+    });
+
     // authentication succeed in renderer
-    ipcMain.on('authentication-succeed', (event, arguments) => {
+    ipcMain.on('authentication-succeed', (event, arg) => {
         console.log('authentication-succeed', 'authenticationSucceed()');
-        authenticationSucceed(event, arguments);
+        authenticationSucceed(event, arg);
 
         console.log('authentication-succeed', 'windowOnLoadCompleted()');
-        windowOnLoadCompleted(event, arguments);
+        windowOnLoadCompleted(event, arg);
 
         if (config.has('app.dashboardOnlyMode') && config.get('app.dashboardOnlyMode') === true) {
             windowInstance.webContents.send('full-dashboard', {});
