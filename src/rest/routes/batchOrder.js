@@ -1,7 +1,7 @@
-const {logDebug} = require("../logging");
+const {logDebug} = require("../../logging");
 const {ipcMain} = require("electron");
-const {getHostname} = require("../helper");
-const getResponse = require("./response");
+const {getHostname} = require("../../helper");
+const getResponse = require("../response");
 
 
 const _handleBatchOrderGetNextMock = (response, error) => {

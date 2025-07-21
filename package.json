@@ -47,6 +47,7 @@
     "chokidar": "^3.3.1",
     "config": "^3.2.5",
     "config-reloadable": "^1.0.9",
+    "cors": "^2.8.5",
     "electron-is-running-in-asar": "^1.0.0",
     "electron-log": "^5.3.4",
     "electron-promise-ipc": "^2.2.4",
