@@ -325,6 +325,10 @@ class PrintingHandler {
     };
 
     _handleAdditionalDocumentPrinting = (response) => {
+        if (!config.has('printing.printAdditionalDocuments') || config.get('printing.printAdditionalDocuments') === false) {
+            return;
+        }
+
         if (!config.has('printing.additionalDocumentUrl')) {
             return;
         }
