@@ -397,16 +397,29 @@ class PrintingHandler {
         const printingOptions = this._getOptionsForPrinting(printerConfig);
 
         logDebug('printingHandler', '_handleDocumentPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-        pdfPrinter().print(tmpFileName, printingOptions).then((r) => {
-            console.log('after print', r);
-            if (
-                process.env.NODE_ENV === 'development' &&
-                config.has('printing.debugAutoOpenDocumentAfterPrint') &&
-                config.get('printing.debugAutoOpenDocumentAfterPrint')
-            ) {
-                exec('xdg-open ' + tmpFileName);
-            }
-        }).catch(console.log);
+        if (isWindows()) {
+            pdfPrinter().print(tmpFileName, printingOptions).then((r) => {
+                console.log('after print', r);
+                if (
+                    process.env.NODE_ENV === 'development' &&
+                    config.has('printing.debugAutoOpenDocumentAfterPrint') &&
+                    config.get('printing.debugAutoOpenDocumentAfterPrint')
+                ) {
+                    exec('xdg-open ' + tmpFileName);
+                }
+            }).catch(console.log);
+        } else {
+            pdfPrinter().print(tmpFileName, printingOptions.printer).then((r) => {
+                console.log('after print', r);
+                if (
+                    process.env.NODE_ENV === 'development' &&
+                    config.has('printing.debugAutoOpenDocumentAfterPrint') &&
+                    config.get('printing.debugAutoOpenDocumentAfterPrint')
+                ) {
+                    exec('xdg-open ' + tmpFileName);
+                }
+            }).catch(console.log);
+        }
     };
 
     _handleRawPrint = (printerName, command) => {
@@ -545,16 +558,16 @@ class PrintingHandler {
      */
     _getOptionsForPrinting = (printerConfig, numberOfCopies = 1) => {
         const options = {}
+        if (printerConfig.printer) {
+            options.printer = printerConfig.printer;
+        }
+
+        options.copies = numberOfCopies;
+        if (printerConfig.numberOfCopies && printerConfig.numberOfCopies > numberOfCopies) {
+            options.copies = printerConfig.numberOfCopies;
+        }
+
         if (isWindows()) {
-            if (printerConfig.printer) {
-                options.printer = printerConfig.printer;
-            }
-
-            options.copies = numberOfCopies;
-            if (printerConfig.numberOfCopies && printerConfig.numberOfCopies > numberOfCopies) {
-                options.copies = printerConfig.numberOfCopies;
-            }
-
             if (printerConfig.color) { // nothing to do, this is default
                 logDebug('printingHandler', '_getOptionsForPrinting', `color printing ${printerConfig.color}`);
                 options.monochrome = !printerConfig.color

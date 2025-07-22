@@ -3,8 +3,6 @@ const restClientInstance = require('./../restClient');
 const config = require('config');
 
 class InvoiceHandler {
-
-
     initialized = false;
 
     initialize = () => {
