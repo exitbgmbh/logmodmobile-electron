@@ -135,7 +135,7 @@ class WebSocketHandler
 
         showNotification('LogModMobile - Die aktuelle WebSocket-Verbindung wurde geschlossen.');
     };
-    
+
     /**
      * handle the websocket message
      * @param {{type: string, utf8Data: string}} message
@@ -180,18 +180,18 @@ class WebSocketHandler
                 break;
             }
             case PICK_BOX_READY: {
-                if (!this._isInvoicePrintingActive(socketEvent.data) || this._pickListNeedsAdditionalDocuments(socketEvent.data)) {
+                if (!this._isInvoicePrintingActive(socketEvent.data) || this.pickListNeedsAdditionalDocuments(socketEvent.data)) {
                     return;
                 }
-                
+
                 eventEmitter.emit('pickBoxReady', socketEvent.data);
                 break;
             }
             case PICK_LIST_FINISHED: {
-                if (!this._isAdditionalDocumentPrintingActive(socketEvent.data) || !this._pickListNeedsAdditionalDocuments(socketEvent.data)) {
+                if (!this._isAdditionalDocumentPrintingActive(socketEvent.data) || !this.pickListNeedsAdditionalDocuments(socketEvent.data)) {
                     return;
                 }
-                
+
                 eventEmitter.emit('pickListNeedsAdditionalDocuments', socketEvent.data);
                 break;
             }
@@ -200,7 +200,7 @@ class WebSocketHandler
             }
         }
     };
-    
+
     /**
      * checks if socket message is for me
      *
@@ -215,7 +215,7 @@ class WebSocketHandler
             || (receiverLogModIdent === ident);
 
     };
-    
+
     /**
      * checks if automatic invoice process is active and box is watched
      *
@@ -232,11 +232,11 @@ class WebSocketHandler
         if (messageData.logModIdent === ident) {
             return true;
         }
-        
+
         const watchPattern = new RegExp(config.get('invoicing.watchBoxes'));
         return watchPattern.test(messageData.pickBoxIdent);
     };
-    
+
     /**
      * checks if automatic additional document printing is enabled
      *
@@ -248,23 +248,22 @@ class WebSocketHandler
         if (!config.has('printing.printAdditionalDocuments')) {
             return false;
         }
-        
+
         return config.get('printing.printAdditionalDocuments');
     };
-    
+
     /**
      * checks if pick list not containing shipping request items
      *
      * @param {{}} messageData
      * @returns {boolean}
-     * @private
      */
-    _pickListNeedsAdditionalDocuments = (messageData) => {
+    pickListNeedsAdditionalDocuments = (messageData) => {
         if (!messageData.hasOwnProperty('pickListNumber') || !messageData.hasOwnProperty('pickListType')) {
-            logDebug('webSocketHandler', '_pickListNeedsAdditionalDocuments', 'no additional documents needed');
+            logDebug('webSocketHandler', 'pickListNeedsAdditionalDocuments', 'no additional documents needed');
             return false;
         }
-        
+
         return messageData.pickListType > 1;
     }
 
