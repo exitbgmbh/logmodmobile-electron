@@ -1,5 +1,5 @@
 const express = require('express');
-const {ipcMain} = require("electron");
+const cors = require('cors');
 const config = require('config');
 
 class RestServerHandler
@@ -34,6 +34,12 @@ class RestServerHandler
 
         this.windowInstance = windowInstance;
         this.server = express();
+
+        this.server.use(cors({
+          origin: '*',
+          methods: ['GET', 'POST', 'PUT', 'DELETE']
+        }));
+
         this._initRoutes();
 
         this.server.listen(serverPort, () => {
