@@ -1,4 +1,5 @@
 const express = require('express');
+const bodyParser = require('body-parser')
 const cors = require('cors');
 const config = require('config');
 
@@ -39,6 +40,9 @@ class RestServerHandler
           origin: '*',
           methods: ['GET', 'POST', 'PUT', 'DELETE']
         }));
+
+        this.server.use(bodyParser.urlencoded({ extended: true }));
+        this.server.use(bodyParser.json());
 
         this._initRoutes();
 

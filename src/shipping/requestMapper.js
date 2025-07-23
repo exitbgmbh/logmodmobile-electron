@@ -4,7 +4,7 @@ const mapWebSocketMessage = (data) => {
     let requestData = {
         shippingData: {}
     };
-    
+
     requestData.shippingData.workplaceIdentifier = getHostname();
 
     if (data.hasOwnProperty('overrideShipmentTypeId')) {
@@ -15,11 +15,12 @@ const mapWebSocketMessage = (data) => {
         requestData.shippingData.packagingProductTray = data.packagingProductTray;
     }
 
-    if (data.hasOwnProperty('packageData')) {
+    const shippingRequestPackages = data.shippingRequestPackages || data.packageData
+    if (shippingRequestPackages) {
         requestData.shippingData.shippingRequestPackages = [];
-        data.packageData.forEach((shippingRequestPackage) => {
+        shippingRequestPackages.forEach((shippingRequestPackage) => {
             let requestPackage = {
-                packageNumber: shippingRequestPackage.packageId
+                packageNumber: shippingRequestPackage.packageNumber || shippingRequestPackage.packageId
             };
 
             if (shippingRequestPackage.hasOwnProperty('weight')) {

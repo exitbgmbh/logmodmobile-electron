@@ -187,7 +187,7 @@ class ShippingHandler {
         }
 
         const requestData = mapRequest(data);
-        restClientInstance.requestShipOut(boxIdentification, requestData)
+        return restClientInstance.requestShipOut(boxIdentification, requestData)
             .then((res) => {
                 this._handleResult(res, boxIdentification);
             })
