@@ -183,13 +183,19 @@ class ShippingHandler {
         const {identification: boxIdentification} = data;
         if (!boxIdentification || boxIdentification === '') {
             logWarning('shippingHandler', 'handleShipping', 'got no boxIdentification from data ' + JSON.stringify(data));
-            return;
+            return new Promise((resolve, reject) => {
+                reject('failed');
+            });
         }
 
         const requestData = mapRequest(data);
         return restClientInstance.requestShipOut(boxIdentification, requestData)
             .then((res) => {
                 this._handleResult(res, boxIdentification);
+
+                return new Promise((resolve) => {
+                    resolve(data);
+                });
             })
             .catch((err) => {
                 logWarning('shippingHandler', 'handleShipping', 'requestShipOut failed ' + JSON.stringify(err));
@@ -200,7 +206,12 @@ class ShippingHandler {
                     receiverLogModIdent: '',
                     data: {boxIdent: boxIdentification, reason: err.message}
                 });
-            });
+
+                return new Promise((resolve, reject) => {
+                    reject('failed');
+                });
+            })
+
     };
 }
 
