@@ -182,9 +182,10 @@ class ShippingHandler {
     handleShipping = (data) => {
         const {identification: boxIdentification} = data;
         if (!boxIdentification || boxIdentification === '') {
-            logWarning('shippingHandler', 'handleShipping', 'got no boxIdentification from data ' + JSON.stringify(data));
+            const msg = 'got no boxIdentification from data ' + JSON.stringify(data)
+            logWarning('shippingHandler', 'handleShipping', msg);
             return new Promise((resolve, reject) => {
-                reject('failed');
+                reject(msg)
             });
         }
 
@@ -194,7 +195,7 @@ class ShippingHandler {
                 this._handleResult(res, boxIdentification);
 
                 return new Promise((resolve) => {
-                    resolve(data);
+                    resolve('success')
                 });
             })
             .catch((err) => {
