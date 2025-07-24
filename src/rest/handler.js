@@ -9,15 +9,6 @@ class RestServerHandler
     server;
     windowInstance;
 
-    getResponse = (code = 200, message = '', responseData = []) => {
-        return {
-            success: code === 200,
-            code: code,
-            message: message,
-            response: responseData
-        };
-    }
-
     initialize = (windowInstance) => {
         if (this.initialized) {
             return;

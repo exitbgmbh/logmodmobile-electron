@@ -1,10 +1,17 @@
-const registerBatchOrderRoutes = require("./routes/batchOrder");
-const registerShippingRequestRoutes = require("./routes/shippingRequest");
-const getResponse = require("./response");
+const registerBatchOrderRoutes = require('./routes/batchOrder');
+const registerShippingRoutes = require('./routes/shipping');
+const registerScaleRoutes = require('./routes/scale');
+const registerSystemRoutes = require('./routes/system');
+const {getResponse} = require('./response');
 
 module.exports = (server, windowInstance) => {
+    // routes with connection to frontend
     registerBatchOrderRoutes(server, windowInstance);
-    registerShippingRequestRoutes(server, windowInstance);
+
+    // routes without frontend connection
+    registerShippingRoutes(server);
+    registerScaleRoutes(server);
+    registerSystemRoutes(server);
 
     // default route
     server.use((request, response) => {
