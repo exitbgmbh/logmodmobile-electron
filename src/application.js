@@ -49,7 +49,6 @@ const windowOnLoadCompleted = () => {
     if (windowTitle.indexOf('Client') === -1) {
         windowInstance.setTitle(windowInstance.getTitle() + ' • Client %s'.replace('%s', version));
     }
-
     logDebug('application', 'windowOnLoadCompleted', 'done');
 };
 
