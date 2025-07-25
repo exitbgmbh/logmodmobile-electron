@@ -7,6 +7,7 @@ const Debug = require('./type/debug');
 const Random = require('./type/random');
 const PCE_PB_N = require("./type/pce-pb-n");
 const BizerbaTis20 = require("./type/bizerba-tis-20");
+const Kern60k = require("./type/kern-60k");
 const {logDebug, logInfo, logWarning} = require('./../logging');
 
 class ScaleHandler {
@@ -28,6 +29,10 @@ class ScaleHandler {
             }
             case 'RANDOM': {
                 this.scale = new Random(scaleConfig);
+                break;
+            }
+            case 'KERN60K': {
+                this.scale = new Kern60k(scaleConfig);
                 break;
             }
             case 'PLC6000': {
