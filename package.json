@@ -77,7 +77,6 @@
       ]
     },
     "icon": "./static/assets/logmodmobile-512.png",
-    "afterPack": "./afterPackWin.js",
     "linux": {
       "category": "Office",
       "target": [
