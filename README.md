@@ -2,6 +2,7 @@
 electron.js wrapper for exitB LogModMobile (blisstribute logistic module)
 
 # dev
+- use nodejs up to version 22.13.1 
 - using electron ^30.5.1 equals modules version 123 which is hard coded by now, regardless the locally installed nodejs/electron version 
 
 # autoupdate for dev (UX/UI only)
