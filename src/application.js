@@ -27,7 +27,7 @@ const {nanoid} = require("nanoid");
 const {loadPlugins} = require("../pluginLoader");
 const webSocketEventEmitter = require("./websocket/eventEmitter");
 const LocalStorage = require('node-localstorage').LocalStorage;
-const pcsclite = require('pcsclite')
+//const pcsclite = require('pcsclite')
 
 /**
  * the application main window instance
@@ -206,7 +206,7 @@ const notifyForUpdate = () => {
     windowInstance.webContents.send('updateAvailable');
 }
 
-const initRFIDReader = () => {
+/**const initRFIDReader = () => {
     const pcsc = pcsclite()
     pcsc.on('reader', (reader) => {
         logInfo('application', 'initRFIDReader', `connected to reader ${reader.name}`)
@@ -246,7 +246,7 @@ const initRFIDReader = () => {
             }
         })
     })
-}
+}*/
 
 const bindIpcEvents = () => {
     // log from renderer
@@ -355,8 +355,8 @@ const bindIpcEvents = () => {
  */
 const bootApplication = () => {
     logInfo('application', 'bootApplication', 'start');
-    initRFIDReader();
-    logInfo('application', 'bootApplication', 'reach out to RFID reader')
+    // initRFIDReader();
+    // logInfo('application', 'bootApplication', 'reach out to RFID reader')
     menuEventEmitter.on('showConfig', () => showApplicationConfig());
     menuEventEmitter.on('reloadConfig', () => reloadApplicationConfig());
     menuEventEmitter.on('showBatchPrint', () => showBatchPrint());
