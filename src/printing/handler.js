@@ -4,8 +4,6 @@ const restClientInstance = require('./../restClient');
 const tmp = require('tmp');
 const fs = require('fs');
 const printer = require('@grandchef/node-printer')
-const printerWin = require('pdf-to-printer');
-const printerUnix = require('unix-print')
 const {isLinux, isWindows} = require('../helper')
 const {getDocumentPrinter, getProductLabelPrinter, getShipmentLabelPrinter, getRawLabelPrinter} = require('./printer');
 const {logDebug, logWarning} = require('./../logging');
@@ -19,8 +17,12 @@ const printAdditionalDocumentsFirst = config.has('printing.printAdditionalDocume
 // EPL2 Guide: https://www.servopack.de/support/zebra/EPL2_Manual.pdf
 
 function pdfPrinter() {
-    if (isWindows()) return printerWin;
-    if (isLinux()) return printerUnix;
+    if (isWindows()) {
+        return require('pdf-to-printer');
+    }
+    if (isLinux()) {
+        return require('unix-print');
+    }
 
     throw new Error(`unsupported platform. ${process.platform}`)
 }

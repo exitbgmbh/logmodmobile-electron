@@ -377,36 +377,36 @@ const showChangeLog = (force = false) => {
 const init = () => {
     const lock = app.requestSingleInstanceLock();
     if (!lock) {
-        logWarning('application', 'init', 'prevent second instance startup. exiting.');
-        app.quit();
-        return;
+       logWarning('application', 'init', 'prevent second instance startup. exiting.');
+       app.quit();
+       return;
     }
 
     app.on('certificate-error', function(event, webContents, url, error, certificate, callback) {
-        event.preventDefault();
-        callback(true);
+       event.preventDefault();
+       callback(true);
     });
 
     app.on('ready', bootApplication);
     app.on('window-all-closed', function () {
-        // On OS X it is common for applications and their menu bar
-        // to stay active until the user quits explicitly with Cmd + Q
-        if (process.platform !== 'darwin') {
-            app.quit()
-        }
+       // On OS X it is common for applications and their menu bar
+       // to stay active until the user quits explicitly with Cmd + Q
+       if (process.platform !== 'darwin') {
+           app.quit()
+       }
     });
 
     app.on('activate', function () {
-        // On OS X it's common to re-create a window in the app when the
-        // dock icon is clicked and there are no other windows open.
-        if (windowInstance === null) {
-            bootApplication(app);
-        }
+       // On OS X it's common to re-create a window in the app when the
+       // dock icon is clicked and there are no other windows open.
+       if (windowInstance === null) {
+           bootApplication(app);
+       }
     });
 
     // when application is shut down, we've to remove our temporary files
     app.on('quit', function () {
-        printingHandlerInstance.cleanup();
+       printingHandlerInstance.cleanup();
     });
 };
 

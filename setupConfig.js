@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const {logDebug, logInfo} = require('./src/logging');
 
-const defaultConfig = new Buffer(`{
+const defaultConfig = Buffer.from(`{
     "app": {
         "url": "https://your-logmod-mobile-instance-url",
         "autoUpdateCheckInterval": 600,

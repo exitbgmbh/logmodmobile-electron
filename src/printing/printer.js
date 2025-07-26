@@ -1,16 +1,27 @@
 const { logDebug } = require('./../logging');
 const config = require('config');
 const printer = require('pdf-to-printer');
-const {isLinux} = require("../helper");
+const {isLinux, isWindows} = require("../helper");
+
+function systemPrinter() {
+  if (isWindows()) {
+    return require('pdf-to-printer');
+  }
+  if (isLinux()) {
+    return require('unix-print');
+  }
+
+  throw new Error(`unsupported platform. ${process.platform}`)
+}
 
 let printerList = [];
-printer.getPrinters().then((res) => {
+systemPrinter().getPrinters().then((res) => {
   console.log('printer.js', 'getPrinters', res)
   printerList = res
 });
 
 let defaultPrinter = '';
-printer.getDefaultPrinter().then((res) => {
+systemPrinter().getDefaultPrinter().then((res) => {
   console.log('printer.js', 'getDefaultPrinter', res)
   defaultPrinter = res
 });

@@ -1,6 +1,8 @@
 const config = require('config');
+const { app } = require('electron')
 const { autoUpdater } = require('electron-updater');
 const { logInfo } = require('./logging');
+const electron = require("electron");
 
 let updateCheckPID = null;
 
@@ -8,6 +10,10 @@ let updateCheckPID = null;
  * initializes the electron-updater auto updater mechanism, using update interval from application config
  */
 const initializeAutoUpdateCheck = () => {
+    if (!app.isPackaged) {
+        return;
+    }
+
     let autoUpdateInterval = 0;
     if (config.has('app.autoUpdateCheckInterval')) {
         autoUpdateInterval = config.get('app.autoUpdateCheckInterval');
