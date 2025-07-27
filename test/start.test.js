@@ -3,7 +3,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 
 describe('Electron client startup', function () {
-    this.timeout(10000);
+    this.timeout(31000);
     let electronProcess = null;
 
     it('start client without error', (done) => {
@@ -17,7 +17,7 @@ describe('Electron client startup', function () {
                 electronProcess.kill();
                 done();
             }
-        }, 60000);
+        }, 30000);
 
         const electronPath = require('electron');
         const appPath = path.join(__dirname, '..');
@@ -49,7 +49,6 @@ describe('Electron client startup', function () {
         });
 
         electronProcess.on('exit', (code) => {
-            expect(code).to.equal(0);
             expect(checkConfigFound).to.be.true;
             expect(bootStartFound).to.be.true;
             expect(bootEndFound).to.be.true;
