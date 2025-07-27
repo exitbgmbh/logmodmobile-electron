@@ -22,7 +22,7 @@ describe('Electron client startup', function () {
         const electronPath = require('electron');
         const appPath = path.join(__dirname, '..');
 
-        electronProcess = spawn(electronPath, [appPath, '--trace-deprecation', '--trace-warnings'], { env: { ...process.env, ELECTRON_START_URL: 'https://lmm-blisstribute.exitb.de'}});
+        electronProcess = spawn(electronPath, [appPath, '--trace-deprecation', '--trace-warnings', '--no-sandbox'], { env: { ...process.env, ELECTRON_START_URL: 'https://lmm-blisstribute.exitb.de'}});
 
         electronProcess.stderr.on('data', (data) => {
             electronProcess.kill();
@@ -44,7 +44,6 @@ describe('Electron client startup', function () {
             if (checkConfigFound && bootStartFound && bootEndFound) {
                 clearTimeout(securityTimeout);
                 electronProcess.kill();
-                done();
             }
         });
 
@@ -52,6 +51,8 @@ describe('Electron client startup', function () {
             expect(checkConfigFound).to.be.true;
             expect(bootStartFound).to.be.true;
             expect(bootEndFound).to.be.true;
+
+            done();
         });
 
     });
