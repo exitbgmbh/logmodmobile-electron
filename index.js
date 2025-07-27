@@ -3,6 +3,7 @@ const log = require('electron-log');
 console.log(process.versions)
 console.log(process.version)
 console.log(`Node.js ABI version: ${process.versions.modules}`);
+console.log(`env: ${process.env}`);
 
 process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error);

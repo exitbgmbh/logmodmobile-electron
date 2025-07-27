@@ -22,7 +22,7 @@ describe('Electron client startup', function () {
         const electronPath = require('electron');
         const appPath = path.join(__dirname, '..');
 
-        electronProcess = spawn(electronPath, [appPath, '--trace-deprecation', '--trace-warnings', '--no-sandbox'], { env: { ...process.env, ELECTRON_START_URL: 'https://lmm-blisstribute.exitb.de'}});
+        electronProcess = spawn(electronPath, [appPath, '--trace-deprecation', '--trace-warnings', '--no-sandbox', '--disable-gpu'], { env: { ...process.env, TESTING: true}});
 
         electronProcess.stderr.on('data', (data) => {
             electronProcess.kill();

@@ -344,7 +344,10 @@ const bootApplication = () => {
     }
 
     loadPlugins();
-    instantiateApplicationWindow();
+    if (process.env.TESTING !== 'true') {
+        instantiateApplicationWindow();
+    }
+
     logInfo('application', 'bootApplication', 'end');
 };
 
