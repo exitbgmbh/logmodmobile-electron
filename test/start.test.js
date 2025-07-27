@@ -3,35 +3,51 @@ const { spawn } = require('child_process');
 const path = require('path');
 
 describe('Electron client startup', function () {
-    console.log(process.platform)
-    this.timeout(10000); // Gib Electron ein paar Sekunden zum Starten
-
+    this.timeout(10000);
     let electronProcess = null;
 
-    it('should start without crashing', (done) => {
-        const electronPath = require('electron');
-        const appPath = path.join(__dirname, '..');
-
-        electronProcess = spawn(electronPath, [appPath, '--trace-deprecation', '--trace-warnings']);
-
+    it('start client without error', (done) => {
         let hasExited = false;
+        let checkConfigFound = false;
+        let bootStartFound = false;
+        let bootEndFound = false;
 
-        electronProcess.stderr.on('data', (data) => {
-            done(new Error(`Electron exited with data ${data}`));
-            electronProcess.kill();
-        });
-
-        electronProcess.on('exit', (code) => {
-            hasExited = true;
-        });
-
-        // Sicherheitshalber nach 3 Sekunden prüfen, ob es noch läuft
         setTimeout(() => {
             if (!hasExited) {
-                expect(true).to.be.true;
                 electronProcess.kill();
                 done();
             }
         }, 3000);
+
+        const electronPath = require('electron');
+        const appPath = path.join(__dirname, '..');
+
+        electronProcess = spawn(electronPath, [appPath, '--trace-deprecation', '--trace-warnings'], { env: { ...process.env, ELECTRON_START_URL: 'https://lmm-blisstribute.exitb.de'}});
+
+        electronProcess.stderr.on('data', (data) => {
+            electronProcess.kill();
+            done(new Error(`Electron exited with data ${data}`));
+        });
+
+        electronProcess.stdout.on('data', (data) => {
+            console.log(`electron client output: ${data}`)
+            if (data.includes('setupConfig::checkConfig::start')) {
+                checkConfigFound = true;
+            }
+            if (data.includes('application::bootApplication::start')) {
+                bootStartFound = true;
+            }
+            if (data.includes('application::bootApplication::end')) {
+                bootEndFound = true;
+            }
+        });
+
+        electronProcess.on('exit', (code) => {
+            expect(code).to.equal(0);
+            expect(checkConfigFound).to.be.true;
+            expect(bootStartFound).to.be.true;
+            expect(bootEndFound).to.be.true;
+        });
+
     });
 });
