@@ -12,12 +12,12 @@ describe('Electron client startup', function () {
         let bootStartFound = false;
         let bootEndFound = false;
 
-        setTimeout(() => {
+        let securityTimeout = setTimeout(() => {
             if (!hasExited) {
                 electronProcess.kill();
                 done();
             }
-        }, 3000);
+        }, 60000);
 
         const electronPath = require('electron');
         const appPath = path.join(__dirname, '..');
@@ -39,6 +39,12 @@ describe('Electron client startup', function () {
             }
             if (data.includes('application::bootApplication::end')) {
                 bootEndFound = true;
+            }
+
+            if (checkConfigFound && bootStartFound && bootEndFound) {
+                clearTimeout(securityTimeout);
+                electronProcess.kill();
+                done();
             }
         });
 
