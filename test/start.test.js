@@ -7,6 +7,7 @@ describe('Electron client startup', function () {
     let electronProcess = null;
 
     it('start client without error', (done) => {
+        let hasError = false;
         let hasExited = false;
         let checkConfigFound = false;
         let bootStartFound = false;
@@ -25,6 +26,7 @@ describe('Electron client startup', function () {
         electronProcess = spawn(electronPath, [appPath, '--trace-deprecation', '--trace-warnings', '--no-sandbox', '--disable-gpu'], { env: { ...process.env, TESTING: true}});
 
         electronProcess.stderr.on('data', (data) => {
+            hasError = true;
             electronProcess.kill();
             done(new Error(`Electron exited with data ${data}`));
         });
@@ -48,9 +50,14 @@ describe('Electron client startup', function () {
         });
 
         electronProcess.on('exit', (code) => {
+            if (hasError) {
+                return;
+            }
+
             expect(checkConfigFound).to.be.true;
             expect(bootStartFound).to.be.true;
             expect(bootEndFound).to.be.true;
+            expect(hasError).to.be.false;
 
             done();
         });
