@@ -5,7 +5,7 @@ class RFIDHandler
 {
     initialized = false;
 
-    initialize = () => {
+    initialize = (applicationWindow) => {
         if (this.initialized) {
            return;
         }
@@ -22,27 +22,25 @@ class RFIDHandler
                                 console.error(err);
                                 return;
                             }
-                            console.log('Protocol:', protocol);
 
-                            // APDU-Befehl zum UID-Auslesen
                             const GET_UID = Buffer.from([0xFF, 0xCA, 0x00, 0x00, 0x00]);
-
                             reader.transmit(GET_UID, 40, protocol, function(err, data) {
+                                console.log('GETUID result', err, data)
                                 if (err) {
                                     console.error('Transmit error:', err);
                                     return;
                                 }
-                                // UID + Statuswort (letzte 2 Bytes)
-                                const uid = data.slice(0, -2);
-                                const sw1 = data[data.length - 2];
-                                const sw2 = data[data.length - 1];
 
-                                console.log('UID:', uid.toString('hex').toUpperCase());
-                                console.log(`Status: ${sw1.toString(16)} ${sw2.toString(16)}`);
+                                const uid = data.subarray(0, -2);
+                                const tagId = uid.toString('hex').toUpperCase();
+                                console.log(`UID: ${tagId}`);
+
+                                applicationWindow?.webContents?.send('debug-rfid', { tagId })
 
                                 reader.disconnect(reader.SCARD_LEAVE_CARD, function(err) {
-                                    if (err) console.error(err);
-                                    else console.log('Disconnected');
+                                    if (err) {
+                                        console.error(err);
+                                    }
                                 });
                             });
                         });

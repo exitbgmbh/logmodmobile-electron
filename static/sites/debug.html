@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Hardware Interface</title>
+    <script defer src="js/debug.js"></script>
+    <style>
+        body {
+            font-family: monospace;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #console {
+            flex: 1;
+            background: #111;
+            color: #0f0;
+            padding: 1rem;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        #controls {
+            padding: 1rem;
+            background: #222;
+            display: flex;
+            gap: 1rem;
+        }
+
+        button {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div id="console"></div>
+<div id="controls">
+    <button id="request-weight">Gewicht anfragen</button>
+</div>
+</body>
+</html>

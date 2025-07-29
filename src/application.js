@@ -60,7 +60,7 @@ const windowOnLoadCompleted = () => {
  */
 const showApplicationError = (error) => {
     windowInstance.loadFile(
-        'static/html/applicationBootError.html',
+        'static/sites/applicationBootError.html',
         {search: 'error=' + JSON.stringify(error.message)}
     ).then(() => {
 
@@ -98,7 +98,14 @@ const reloadApplicationConfig = () => {
  * displaying json editor
  */
 const showBatchPrint = () => {
-    windowInstance.loadFile('static/html/batchPrinting.html').then(() => {});
+    windowInstance.loadFile('static/sites/batchPrinting.html').then(() => {});
+};
+
+/**
+ * displaying json editor
+ */
+const showDebugPage = () => {
+    windowInstance.loadFile('static/sites/debug.html').then(() => {});
 };
 
 /**
@@ -298,6 +305,11 @@ const bindIpcEvents = () => {
         return version;
     });
 
+    ipcMain.on('request-weight', async () => {
+        const weight = await scaleHandler.callScale();
+        windowInstance.webContents.send('debug-weight', { weight });
+    });
+
     // deprecated - not used anymore
     ipcMain.on('back', () => showLogModMobile(windowInstance));
     // deprecated - not used anymore
@@ -316,6 +328,7 @@ const bootApplication = () => {
     menuEventEmitter.on('showConfig', () => showApplicationConfig());
     menuEventEmitter.on('reloadConfig', () => reloadApplicationConfig());
     menuEventEmitter.on('showBatchPrint', () => showBatchPrint());
+    menuEventEmitter.on('showDebugPage', () => showDebugPage());
     menuEventEmitter.on('checkForUpdate', () => manualCheckForUpdate());
     menuEventEmitter.on('testNewRelease', () => notifyForUpdate());
     menuEventEmitter.on('showChangeLog', () => showChangeLog(true));
@@ -335,7 +348,6 @@ const bootApplication = () => {
         bindIpcEvents();
 
         scaleHandler.initialize();
-        rfidHandler.initialize();
     } catch (err) {
         console.log(err);
         logWarning('application', 'bootApplication', err.message);
@@ -346,6 +358,12 @@ const bootApplication = () => {
     loadPlugins();
     if (process.env.TESTING !== 'true') {
         instantiateApplicationWindow();
+    }
+
+    try {
+        rfidHandler.initialize(windowInstance);
+    } catch (err) {
+        console.log('error initializing rfid', err)
     }
 
     logInfo('application', 'bootApplication', 'end');
@@ -372,7 +390,7 @@ const showChangeLog = (force = false) => {
     });
 
     releaseNoteBrowserWindow.setMenu(null);
-    releaseNoteBrowserWindow.loadFile('static/html/changeLog.html');
+    releaseNoteBrowserWindow.loadFile('static/sites/changeLog.html');
     releaseNoteBrowserWindow.show();
     releaseNoteBrowserWindow.focus();
 }

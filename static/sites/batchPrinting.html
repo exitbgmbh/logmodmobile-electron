@@ -28,7 +28,6 @@ Druckername: <input type="text" id="printerName" style="margin-bottom: 5px"/>
 
 <script>
     const { shell } = require('electron');
-    const schema = require('./../configSchema.json');
 
     back = () => {
         window.ipcRenderer.send('back');

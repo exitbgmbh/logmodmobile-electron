@@ -57,9 +57,9 @@ buildMenu = () => {
     tools.submenu.push({ role: 'toggledevtools' });
     tools.submenu.push({ type: 'separator' });
     tools.submenu.push({
-        label: 'Waage testen',
+        label: 'HW-Debug',
         click: async () => {
-            console.log('got scale result', await scaleHandler.callScale());
+            menuEventEmitter.emit('showDebugPage');
         }
     });
 
