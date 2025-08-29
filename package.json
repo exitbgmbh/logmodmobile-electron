@@ -88,7 +88,8 @@
       ]
     },
     "nsis": {
-      "oneClick": true
+      "oneClick": true,
+      "packElevateHelper": false
     },
     "publish": {
       "provider": "github"
