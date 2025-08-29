@@ -278,16 +278,24 @@ const bindIpcEvents = () => {
 
     // login form has been loaded in renderer, if configured, send credentials and login automatically
     ipcMain.on('await-authentication', (event, arg) => {
-        if (!config.has('app.username') || !config.has('app.password')) {
+        // deprecated
+        if (config.has('app.username') && config.has('app.password')) {
+            console.debug('auto authentication with credentials');
+            windowInstance.webContents.send('auth-request', {
+                username: config.get('app.username'),
+                password: config.get('app.password')
+            });
+
             return;
         }
 
-        console.debug('got awaiting authentication event');
-        windowInstance.webContents.send('auth-request', {
-            username: config.get('app.username'),
-            password: config.get('app.password')
-        });
-        console.debug('auth event answered');
+        if (config.has('app.autoLogin.clientCode') && config.has('app.autoLogin.token')) {
+            console.debug('auto authentication with token');
+            windowInstance.webContents.send('auth-request', {
+                clientCode: config.get('app.autoLogin.clientCode'),
+                token: config.get('app.autoLogin.token')
+            });
+        }
     });
 
     // promiseIpc is an advanced ipc package - it returns promised
