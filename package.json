@@ -8,6 +8,7 @@
     "electron-dev-lmm": "NODE_ENV=development ELECTRON_START_URL=http://lmm-exitbtest.exitb.de electron .",
     "electron-dev-lmmdev": "SHOW_DEV_TOOLS=1 NODE_ENV=development ELECTRON_START_URL=http://lmmdev-exitb-erp.blissdev.de electron . --no-sandbox",
     "build": "electron-builder -l -w -p never",
+    "postinstall": "electron-builder install-app-deps",
     "buildWindows": "electron-builder -w -p never",
     "buildLinux": "electron-builder -l -p never",
     "publish": "electron-builder -l -w -p always",
