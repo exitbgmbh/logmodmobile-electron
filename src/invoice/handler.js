@@ -28,10 +28,14 @@ class InvoiceHandler {
               const { response } = res;
               let event = 'pickBoxInvoiceSuccess';
               // event for lmm - toggle mask
-              eventEmitter.emit(event, {...messageTemplate, event: event, data: {...messageTemplate.data, invoiceNumber: response.invoiceNumber}});
+              eventEmitter.emit(event, {...messageTemplate, event: event, data: {...messageTemplate.data, invoiceNumber: response.invoiceNumber, shippingRequestNumber: response.shippingRequestNumber}});
 
               if (config.has('printing.requestInvoiceDocumentsMerged') && config.get('printing.requestInvoiceDocumentsMerged') === true) {
-                  eventEmitter.emit('requestDocuments', {documentType: 'allDocs', invoiceNumber: response.invoiceNumber});
+                  if (response.invoiceNumber === 'NO_INVOICE') {
+                      eventEmitter.emit('requestDocuments', {documentType: 'allDocs', invoiceNumber: response.shippingRequestNumber});
+                  } else {
+                      eventEmitter.emit('requestDocuments', {documentType: 'allDocs', invoiceNumber: response.invoiceNumber});
+                  }
               } else {
                   eventEmitter.emit('invoiceCreationSuccess', response);
               }
