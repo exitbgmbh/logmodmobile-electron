@@ -269,7 +269,7 @@ class PrintingHandler {
             }
             case 'DELIVERY': {
                 if (!data.hasOwnProperty('invoiceNumber')) {
-                    this._handleError(new Error('invalid data, no invoice number given'));
+                    this._handleError(new Error('invalid data, no invoice or shipping request number given'));
                     return;
                 }
 
@@ -398,7 +398,6 @@ class PrintingHandler {
         }
 
         const tmpFileName = this._saveResultToPdf(contentToPrint, isBase64);
-
         const printerConfig = getDocumentPrinter(type, data.advertisingMedium, data.deliveryCountry, data.isEU);
         const printingOptions = this._getOptionsForPrinting(printerConfig);
 
