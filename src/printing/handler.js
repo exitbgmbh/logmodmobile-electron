@@ -403,7 +403,7 @@ class PrintingHandler {
 
         logDebug('printingHandler', '_handleDocumentPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
         if (isWindows()) {
-            pdfPrinter().print(tmpFileName, printingOptions).then((r) => {
+            pdfPrinter().print(tmpFileName, printingOptions.printer).then((r) => {
                 console.log('after print', r);
                 if (
                     process.env.NODE_ENV === 'development' &&
@@ -497,7 +497,11 @@ class PrintingHandler {
         const printingOptions = this._getOptionsForPrinting(printerConfig, numberOfCopies);
 
         logDebug('printingHandler', '_handleProductLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-        pdfPrinter().print(tmpFileName, printingOptions).then(console.log).catch(console.log);
+        if (isWindows()) {
+            pdfPrinter().print(tmpFileName, printingOptions).then(console.log).catch(console.log);
+        } else {
+            pdfPrinter().print(tmpFileName, printingOptions.printer).then(console.log).catch(console.log);
+        }
     };
 
     /**
@@ -538,17 +542,32 @@ class PrintingHandler {
         const printingOptions = this._getOptionsForPrinting(printerConfig);
 
         data.shipmentLabelCollection.forEach((label) => {
-            if (label.shipmentLabel && label.shipmentLabel.trim() !== '') {
-                let shipmentTmpFile = this._saveResultToPdf(label.shipmentLabel);
+            if (isWindows()) {
+                if (label.shipmentLabel && label.shipmentLabel.trim() !== '') {
+                    let shipmentTmpFile = this._saveResultToPdf(label.shipmentLabel);
 
-                logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-                pdfPrinter().print(shipmentTmpFile, printingOptions).then(console.log).catch(console.log);
-            }
+                    logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
+                    pdfPrinter().print(shipmentTmpFile, printingOptions).then(console.log).catch(console.log);
+                }
 
-            if (label.returnLabel && label.returnLabel.trim() !== '') {
-                let returnTmpFile = this._saveResultToPdf(label.returnLabel);
-                logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-                pdfPrinter().print(returnTmpFile, printingOptions).then(console.log).catch(console.log);
+                if (label.returnLabel && label.returnLabel.trim() !== '') {
+                    let returnTmpFile = this._saveResultToPdf(label.returnLabel);
+                    logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
+                    pdfPrinter().print(returnTmpFile, printingOptions).then(console.log).catch(console.log);
+                }
+            } else {
+                if (label.shipmentLabel && label.shipmentLabel.trim() !== '') {
+                    let shipmentTmpFile = this._saveResultToPdf(label.shipmentLabel);
+
+                    logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
+                    pdfPrinter().print(shipmentTmpFile, printingOptions.printer).then(console.log).catch(console.log);
+                }
+
+                if (label.returnLabel && label.returnLabel.trim() !== '') {
+                    let returnTmpFile = this._saveResultToPdf(label.returnLabel);
+                    logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
+                    pdfPrinter().print(returnTmpFile, printingOptions.printer).then(console.log).catch(console.log);
+                }
             }
         });
     };
