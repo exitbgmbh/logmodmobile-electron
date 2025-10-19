@@ -2,11 +2,16 @@
   "app": {
     "url": "https://your-logmod-mobile-instance-url",
     "autoUpdateCheckInterval": 600,
+    "autoUpdateAllowPrerelease": false,
     "heartbeatInterval": 5,
     "dashboardOnlyMode": false,
     "identification": "LogModMobile-Hostname",
-    "username": "for debug purposes and used in persistentLogin mode",
-    "password": "for debug purposes and used in persistentLogin mode",
+    "autoLogin": {
+      "clientCode": "XXX",
+      "token": "VHS1-encrypted-token"
+    },
+    "username": "deprecated, please use autoLogin settings",
+    "password": "deprecated, please use autoLogin settings",
     "persistentLogin": false,
     "restServer": {
       "enable": false,
@@ -22,7 +27,8 @@
   },
   "invoicing": {
     "directPrinting": false,
-    "watchBoxes": "$x"
+    "watchBoxes": "$x",
+    "disablePrintingOnCreation": false
   },
   "shipping": {
     "DHL3": {
@@ -67,14 +73,25 @@
 
     "defaultAdditionalDocumentPrinter": "PDF",
     "defaultAdditionalDocumentPrinterMode": "monochrome",
+
     "printAdditionalDocuments": true,
     "additionalDocumentUrl": "",
     "printAdditionalDocumentsFirst": false,
 
     "rotateProductLabel": false,
     "productLabelFormatName": "",
+    "productLabelOptions": "",
+
     "printProductLabelRAW": false,
     "productLabelRAWTemplate": "N\nS4\nD15\nq400\nR\nB20,10,0,1,2,30,173,B,\"{%barcode}\"\nP{%quantity}\n",
+
+    "printShippingRequestPackageLabel": false,
+    "printShippingRequestPackageLabelRaw": false,
+    "shippingRequestPackageLabelRAWTemplate": "N\nS4\nD15\nq300\nR0,0\nB10,10,0,1,3,20,100,N,\"{%packageId}\"\nA10,150,0,1,3,3,N,\"{%packageId}\"\nP1\n",
+
+    "autoPrintMultiPackageSupplyNote": false,
+    "alwaysPrintMultiPackageSupplyNote": false,
+    "requestMultiPackageSupplyNoteOnDemand": false,
 
     "defaultInvoiceSlipPrintCountCC": 1,
     "defaultInvoiceSlipPrintCountEU": 1,

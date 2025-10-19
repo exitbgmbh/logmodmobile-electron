@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "electron-test": "electron .",
-    "electron-dev-extlmm": "NODE_ENV=development ELECTRON_START_URL=http://lmm-narayana.exitb.de electron .",
-    "electron-dev-lmm": "NODE_ENV=development ELECTRON_START_URL=http://lmm-exitb-erp.blissdev.de electron .",
-    "electron-dev-lmmdev": "SHOW_DEV_TOOLS=1 NODE_ENV=development ELECTRON_START_URL=http://lmmdev-exitb-erp.blissdev.de electron . --no-sandbox",
+    "stg-electron-ext":  "SHOW_DEV_TOOLS=1 NODE_ENV=development ELECTRON_START_URL=http://lmm-narayana.exitb.de electron .",
+    "blissdev-electron-local":     "SHOW_DEV_TOOLS=1 NODE_ENV=development ELECTRON_START_URL=http://lmm-exitb-erp.blissdev.de electron .",
+    "dev-electron-alpha":  "SHOW_DEV_TOOLS=1 NODE_ENV=development ELECTRON_START_URL=http://lmmdev-exitb-erp.blissdev.de electron . --no-sandbox",
     "build": "electron-builder -l -w -p never",
     "postinstall": "electron-builder install-app-deps",
     "buildWindows": "electron-builder -w -p never",
