@@ -402,9 +402,9 @@ class PrintingHandler {
         const printingOptions = this._getOptionsForPrinting(printerConfig);
 
         logDebug('printingHandler', '_handleDocumentPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-        if (isWindows()) {
-            pdfPrinter().print(tmpFileName, printingOptions).then((r) => {
-                console.log('after print', r);
+        this._print(tmpFileName, printingOptions, (r) => {
+            console.log('after print', r);
+            if (isLinux()) {
                 if (
                     process.env.NODE_ENV === 'development' &&
                     config.has('printing.debugAutoOpenDocumentAfterPrint') &&
@@ -412,19 +412,9 @@ class PrintingHandler {
                 ) {
                     exec('xdg-open ' + tmpFileName);
                 }
-            }).catch(console.log);
-        } else {
-            pdfPrinter().print(tmpFileName, printingOptions.printer, printingOptions).then((r) => {
-                console.log('after print', r);
-                if (
-                    process.env.NODE_ENV === 'development' &&
-                    config.has('printing.debugAutoOpenDocumentAfterPrint') &&
-                    config.get('printing.debugAutoOpenDocumentAfterPrint')
-                ) {
-                    exec('xdg-open ' + tmpFileName);
-                }
-            }).catch(console.log);
-        }
+            }
+        }, (r) => console.log(r))
+
     };
 
     _handleRawPrint = (printerName, command) => {
@@ -451,23 +441,38 @@ class PrintingHandler {
         this._handleRawPrint(printerName, command)
     };
 
+    _print = (document, printingOptions, successCallback = (res) => console.log(res), errorCallback = (res) => console.log(res)) => {
+        if (isWindows()) {
+            pdfPrinter()
+                .print(document, printingOptions)
+                .then((res) => successCallback(res))
+                .catch((res) => errorCallback(res));
+
+            return;
+        }
+        pdfPrinter()
+            .print(document, printingOptions.printer)
+            .then((res) => successCallback(res))
+            .catch((res) => errorCallback(res));
+    };
+
     productLabelPrintRaw = (printerName, template, numberOfCopies, ean13, price, articleNumber, classification1, classification2) => {
         const command = template
-        .replaceAll('{%quantity}', numberOfCopies.toString())
-        .replaceAll('{%barcode}', ean13)
-        .replaceAll('{%articleNumber}', articleNumber)
-        .replaceAll('{%price}', price)
-        .replaceAll('{%classification1}', classification1)
-        .replaceAll('{%classification2}', classification2);
+            .replaceAll('{%quantity}', numberOfCopies.toString())
+            .replaceAll('{%barcode}', ean13)
+            .replaceAll('{%articleNumber}', articleNumber)
+            .replaceAll('{%price}', price)
+            .replaceAll('{%classification1}', classification1)
+            .replaceAll('{%classification2}', classification2);
 
         this._handleRawPrint(printerName, command)
     };
 
     shippingRequestPackageLabelPrintRaw = (printerName, template, numberOfCopies, shippingRequestPackageNumber, shippingRequestNumber) => {
         const command = template
-        .replaceAll('{%quantity}', numberOfCopies.toString())
-        .replaceAll('{%packageId}', shippingRequestPackageNumber)
-        .replaceAll('{%shippingRequest}', shippingRequestNumber);
+            .replaceAll('{%quantity}', numberOfCopies.toString())
+            .replaceAll('{%packageId}', shippingRequestPackageNumber)
+            .replaceAll('{%shippingRequest}', shippingRequestNumber);
 
         this._handleRawPrint(printerName, command)
     };
@@ -495,11 +500,7 @@ class PrintingHandler {
         const printingOptions = this._getOptionsForPrinting(printerConfig, numberOfCopies);
 
         logDebug('printingHandler', '_handleProductLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-        if (isWindows()) {
-            pdfPrinter().print(tmpFileName, printingOptions).then(console.log).catch(console.log);
-        } else {
-            pdfPrinter().print(tmpFileName, printingOptions.printer).then(console.log).catch(console.log);
-        }
+        this._print(tmpFileName, printingOptions);
     };
 
     /**
@@ -525,7 +526,7 @@ class PrintingHandler {
         const printingOptions = this._getOptionsForPrinting(printerConfig);
 
         logDebug('printingHandler', '_handleShippingRequestPackageLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-        pdfPrinter().print(tmpFileName, printingOptions).then(console.log).catch(console.log);
+        this._print(tmpFileName, printingOptions);
     };
 
     /**
@@ -540,33 +541,46 @@ class PrintingHandler {
         const printingOptions = this._getOptionsForPrinting(printerConfig);
 
         data.shipmentLabelCollection.forEach((label) => {
-            if (isWindows()) {
-                if (label.shipmentLabel && label.shipmentLabel.trim() !== '') {
-                    let shipmentTmpFile = this._saveResultToPdf(label.shipmentLabel);
+            if (label.shipmentLabel && label.shipmentLabel.trim() !== '') {
+                let shipmentTmpFile = this._saveResultToPdf(label.shipmentLabel);
 
-                    logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-                    pdfPrinter().print(shipmentTmpFile, printingOptions).then(console.log).catch(console.log);
-                }
-
-                if (label.returnLabel && label.returnLabel.trim() !== '') {
-                    let returnTmpFile = this._saveResultToPdf(label.returnLabel);
-                    logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-                    pdfPrinter().print(returnTmpFile, printingOptions).then(console.log).catch(console.log);
-                }
-            } else {
-                if (label.shipmentLabel && label.shipmentLabel.trim() !== '') {
-                    let shipmentTmpFile = this._saveResultToPdf(label.shipmentLabel);
-
-                    logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-                    pdfPrinter().print(shipmentTmpFile, printingOptions.printer).then(console.log).catch(console.log);
-                }
-
-                if (label.returnLabel && label.returnLabel.trim() !== '') {
-                    let returnTmpFile = this._saveResultToPdf(label.returnLabel);
-                    logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-                    pdfPrinter().print(returnTmpFile, printingOptions.printer).then(console.log).catch(console.log);
-                }
+                logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
+                this._print(shipmentTmpFile, printingOptions);
             }
+
+            if (label.returnLabel && label.returnLabel.trim() !== '') {
+                let returnTmpFile = this._saveResultToPdf(label.returnLabel);
+                logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
+                this._print(shipmentTmpFile, printingOptions);
+            }
+
+            // if (isWindows()) {
+            //     if (label.shipmentLabel && label.shipmentLabel.trim() !== '') {
+            //         let shipmentTmpFile = this._saveResultToPdf(label.shipmentLabel);
+            //
+            //         logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
+            //         pdfPrinter().print(shipmentTmpFile, printingOptions).then(console.log).catch(console.log);
+            //     }
+            //
+            //     if (label.returnLabel && label.returnLabel.trim() !== '') {
+            //         let returnTmpFile = this._saveResultToPdf(label.returnLabel);
+            //         logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
+            //         pdfPrinter().print(returnTmpFile, printingOptions).then(console.log).catch(console.log);
+            //     }
+            // } else {
+            //     if (label.shipmentLabel && label.shipmentLabel.trim() !== '') {
+            //         let shipmentTmpFile = this._saveResultToPdf(label.shipmentLabel);
+            //
+            //         logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
+            //         pdfPrinter().print(shipmentTmpFile, printingOptions.printer).then(console.log).catch(console.log);
+            //     }
+            //
+            //     if (label.returnLabel && label.returnLabel.trim() !== '') {
+            //         let returnTmpFile = this._saveResultToPdf(label.returnLabel);
+            //         logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
+            //         pdfPrinter().print(returnTmpFile, printingOptions.printer).then(console.log).catch(console.log);
+            //     }
+            // }
         });
     };
 
@@ -582,6 +596,9 @@ class PrintingHandler {
         const options = {}
         if (printerConfig.printer) {
             options.printer = printerConfig.printer;
+            if (typeof options.printer == 'object') {
+                options.printer = options.printer.name;
+            }
         }
 
         options.copies = numberOfCopies;
