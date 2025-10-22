@@ -551,36 +551,8 @@ class PrintingHandler {
             if (label.returnLabel && label.returnLabel.trim() !== '') {
                 let returnTmpFile = this._saveResultToPdf(label.returnLabel);
                 logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-                this._print(shipmentTmpFile, printingOptions);
+                this._print(returnTmpFile, printingOptions);
             }
-
-            // if (isWindows()) {
-            //     if (label.shipmentLabel && label.shipmentLabel.trim() !== '') {
-            //         let shipmentTmpFile = this._saveResultToPdf(label.shipmentLabel);
-            //
-            //         logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-            //         pdfPrinter().print(shipmentTmpFile, printingOptions).then(console.log).catch(console.log);
-            //     }
-            //
-            //     if (label.returnLabel && label.returnLabel.trim() !== '') {
-            //         let returnTmpFile = this._saveResultToPdf(label.returnLabel);
-            //         logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-            //         pdfPrinter().print(returnTmpFile, printingOptions).then(console.log).catch(console.log);
-            //     }
-            // } else {
-            //     if (label.shipmentLabel && label.shipmentLabel.trim() !== '') {
-            //         let shipmentTmpFile = this._saveResultToPdf(label.shipmentLabel);
-            //
-            //         logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-            //         pdfPrinter().print(shipmentTmpFile, printingOptions.printer).then(console.log).catch(console.log);
-            //     }
-            //
-            //     if (label.returnLabel && label.returnLabel.trim() !== '') {
-            //         let returnTmpFile = this._saveResultToPdf(label.returnLabel);
-            //         logDebug('printingHandler', '_handleShipmentLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
-            //         pdfPrinter().print(returnTmpFile, printingOptions.printer).then(console.log).catch(console.log);
-            //     }
-            // }
         });
     };
 
