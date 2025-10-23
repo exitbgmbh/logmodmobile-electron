@@ -33,7 +33,7 @@ class InvoiceHandler {
                 }
 
                 const {response} = res;
-                const disableInvoicePrinting = config.has('printing.disablePrintingOnCreation') && config.get('printing.disablePrintingOnCreation');
+                const disableInvoicePrinting = config.has('invoicing.disablePrintingOnCreation') && config.get('invoicing.disablePrintingOnCreation');
 
                 let event = 'pickBoxInvoiceSuccess';
                 // event for lmm - toggle mask
