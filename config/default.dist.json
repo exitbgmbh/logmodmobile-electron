@@ -1,23 +1,48 @@
 {
   "app": {
+
+    "doc::url": "logmodmobile instance url, starts with https://lmm-",
     "url": "https://your-logmod-mobile-instance-url",
+
+    "doc::autoUpdateCheckInterval": "interval to check for updates. set to 0 to disable automatic updates (really not recommended)",
     "autoUpdateCheckInterval": 600,
+
+    "doc::autoUpdateAllowPrerelease": "allow BETA / pre release update",
     "autoUpdateAllowPrerelease": false,
+
+    "doc::heartbeatInterval": "heartbeat interval",
     "heartbeatInterval": 5,
+
+    "doc::dashboardOnlyMode": "enable dashboard only mode for logmod. only the dashboard is available via the frontend and menu is hidden.",
     "dashboardOnlyMode": false,
+
+    "doc::identification": "logmod workstation identification. if parameter is omitted or blank, the pcs hostname will be used",
     "identification": "LogModMobile-Hostname",
+
+    "doc::autoLogin": "automatic login settings, remove node if not used. If you want to use this, please contact exitB support",
     "autoLogin": {
       "clientCode": "XXX",
       "token": "VHS1-encrypted-token"
     },
+
+    "doc::username": "deprecated automatic login settings, please use autoLogin settings",
     "username": "deprecated, please use autoLogin settings",
+
+    "doc::password": "deprecated automatic login settings, please use autoLogin settings",
     "password": "deprecated, please use autoLogin settings",
+
+    "doc::persistentLogin": "automatically refresh login token. useful in combination with automatic login and dashboard mode",
     "persistentLogin": false,
+
+    "doc::restServer": "logmod rest server. if enabled, server will start with configured port on interface 0.0.0.0 (public). necessary with hardware BatchOrder or AutoStore-Shipout integration",
     "restServer": {
       "enable": false,
       "port": 3005
     }
+
   },
+
+  "doc::scale": "hardware scale settings. If you want to use this, please contact exitB support",
   "scale": {
     "type": "None",
     "path": "/dev/ttyUSB0",
@@ -25,78 +50,141 @@
     "command": [],
     "parserDelimiter": []
   },
+
+  "doc::invoicing": "invoice creation settings",
   "invoicing": {
+    "doc::directPrinting": "enable direct invoice printing / creation. the invoice will be created and printed directly on logmod workstation printer (default system printer if not configured otherwise). if enabled, watchBoxes expressions are omitted on this workstation",
     "directPrinting": false,
+
+    "doc::watchBoxes": "enable invoice printing / creation via websocket messages. useful in larger setups with dedicated scan in workstations. watchBoxes is a regular expression (ECMASCRIPT/JS syntax)",
     "watchBoxes": "$x",
+
+    "doc::disablePrintingOnCreation": "disables the printing request after invoice creation. useful for paperless setups",
     "disablePrintingOnCreation": false
   },
+
+
+  "doc::shipping": "shipout configurations. every shipment type code needs to be configured as a separate node here *2",
   "shipping": {
     "DHL3": {
+      "doc::printing": "either the shipment type will be processed as printing (label is generated online via webservice) *1",
       "printing": {
+        "doc::shipmentLabelPrinter": "printer name to be used for this specific shipment type to print the labels",
         "shipmentLabelPrinter": "PDF",
+
+        "doc::rotate": "rotate the shipment labels by 90degree (only the paper, not the format).",
         "rotate": false,
+
+        "doc::paperFormatName": "the configured printer paper format / template to use",
         "paperFormatName": ""
       }
     },
     "DHL": {
+      "doc::polling": "*1 - or shipment type will be processed as polling file. external polling software is necessary (like DHL Versenden, Heidler HVS32 or VLog)",
       "polling": {
+
+        "doc::fileExport": "where an how to store the polling export files",
         "fileExport": {
+
+          "doc::path": "path to the export folder. you need to double escape on windows systems e.g. C:\\Documents\\Foo\\Bar",
           "path": "PATH",
+
+          "doc::pattern": "export file name pattern. Available parameters are {COUNTER} and {INVOICE_NUMBER}. {COUNTER} will export a number increased by 1 every time an export file is written",
           "pattern": "Poll-{COUNTER}.csv",
+
+          "doc::encoding": "VHS1 will always export data with UTF-8 encoding. transcoding can be configured here",
           "encoding": "iso-8859-1"
         },
+
+        "doc::fileImport":"where an how to search for the polling import files (tracking number import)",
         "fileImport": {
+
+          "doc::path":"path to the import folder. you need to double escape on windows systems e.g. C:\\Documents\\Foo\\Bar",
           "path": "PATH",
+
+          "doc::pattern":"ECMASCRIPT/JS regex file filter pattern",
           "pattern": "^ELSendEx.*.txt$",
+
+          "doc::encoding":"VHS1 will always expect import data with UTF-8 encoding. this needs to be the encoding given from external polling software to transcode into utf8",
           "encoding": "utf-8"
         }
       }
     }
   },
+
   "printing": {
+    "doc::requestInvoiceDocumentsMerged": "request all necessary documents (from VHS1) for printing at once. will improve printer performance. the documents are generated based on advertising medium configuration (which documents to attach) and the system setting for document order (e.g. Invoice first, delivery slip second, return slip last)",
     "requestInvoiceDocumentsMerged": true,
 
+    "doc::defaultInvoiceSlipPrinter": "default printer name for invoices (can be overwritten in advertising medium specific configuration *3). This settings will rule if documents are requested merged",
     "defaultInvoiceSlipPrinter": "PDF",
+    "doc::defaultInvoiceSlipPrinterMode": "monochrome or color printing for invoices",
     "defaultInvoiceSlipPrinterMode": "monochrome",
 
+    "doc::defaultDeliverySlipPrinter": "default printer name for delivery slips (can be overwritten in advertising medium specific configuration *3). This setting will be ignored, if documents are requested merged",
     "defaultDeliverySlipPrinter": "PDF",
+    "doc::defaultDeliverySlipPrinterMode": "monochrome or color printing for delivery slips",
     "defaultDeliverySlipPrinterMode": "monochrome",
 
+    "doc::defaultReturnSlipPrinter": "default printer name for return slips (can be overwritten in advertising medium specific configuration *3). This setting will be ignored, if documents are requested merged",
     "defaultReturnSlipPrinter": "PDF",
+    "doc::defaultReturnSlipPrinterMode": "monochrome or color printing for return slips",
     "defaultReturnSlipPrinterMode": "monochrome",
 
+    "doc::defaultShipmentLabelPrinter": "default printer name for shipping labels (if shipment type is configured for printing *2). This setting has no effect, if polling is used as shipout type",
     "defaultShipmentLabelPrinter": "PDF",
+    "doc::defaultShipmentLabelPrinterMode": "monochrome or color printing for shipment labels",
     "defaultShipmentLabelPrinterMode": "monochrome",
 
+    "doc::defaultProductLabelPrinter": "default printer name for product labels",
     "defaultProductLabelPrinter": "PDF",
+    "doc::defaultProductLabelPrinterMode": "monochrome or color printing for product labels",
     "defaultProductLabelPrinterMode": "monochrome",
 
+    "doc::defaultAdditionalDocumentPrinter": "default printer name for additional documents",
     "defaultAdditionalDocumentPrinter": "PDF",
+    "doc::defaultAdditionalDocumentPrinterMode": "monochrome or color printing for additional documents",
     "defaultAdditionalDocumentPrinterMode": "monochrome",
-
+    "doc::printAdditionalDocuments": "enable the print of additional documents. this can be useful for relocation slips or external documents",
     "printAdditionalDocuments": true,
+    "doc::additionalDocumentUrl": "external documents access url. available parameters are $ORDER_NUMBER$",
     "additionalDocumentUrl": "",
+    "doc::printAdditionalDocumentsFirst": "by default additional document will be printed last (after invoice/delivery and return slip)",
     "printAdditionalDocumentsFirst": false,
 
+    "doc::rotateProductLabel": "rotate the product labels by 90degree (only the paper, not the format).",
     "rotateProductLabel": false,
-    "productLabelFormatName": "",
+    "doc::productLabelFormatName": "printer",
+    "productLabelFormatName": "the configured printer paper format / template to use for product labels",
+    "doc::productLabelOptions": "special options for product label printing. has no current use.",
     "productLabelOptions": "",
-
+    "doc::printProductLabelRAW": "by default, the product labels are generated by VHS1 and exported (and printed) as rendered PDF files. This setting enables RAW mode, EPL/ZPL syntax knowledge is required.",
     "printProductLabelRAW": false,
+    "doc::productLabelRAWTemplate": "EPL/ZPL template for product label printing. Available parameters {%quantity}, {%barcode}, {%articleNumber}, {%price}, {%classification1}, {%classification2}",
     "productLabelRAWTemplate": "N\nS4\nD15\nq400\nR\nB20,10,0,1,2,30,173,B,\"{%barcode}\"\nP{%quantity}\n",
 
+    "doc::printShippingRequestPackageLabel": "If enabled, a shipping request package label will be automatically printed, every time a shipping request package is created",
     "printShippingRequestPackageLabel": false,
+    "doc::printShippingRequestPackageLabelRaw": "by default, the shipping request package labels are generated by VHS1 and exported (and printed) as rendered PDF files. This setting enables RAW mode, EPL/ZPL syntax knowledge is required.",
     "printShippingRequestPackageLabelRaw": false,
+    "doc::shippingRequestPackageLabelRAWTemplate": "EPL/ZPL template for shipping request package label printing. Available parameters {%quantity}, {%packageId}, {%shippingRequest}",
     "shippingRequestPackageLabelRAWTemplate": "N\nS4\nD15\nq300\nR0,0\nB10,10,0,1,3,20,100,N,\"{%packageId}\"\nA10,150,0,1,3,3,N,\"{%packageId}\"\nP1\n",
 
+    "doc::autoPrintMultiPackageSupplyNote": "Enables the automatic printing of multi package label slips (needs also additional configuration with VHS1 and the advertising medium). The document will be printed after shipout",
     "autoPrintMultiPackageSupplyNote": false,
+    "doc::alwaysPrintMultiPackageSupplyNote": "By default, the multi package slip is only generated if there are multiple shipping request packages available. Enable this option to force the slip generation for single package shipouts",
     "alwaysPrintMultiPackageSupplyNote": false,
+    "doc::requestMultiPackageSupplyNoteOnDemand": "If enabled, the document will not be printed again when shipout is repeated manually",
     "requestMultiPackageSupplyNoteOnDemand": false,
 
+    "doc::defaultInvoiceSlipPrintCountCC": "number of invoice to be printed for deliveries to current country (depends on client configuration, mostly germany). Setting is ignored, if merged documents are requested",
     "defaultInvoiceSlipPrintCountCC": 1,
+    "doc::defaultInvoiceSlipPrintCountEU": "number of invoices to be printed for deliveries to EU states, except current country. Setting is ignored, if merged documents are requested",
     "defaultInvoiceSlipPrintCountEU": 1,
+    "doc::defaultInvoiceSlipPrintCountTC": "number of invoices to be printed for deliveries to third countries. Setting is ignored, if merged documents are requested",
     "defaultInvoiceSlipPrintCountTC": 3,
 
+    "doc::advertisingMediumConfig": "advertising specific configurations, which will overwrite default configurations. *2",
     "advertisingMediumConfig": {
       "EXB": {
         "invoiceSlipPrinter": "PDF",
