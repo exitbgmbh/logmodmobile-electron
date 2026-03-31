@@ -145,6 +145,12 @@
     "defaultAdditionalDocumentPrinter": "PDF",
     "doc::defaultAdditionalDocumentPrinterMode": "monochrome or color printing for additional documents",
     "defaultAdditionalDocumentPrinterMode": "monochrome",
+
+    "doc::defaultPersonalizationPrinter": "default printer name for personalization",
+    "defaultPersonalizationPrinter": "PDF",
+    "doc::defaultPersonalizationPrinterMode": "monochrome or color printing for personalization print",
+    "defaultPersonalizationPrinterMode": "monochrome",
+
     "doc::printAdditionalDocuments": "enable the print of additional documents. this can be useful for relocation slips or external documents",
     "printAdditionalDocuments": true,
     "doc::additionalDocumentUrl": "external documents access url. available parameters are $ORDER_NUMBER$",

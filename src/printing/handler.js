@@ -82,6 +82,7 @@ class PrintingHandler {
         eventEmitter.on('shipmentRawPrint', this._handleRawLabelPrinting);
         eventEmitter.on('pickListNeedsAdditionalDocuments', this._requestAdditionalPickListDocuments);
         eventEmitter.on('multiPackageSupplyNotePrint', this._requestMultiPackageSupplyNote);
+        eventEmitter.on('requestPersonalizationDocuments', this._requestPersonalizationDocuments);
     };
 
     /**
@@ -198,6 +199,17 @@ class PrintingHandler {
 
         }
     }
+
+    _requestPersonalizationDocuments = (data) => {
+        if (!data || !data.hasOwnProperty('shippingRequestNumber')) {
+            this._handleError(new Error('invalid data, no shipping request number given'));
+            return;
+        }
+
+        restClientInstance.requestPersonalizationDocument(data.shippingRequestNumber).then((response) => {
+            this._handleDocumentPrinting('personalization', response.response, response.response.content)
+        }).catch(this._handleError);
+    };
 
     /**
      * requesting documents from blisstribute and print them
