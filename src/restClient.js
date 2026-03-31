@@ -185,6 +185,10 @@ class RestClient
         return this.get('document/readInvoice/' + invoiceNumber);
     };
 
+    requestPersonalizationDocument = (shippingRequestNumber) => {
+        return this.get('document/readPersonalization/' + shippingRequestNumber);
+    };
+
     /**
      * requests a single delivery slip for printing
      *

@@ -1,5 +1,5 @@
 const application = require('electron');
-const { ipcMain, ipcRenderer, shell, dialog } = require('electron');
+const { ipcMain, shell, session } = require('electron');
 const menuEventEmitter = require('./menu/eventEmitter');
 const version = require('./../package').version;
 const BrowserWindow = application.BrowserWindow;
@@ -35,6 +35,7 @@ const LocalStorage = require('node-localstorage').LocalStorage;
  * @type Electron.BrowserWindow
  */
 let windowInstance = null;
+let saveDir;
 
 /**
  * window content loaded successfully
@@ -126,6 +127,7 @@ const instantiateApplicationWindow = (applicationBootError) => {
             allowRunningInsecureContent: true,
             enableRemoteModule: true,
             contextIsolation: false,
+            sandbox: !isDevelopment,
             preload: __dirname + '/preload.js'
         }
     });
@@ -249,6 +251,10 @@ const bindIpcEvents = () => {
         webSocketEventEmitter.emit('pickBoxReady', arg);
     });
 
+    ipcMain.on('print-personalization', (event, arg) => {
+        webSocketEventEmitter.emit('requestPersonalizationDocuments', arg);
+    });
+
     // authentication succeed in renderer
     ipcMain.on('authentication-succeed', (event, arg) => {
         console.log('authentication-succeed', 'authenticationSucceed()');
@@ -326,12 +332,29 @@ const bindIpcEvents = () => {
         fs.writeFileSync(configFile, arg);
         showLogModMobile(windowInstance);
     });
+
+    ipcMain.handle('save-photo', async (event, dataUrl) => {
+        try {
+            const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const filename = `photo-${timestamp}.png`;
+            const filePath = path.join(saveDir, filename);
+
+            fs.writeFileSync(filePath, base64Data, 'base64');
+
+            console.log('Photo saved:', filePath);
+            return filePath; // return path so React can show it
+        } catch (err) {
+            console.error('Save failed:', err);
+            throw err;
+        }
+    });
 }
 
 /**
  * booting the application
  */
-const bootApplication = () => {
+const bootApplication = async () => {
     logInfo('application', 'bootApplication', 'start');
     menuEventEmitter.on('showConfig', () => showApplicationConfig());
     menuEventEmitter.on('reloadConfig', () => reloadApplicationConfig());
@@ -364,6 +387,9 @@ const bootApplication = () => {
     }
 
     loadPlugins();
+    await requestMediaPermissions();
+    setupPermissions();
+    ensureSaveDirectory();
     if (process.env.TESTING !== 'true') {
         instantiateApplicationWindow();
     }
@@ -401,6 +427,39 @@ const showChangeLog = (force = false) => {
     releaseNoteBrowserWindow.loadFile('static/sites/changeLog.html');
     releaseNoteBrowserWindow.show();
     releaseNoteBrowserWindow.focus();
+}
+
+async function requestMediaPermissions() {
+  if (process.platform === 'darwin') {
+    try {
+      const cameraGranted = await systemPreferences.askForMediaAccess('camera');
+      console.log('Camera permission (macOS):', cameraGranted ? 'GRANTED' : 'DENIED');
+      // Optional: also ask for microphone if needed later
+      // await systemPreferences.askForMediaAccess('microphone');
+    } catch (err) {
+      console.error('Failed to request media access:', err);
+    }
+  }
+}
+
+function setupPermissions() {
+  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+    console.log(`Permission requested: ${permission}`);
+    if (permission === 'camera' || permission === 'media') {
+      callback(true);   // Auto-approve
+    } else {
+      callback(false);
+    }
+  });
+}
+
+// Create save folder in user's Pictures
+function ensureSaveDirectory() {
+  saveDir = path.join(app.getPath('pictures'), 'cam');
+  if (!fs.existsSync(saveDir)) {
+    fs.mkdirSync(saveDir, { recursive: true });
+  }
+  console.log('Photos will be saved to:', saveDir);
 }
 
 const init = () => {

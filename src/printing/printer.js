@@ -118,6 +118,10 @@ getDocumentPrinter = (documentType, advertisingMedium = '', deliveryCountryCode=
       printerConfig = getReturnSlipPrinter(advertisingMedium);
       break;
     }
+    case 'PERSONALIZATION': {
+      printerConfig = getPersonalizationPrinter();
+      break;
+    }
   }
 
   logDebug('printer', 'getDocumentPrinter', JSON.stringify(printerConfig));
@@ -300,6 +304,27 @@ getAdditionalDocumentPrinter = () => {
 
   return printerConfig;
 };
+
+/**
+ * @returns {{numOfCopies: number, printer: string, rotate: boolean, color: boolean, monochrome: boolean}}
+ */
+getPersonalizationPrinter = () => {
+  let printerConfig = _getConfigTemplate(defaultPrinter);
+  if (_checkPrinterKey('printing.defaultPersonalizationPrinter')) {
+    printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultPersonalizationPrinter'));
+  }
+
+  if (config.has('printing.defaultPersonalizationPrinterMode')) {
+    if (config.get('printing.defaultPersonalizationPrinterMode') === 'monochrome') {
+      printerConfig.monochrome = true;
+    } else {
+      printerConfig.color = true;
+    }
+  }
+
+  return printerConfig;
+};
+
 
 /**
  * load product label printer
