@@ -8,22 +8,25 @@ const path = require('path');
 const {logDebug, logInfo, logWarning} = require('./logging');
 const config = require('config');
 const { initializeAutoUpdateCheck, autoUpdater, manualCheckForUpdate} = require('./autoUpdateCheck');
+
 const shippingHandlerInstance = require('./shipping');
 const printingHandlerInstance = require('./printing');
 const invoiceHandlerInstance = require('./invoice');
 const restClientInstance = require('./restClient');
+const webSocketHandlerInstance = require('./websocket');
+const scaleHandlerInstance = require('./scale');
+const webcamHandlerInstance = require('./webcam');
+const rfidHandlerInstance = require('./rfid')
+const restSrvInstance = require('./rest');
+
 const { getLogModIdentification } = require('./helper');
 const showNotification = require('./notificationHelper');
-const webSocketHandler = require('./websocket');
-const scaleHandler = require('./scale');
-const rfidHandler = require('./rfid')
 const isDevelopment = process.env.NODE_ENV === 'development';
 const showDevTools = process.env.SHOW_DEV_TOOLS === '1';
 const promiseIpc = require('electron-promise-ipc');
 const menu = require('./menu');
 const { getApplicationConfigFile } = require('./../setupConfig');
 const fs = require('fs');
-const restSrvInstance = require('./rest');
 const {nanoid} = require("nanoid");
 const {loadPlugins} = require("../pluginLoader");
 const webSocketEventEmitter = require("./websocket/eventEmitter");
@@ -35,7 +38,6 @@ const LocalStorage = require('node-localstorage').LocalStorage;
  * @type Electron.BrowserWindow
  */
 let windowInstance = null;
-let saveDir;
 
 /**
  * window content loaded successfully
@@ -191,6 +193,7 @@ const authenticationSucceed = (event, arguments) => {
     shippingHandlerInstance.initialize();
     printingHandlerInstance.initialize();
     invoiceHandlerInstance.initialize();
+    webcamHandlerInstance.initialize();
     restSrvInstance.initialize(windowInstance);
 };
 
@@ -201,14 +204,14 @@ const websocketConnect = () => {
         logInfo('application', 'websocketConnect', 'got connection link ' + socketLink);
 
         showNotification('LogModMobile wird registriert...');
-        webSocketHandler.setLogModIdentification(logModMobileIdent).connectToWebSocket(socketLink);
+        webSocketHandlerInstance.setLogModIdentification(logModMobileIdent).connectToWebSocket(socketLink);
     }).catch((error) => {
         logWarning('event', 'authenticationSucceed', 'call for websocket failed ' + error.message);
     });
 }
 
 const websocketDisconnect = () => {
-    webSocketHandler.disconnectFromWebSocket();
+    webSocketHandlerInstance.disconnectFromWebSocket();
 }
 
 const notifyForUpdate = () => {
@@ -244,7 +247,7 @@ const bindIpcEvents = () => {
 
     // direct print of invoices on pickBox ready
     ipcMain.on('direct-print-pick-box-ready', (event, arg) => {
-        if (!config.has('invoicing.directPrinting') || webSocketHandler.pickListNeedsAdditionalDocuments(arg)) {
+        if (!config.has('invoicing.directPrinting') || webSocketHandlerInstance.pickListNeedsAdditionalDocuments(arg)) {
             return;
         }
 
@@ -307,11 +310,11 @@ const bindIpcEvents = () => {
     // promiseIpc is an advanced ipc package - it returns promised
     // calling rs232 connected scale
     promiseIpc.on('scale-package', () => {
-        return scaleHandler.callScale();
+        return scaleHandlerInstance.callScale();
     });
 
     promiseIpc.on('scale-available', () => {
-        return scaleHandler.scaleAvailable();
+        return scaleHandlerInstance.scaleAvailable();
     });
 
     // call for electron version
@@ -320,7 +323,7 @@ const bindIpcEvents = () => {
     });
 
     ipcMain.on('request-weight', async () => {
-        const weight = await scaleHandler.callScale();
+        const weight = await scaleHandlerInstance.callScale();
         windowInstance.webContents.send('debug-weight', { weight });
     });
 
@@ -333,17 +336,9 @@ const bindIpcEvents = () => {
         showLogModMobile(windowInstance);
     });
 
-    ipcMain.handle('save-photo', async (event, dataUrl) => {
+    ipcMain.handle('save-photo', async (event, args) => {
         try {
-            const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const filename = `photo-${timestamp}.png`;
-            const filePath = path.join(saveDir, filename);
-
-            fs.writeFileSync(filePath, base64Data, 'base64');
-
-            console.log('Photo saved:', filePath);
-            return filePath; // return path so React can show it
+            webcamHandlerInstance.savePhoto(args);
         } catch (err) {
             console.error('Save failed:', err);
             throw err;
@@ -378,7 +373,7 @@ const bootApplication = async () => {
         initializeAutoUpdateCheck();
         bindIpcEvents();
 
-        scaleHandler.initialize();
+        scaleHandlerInstance.initialize();
     } catch (err) {
         console.log(err);
         logWarning('application', 'bootApplication', err.message);
@@ -387,15 +382,12 @@ const bootApplication = async () => {
     }
 
     loadPlugins();
-    await requestMediaPermissions();
-    setupPermissions();
-    ensureSaveDirectory();
     if (process.env.TESTING !== 'true') {
         instantiateApplicationWindow();
     }
 
     try {
-        rfidHandler.initialize(windowInstance);
+        rfidHandlerInstance.initialize(windowInstance);
     } catch (err) {
         console.log('error initializing rfid', err)
     }
@@ -427,39 +419,6 @@ const showChangeLog = (force = false) => {
     releaseNoteBrowserWindow.loadFile('static/sites/changeLog.html');
     releaseNoteBrowserWindow.show();
     releaseNoteBrowserWindow.focus();
-}
-
-async function requestMediaPermissions() {
-  if (process.platform === 'darwin') {
-    try {
-      const cameraGranted = await systemPreferences.askForMediaAccess('camera');
-      console.log('Camera permission (macOS):', cameraGranted ? 'GRANTED' : 'DENIED');
-      // Optional: also ask for microphone if needed later
-      // await systemPreferences.askForMediaAccess('microphone');
-    } catch (err) {
-      console.error('Failed to request media access:', err);
-    }
-  }
-}
-
-function setupPermissions() {
-  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
-    console.log(`Permission requested: ${permission}`);
-    if (permission === 'camera' || permission === 'media') {
-      callback(true);   // Auto-approve
-    } else {
-      callback(false);
-    }
-  });
-}
-
-// Create save folder in user's Pictures
-function ensureSaveDirectory() {
-  saveDir = path.join(app.getPath('pictures'), 'cam');
-  if (!fs.existsSync(saveDir)) {
-    fs.mkdirSync(saveDir, { recursive: true });
-  }
-  console.log('Photos will be saved to:', saveDir);
 }
 
 const init = () => {

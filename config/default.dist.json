@@ -51,6 +51,12 @@
     "parserDelimiter": []
   },
 
+  "doc::webcam": "webcam / shipout photo settings",
+  "webcam": {
+    "doc::shipoutPhotoSavePath": "The path where shipout photos are stored. Available parameters {%orderNumber}, {%invoiceNumber}, {%date}, {%dateTime}, {%time}",
+    "shipoutPhotoSaveFileName": "/tmp/shot_{%orderNumber}_{%invoiceNumber}_{%dateTime}.png"
+  },
+
   "doc::invoicing": "invoice creation settings",
   "invoicing": {
     "doc::directPrinting": "enable direct invoice printing / creation. the invoice will be created and printed directly on logmod workstation printer (default system printer if not configured otherwise). if enabled, watchBoxes expressions are omitted on this workstation",
