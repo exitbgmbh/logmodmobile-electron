@@ -387,9 +387,9 @@ const bootApplication = async () => {
     }
 
     loadPlugins();
-    await requestMediaPermissions();
-    setupPermissions();
-    ensureSaveDirectory();
+    // await requestMediaPermissions();
+    // setupPermissions();
+    // ensureSaveDirectory();
     if (process.env.TESTING !== 'true') {
         instantiateApplicationWindow();
     }
