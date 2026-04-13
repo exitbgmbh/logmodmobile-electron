@@ -1,5 +1,5 @@
 const application = require('electron');
-const { ipcMain, ipcRenderer, shell, dialog } = require('electron');
+const { ipcMain, shell, session } = require('electron');
 const menuEventEmitter = require('./menu/eventEmitter');
 const version = require('./../package').version;
 const BrowserWindow = application.BrowserWindow;
@@ -8,22 +8,25 @@ const path = require('path');
 const {logDebug, logInfo, logWarning} = require('./logging');
 const config = require('config');
 const { initializeAutoUpdateCheck, autoUpdater, manualCheckForUpdate} = require('./autoUpdateCheck');
+
 const shippingHandlerInstance = require('./shipping');
 const printingHandlerInstance = require('./printing');
 const invoiceHandlerInstance = require('./invoice');
 const restClientInstance = require('./restClient');
+const webSocketHandlerInstance = require('./websocket');
+const scaleHandlerInstance = require('./scale');
+const webcamHandlerInstance = require('./webcam');
+const rfidHandlerInstance = require('./rfid')
+const restSrvInstance = require('./rest');
+
 const { getLogModIdentification } = require('./helper');
 const showNotification = require('./notificationHelper');
-const webSocketHandler = require('./websocket');
-const scaleHandler = require('./scale');
-const rfidHandler = require('./rfid')
 const isDevelopment = process.env.NODE_ENV === 'development';
 const showDevTools = process.env.SHOW_DEV_TOOLS === '1';
 const promiseIpc = require('electron-promise-ipc');
 const menu = require('./menu');
 const { getApplicationConfigFile } = require('./../setupConfig');
 const fs = require('fs');
-const restSrvInstance = require('./rest');
 const {nanoid} = require("nanoid");
 const {loadPlugins} = require("../pluginLoader");
 const webSocketEventEmitter = require("./websocket/eventEmitter");
@@ -189,6 +192,7 @@ const authenticationSucceed = (event, arguments) => {
     shippingHandlerInstance.initialize();
     printingHandlerInstance.initialize();
     invoiceHandlerInstance.initialize();
+    webcamHandlerInstance.initialize();
     restSrvInstance.initialize(windowInstance);
 };
 
@@ -199,14 +203,14 @@ const websocketConnect = () => {
         logInfo('application', 'websocketConnect', 'got connection link ' + socketLink);
 
         showNotification('LogModMobile wird registriert...');
-        webSocketHandler.setLogModIdentification(logModMobileIdent).connectToWebSocket(socketLink);
+        webSocketHandlerInstance.setLogModIdentification(logModMobileIdent).connectToWebSocket(socketLink);
     }).catch((error) => {
         logWarning('event', 'authenticationSucceed', 'call for websocket failed ' + error.message);
     });
 }
 
 const websocketDisconnect = () => {
-    webSocketHandler.disconnectFromWebSocket();
+    webSocketHandlerInstance.disconnectFromWebSocket();
 }
 
 const notifyForUpdate = () => {
@@ -242,11 +246,15 @@ const bindIpcEvents = () => {
 
     // direct print of invoices on pickBox ready
     ipcMain.on('direct-print-pick-box-ready', (event, arg) => {
-        if (!config.has('invoicing.directPrinting') || webSocketHandler.pickListNeedsAdditionalDocuments(arg)) {
+        if (!config.has('invoicing.directPrinting') || webSocketHandlerInstance.pickListNeedsAdditionalDocuments(arg)) {
             return;
         }
 
         webSocketEventEmitter.emit('pickBoxReady', arg);
+    });
+
+    ipcMain.on('print-personalization', (event, arg) => {
+        webSocketEventEmitter.emit('requestPersonalizationDocuments', arg);
     });
 
     // authentication succeed in renderer
@@ -301,11 +309,11 @@ const bindIpcEvents = () => {
     // promiseIpc is an advanced ipc package - it returns promised
     // calling rs232 connected scale
     promiseIpc.on('scale-package', () => {
-        return scaleHandler.callScale();
+        return scaleHandlerInstance.callScale();
     });
 
     promiseIpc.on('scale-available', () => {
-        return scaleHandler.scaleAvailable();
+        return scaleHandlerInstance.scaleAvailable();
     });
 
     // call for electron version
@@ -314,7 +322,7 @@ const bindIpcEvents = () => {
     });
 
     ipcMain.on('request-weight', async () => {
-        const weight = await scaleHandler.callScale();
+        const weight = await scaleHandlerInstance.callScale();
         windowInstance.webContents.send('debug-weight', { weight });
     });
 
@@ -326,12 +334,21 @@ const bindIpcEvents = () => {
         fs.writeFileSync(configFile, arg);
         showLogModMobile(windowInstance);
     });
+
+    ipcMain.handle('save-photo', async (event, args) => {
+        try {
+            webcamHandlerInstance.savePhoto(args);
+        } catch (err) {
+            console.error('Save failed:', err);
+            throw err;
+        }
+    });
 }
 
 /**
  * booting the application
  */
-const bootApplication = () => {
+const bootApplication = async () => {
     logInfo('application', 'bootApplication', 'start');
     menuEventEmitter.on('showConfig', () => showApplicationConfig());
     menuEventEmitter.on('reloadConfig', () => reloadApplicationConfig());
@@ -355,7 +372,7 @@ const bootApplication = () => {
         initializeAutoUpdateCheck();
         bindIpcEvents();
 
-        scaleHandler.initialize();
+        scaleHandlerInstance.initialize();
     } catch (err) {
         console.log(err);
         logWarning('application', 'bootApplication', err.message);
@@ -369,7 +386,7 @@ const bootApplication = () => {
     }
 
     try {
-        rfidHandler.initialize(windowInstance);
+        rfidHandlerInstance.initialize(windowInstance);
     } catch (err) {
         console.log('error initializing rfid', err)
     }
