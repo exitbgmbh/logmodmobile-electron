@@ -322,6 +322,14 @@ getPersonalizationPrinter = () => {
     }
   }
 
+  if (config.has('printing.personalizationPrinterFormatName')) {
+    printerConfig.paper = config.get('printing.personalizationPrinterFormatName');
+  }
+
+  if (config.has('printing.personalizationPrinterOptions')) {
+    printerConfig.specialOptions = config.get('printing.personalizationPrinterOptions');
+  }
+
   return printerConfig;
 };
 
