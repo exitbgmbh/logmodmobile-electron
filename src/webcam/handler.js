@@ -18,7 +18,7 @@ class WebcamHandler {
 
         const now = new Date().toISOString();
         const date     = now.slice(0, 10);
-        const dateTime = now.slice(0, 19).replace('T', '_');
+        const dateTime = now.slice(0, 19).replace('T', '-').replace(/:/g, '-');
         const time     = now.slice(11, 19).replace(/:/g, '-');
 
         const filename = config.get('webcam.shipoutPhotoSaveFileName')

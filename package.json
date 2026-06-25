@@ -6,7 +6,7 @@
   "scripts": {
     "electron-test": "electron .",
     "stg-electron-ext": "SHOW_DEV_TOOLS=1 NODE_ENV=development ELECTRON_START_URL=http://lmm-exitbtest.exitb.de electron .",
-    "blissdev-local-development": "SHOW_DEV_TOOLS=1 NODE_ENV=development ELECTRON_START_URL=http://localhost:3090 electron .",
+    "blissdev-local-development": "NODE_EXTRA_CA_CERTS=/home/roman/.local/share/mkcert/rootCA.pem SHOW_DEV_TOOLS=1 NODE_ENV=development ELECTRON_START_URL=http://localhost:3090 electron .",
     "blissdev-local-test": "SHOW_DEV_TOOLS=1 NODE_ENV=development ELECTRON_START_URL=http://lmm-exitb-erp.blissdev.de electron . --no-sandbox",
     "build": "electron-builder -l -w -p never",
     "postinstall": "electron-builder install-app-deps",
