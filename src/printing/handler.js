@@ -5,7 +5,7 @@ const tmp = require('tmp');
 const fs = require('fs');
 const printer = require('@grandchef/node-printer')
 const {isLinux, isWindows} = require('../helper')
-const {getDocumentPrinter, getProductLabelPrinter, getShipmentLabelPrinter, getRawLabelPrinter} = require('./printer');
+const {getDocumentPrinter, getProductLabelPrinter, getMovementLabelPrinter, getShipmentLabelPrinter, getRawLabelPrinter} = require('./printer');
 const {logDebug, logWarning} = require('./../logging');
 const { exec } = require("child_process");
 
@@ -254,6 +254,17 @@ class PrintingHandler {
 
                 restClientInstance.requestProductLabel(data.productEan, data.templateId).then((response) => {
                     this._handleProductLabelPrinting(response.response, data.quantity);
+                }).catch(this._handleError);
+                break;
+            }
+            case 'MOVEMENTLABEL': {
+                if (!data.hasOwnProperty('productEan') || !data.hasOwnProperty('movementId')) {
+                    this._handleError(new Error('invalid data, no ean number or movement id given'));
+                    return;
+                }
+
+                restClientInstance.requestProductLabel(data.productEan, data.templateId, data.movementId).then((response) => {
+                    this._handleMovementLabelPrinting(response.response, data.quantity);
                 }).catch(this._handleError);
                 break;
             }
@@ -512,6 +523,28 @@ class PrintingHandler {
         const printingOptions = this._getOptionsForPrinting(printerConfig, numberOfCopies);
 
         logDebug('printingHandler', '_handleProductLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
+        this._print(tmpFileName, printingOptions);
+    };
+    
+    /**
+     * printing movement label
+     *
+     * @param {{}} responseData
+     * @param {int} numberOfCopies
+     *
+     * @private
+     */
+    _handleMovementLabelPrinting = (responseData, numberOfCopies) => {
+        logDebug('printingHandler', '_handleMovementLabelPrinting', 'start printing with options ' + JSON.stringify(responseData));
+        const {content: labelContent } = responseData;
+        if (!labelContent || labelContent.length < 100) {
+            return;
+        }
+        const printerConfig = getMovementLabelPrinter();
+        const tmpFileName = this._saveResultToPdf(labelContent);
+        const printingOptions = this._getOptionsForPrinting(printerConfig, numberOfCopies);
+
+        logDebug('printingHandler', '_handleMovementLabelPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
         this._print(tmpFileName, printingOptions);
     };
 

@@ -145,11 +145,18 @@ class RestClient
      *
      * @param {string} productIdentification
      * @param {int} templateId
+     * @param {int|null} additionalIdentifier
      *
      * @returns {*|Promise}
      */
-    requestProductLabel = (productIdentification, templateId) => {
-        return this.get('document/readProductLabel/' + productIdentification, {templateId: templateId});
+    requestProductLabel = (productIdentification, templateId, additionalIdentifier= null) => {
+        const data = {templateId};
+        
+        if (additionalIdentifier !== null) {
+            data.additionalIdentifier = additionalIdentifier
+        }
+    
+        return this.get('document/readProductLabel/' + productIdentification, data);
     };
 
     /**
