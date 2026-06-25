@@ -151,6 +151,11 @@
     "defaultAdditionalDocumentPrinter": "PDF",
     "doc::defaultAdditionalDocumentPrinterMode": "monochrome or color printing for additional documents",
     "defaultAdditionalDocumentPrinterMode": "monochrome",
+    
+    "doc::defaultMovementLabelPrinter": "default printer name for invoices (can be overwritten in advertising medium specific configuration *3). This settings will rule if documents are requested merged",
+    "defaultMovementLabelPrinter": "PDF",
+    "doc::defaultMovementLabelPrinterMode": "monochrome or color printing for invoices",
+    "defaultMovementLabelPrinterMode": "color",
 
     "doc::printAdditionalDocuments": "enable the print of additional documents. this can be useful for relocation slips or external documents",
     "printAdditionalDocuments": true,

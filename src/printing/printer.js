@@ -369,6 +369,28 @@ getProductLabelPrinter = (numberOfCopies) => {
 };
 
 /**
+ * load movement label printer
+ *
+ * @returns {{numOfCopies: number, printer: string, rotate: boolean, color: boolean, monochrome: boolean}}
+ */
+getMovementLabelPrinter = () => {
+  let printerConfig = _getConfigTemplate(defaultPrinter);
+  if (_checkPrinterKey('printing.defaultMovementLabelPrinter')) {
+    printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultMovementLabelPrinter'));
+  }
+
+  if (config.has('printing.defaultMovementLabelPrinterMode')) {
+    if (config.get('printing.defaultMovementLabelPrinterMode') === 'monochrome') {
+      printerConfig.monochrome = true;
+    } else {
+      printerConfig.color = true;
+    }
+  }
+
+  return printerConfig;
+};
+
+/**
  * load shipment label printer
  *
  * @returns {{numOfCopies: number, printer: string, rotate: boolean, color: boolean, monochrome: boolean}}
@@ -409,6 +431,7 @@ getRawLabelPrinter = (shipmentTypeCode) => {
 module.exports = {
   getDocumentPrinter,
   getProductLabelPrinter,
+  getMovementLabelPrinter,
   getRawLabelPrinter,
   getShipmentLabelPrinter
 };
