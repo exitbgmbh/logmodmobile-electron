@@ -3,6 +3,7 @@ const config = require('config');
 const {logInfo} = require("../logging");
 const MifareCard = require('./card');
 
+const ENABLED = !config.has('rfid.enabled') || config.get('rfid.enabled') === true;
 const SECTOR_KEY = (config.has('rfid.sectorKey') && config.get('rfid.sectorKey')) || 'FFFFFFFFFFFF';
 const WRITE_TIMEOUT_MS = (config.has('rfid.writeTimeoutMs') && config.get('rfid.writeTimeoutMs')) || 20000;
 const GET_UID = Buffer.from([0xFF, 0xCA, 0x00, 0x00, 0x00]);
@@ -12,9 +13,11 @@ class RFIDHandler
     initialized = false;
     pendingWrite = null; // { encryptedKey, resolve }
     applicationWindow = null;
+    processing = false; // re-entrancy guard: a card is currently being handled
+    awaitCardRemoval = false; // suppress auto-login until a just-written card is lifted
 
     initialize = (applicationWindow) => {
-        if (this.initialized) {
+        if (this.initialized || !ENABLED) {
            return;
         }
         this.applicationWindow = applicationWindow;
@@ -23,9 +26,17 @@ class RFIDHandler
             .then((reader) => {
                 logInfo('application', 'initRFIDReader', `connected to reader ${reader.name}`)
                 reader.on('status', (status) => {
-                    if ((status.state & reader.SCARD_STATE_PRESENT)) {
-                        this.onCardPresent(reader);
+                    const present = (status.state & reader.SCARD_STATE_PRESENT);
+                    if (!present) {
+                        // card lifted: clear post-write suppression, ready for next card
+                        this.awaitCardRemoval = false;
+                        return;
                     }
+                    if (this.processing || this.awaitCardRemoval) {
+                        return;
+                    }
+                    this.processing = true;
+                    this.onCardPresent(reader);
                 })
             })
             .catch((error) => {
@@ -36,10 +47,12 @@ class RFIDHandler
     }
 
     onCardPresent = (reader) => {
+        const wasWrite = !!this.pendingWrite;
         reader.connect({ share_mode : reader.SCARD_SHARE_SHARED }, async (err, protocol) => {
             if (err) {
                 console.error('rfid connect error', err);
                 this.failPendingWrite('connect failed');
+                this.processing = false;
                 return;
             }
 
@@ -59,6 +72,12 @@ class RFIDHandler
                 console.error('rfid card handling error', error);
                 this.resolvePendingWrite({ success: false, tagId, error: error.message });
             } finally {
+                // after a write, don't auto-login the same card still on the reader;
+                // wait until it is physically removed.
+                if (wasWrite) {
+                    this.awaitCardRemoval = true;
+                }
+                this.processing = false;
                 reader.disconnect(reader.SCARD_LEAVE_CARD, (e) => {
                     if (e) {
                         console.error('rfid disconnect error', e);
