@@ -15,6 +15,8 @@ class RFIDHandler
     applicationWindow = null;
     processing = false; // re-entrancy guard: a card is currently being handled
     awaitCardRemoval = false; // suppress auto-login until a just-written card is lifted
+    reader = null; // the connected PC/SC reader
+    cardPresent = false; // whether a card is currently on the reader
 
     initialize = (applicationWindow) => {
         if (this.initialized || !ENABLED) {
@@ -24,9 +26,11 @@ class RFIDHandler
 
         this.initReader()
             .then((reader) => {
+                this.reader = reader;
                 logInfo('application', 'initRFIDReader', `connected to reader ${reader.name}`)
                 reader.on('status', (status) => {
-                    const present = (status.state & reader.SCARD_STATE_PRESENT);
+                    const present = !!(status.state & reader.SCARD_STATE_PRESENT);
+                    this.cardPresent = present;
                     if (!present) {
                         // card lifted: clear post-write suppression, ready for next card
                         this.awaitCardRemoval = false;
@@ -66,7 +70,14 @@ class RFIDHandler
                 if (this.pendingWrite) {
                     await this.handleWrite(card, tagId);
                 } else {
-                    await this.handleLogin(card, tagId);
+                    const content = await card.readPayload();
+                    console.log('rfid card content', content);
+                    if (!content || !content.toString().startsWith('EXEC.')) {
+                        // not a logmod login card -> no auto-login
+                        this.applicationWindow?.webContents?.send('debug-rfid', { tagId });
+                    } else {
+                        await this.handleLogin(content, tagId);
+                    }
                 }
             } catch (error) {
                 console.error('rfid card handling error', error);
@@ -92,13 +103,14 @@ class RFIDHandler
         this.resolvePendingWrite({ success: true, tagId });
     }
 
-    handleLogin = async (card, tagId) => {
-        const encryptedKey = await card.readPayload();
-        if (encryptedKey) {
-            this.applicationWindow?.webContents?.send('rfid-login', { tagId, encryptedKey });
-        } else {
-            this.applicationWindow?.webContents?.send('debug-rfid', { tagId });
+    handleLogin = async (encryptedKey, tagId) => {
+        const chunks = encryptedKey.toString().split('.');
+        if (chunks.length !== 6) {
+            console.warn('rfid card contains invalid login data');
+            return;
         }
+
+        this.applicationWindow?.webContents?.send('auth-request', { clientCode: chunks[2], token: encryptedKey });
     }
 
     writeKey = (encryptedKey) => {
@@ -121,6 +133,14 @@ class RFIDHandler
                     resolve(result);
                 },
             };
+
+            // if a card is already on the reader, write to it now instead of
+            // waiting for the next card-present event (which won't fire).
+            if (this.cardPresent && !this.processing && this.reader) {
+                this.processing = true;
+                this.awaitCardRemoval = false;
+                this.onCardPresent(this.reader);
+            }
         });
     }
 

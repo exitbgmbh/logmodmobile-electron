@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const m = require('../src/rfid/mifare');
 
-const SAMPLE_TOKEN = 'EXEC.727.iprzY5/QbYv035/t.QDDMbRUrWifXtldL0Wq0Hg==.a+hFSDTPwiwYCP/v1x17mSwvbMKcPUbTwfZEiGLMx2nLNWkLeFtY7pCSpiTdA4TMhGfC6awLJ5vqadN3dENksALFfX7Xpwgz0UujwFZMu+2LBNfGDvGw6SxCVkKCKpwRmsrCi+MUY2ZpDM0p+BaydLi0/Wr+6mHzSxJq/0A841uMCIRJGaqTh0ycYj6gjEivRCAh5dD3v4foD22+2h87t0qG3BBqEsxd7hWpwoV8/Ufrgfkjft3+GSvRoOSbIuX6urlEKBf46k80o11r4FDNvIiQKNyk8uzElPcJQ99WfODAMADTJl7URU0b+6qZs2qLsagIkYypMIaSBOFXw/F0ClO+fEEIqVVEuEYSH+fw9R1P1ZgzMdtN8iuoOOFQwpW82zaE5tClLfgKyyBIuCJmk2S0H2FiGkxcDfrzC5lTo9atG1mimI9DZOcfI+IlVqJ1Ogx1U4bMGzM5XY4nW9+3UxFt6lkBog9TULhtJqq+UuPCaf5QrIqWegs2iAdVSO8T7n8ptGtuPZ5+4OZs0Z1MVJ8mS3995XUaShopWqrZXUqgidrMnXDY2Xu/11J8M7quNjl9KXvlj6qOAuf2+nh924xOx4Sx+qGrcFi8fRq+jWzqRQT6/hNNs25g0d9zLc/kQdwjG+znrPxnDWbL77+PCIbHcBSswSZsdbwXBQpz4hDhvifTZyy3MIcZ7+PEbH44urXwP/bTjhM=';
+const SAMPLE_TOKEN = 'EXEC.41.nar.YR6ITe51Oo8nfy/U.NaT1QHYyumxAEqzN1CKqcQ==.5c1mUSlyvr8Wwq8vWOTttJLGJvCygqjX/KYao2lUWKieeaM6390lsu53PNxoNhaK9teV2V5D2NZp8okdaCNDKYIW2OujsneaINPbPRIcZ1fT4bQFYgb7BsasrdtzAju/AhPkxHyTFK9T2pjdlaNWnbioz579fEf1dM0FMkSuIsIsm282uoahQtvwrg2wkOrGPXevDEI0ij72uDUIQzlawu3AumuZDitr2+D+gvmNJ1z0V7CW4SiuWdkZIFt79IAG1S6bzy795xkZtteDZJLk6jv3TMj0RywI5GaHDvJJ/yO7BogRExtHQFi1aYnq3SiwxIyWR5Djmm7NpQJh2SQK9HnyGNCux7Gee1nl0dArqDUA15Y4Q9Ur7kRX+merDlcGa20FzzwbjSIpLtAl3jUus9MXCaMGVPL8a/Uy1fipE6fiTTBSRvhKfStANOIVu3vjhnBMKr4q9xdYllnZY3hhgVPG0dRnQtjf6BORUuW5TlW3hxxEmYWFNqthuxLkjaP38MSgNqmB7OjqXzc0eYioqnDYvZvfvGrB39dEOMX5fTjr3NI3XI1HDm+q3hq9clFg1zCwLJD1A1rmk4A1MgYNNNdcMyOTyghCh87r8K1TSc7AM6miAbrClsHl2NhEea8sK4Evc659/l3OALUD+impjCt4w6OlaMyaTo4lOnAU0EbG85gMx6Y0B8Sa8e6qgL+qdEc9bGMiR1g=';
 
 describe('mifare APDU builders', () => {
     it('buildLoadKey loads a 6-byte key into volatile slot 0', () => {
@@ -76,9 +76,10 @@ describe('mifare block planner', () => {
 });
 
 describe('mifare token <-> parts', () => {
-    it('splits a token into userId + raw iv/tag/cipher', () => {
+    it('splits a token into userId + clientCode + raw iv/tag/cipher', () => {
         const p = m.tokenToParts(SAMPLE_TOKEN);
-        expect(p.userId).to.equal('727');
+        expect(p.userId).to.equal('41');
+        expect(p.clientCode).to.equal('nar');
         expect(p.iv.length).to.equal(12);
         expect(p.tag.length).to.equal(16);
         expect(p.cipher.length).to.equal(536);
@@ -98,7 +99,8 @@ describe('mifare payload encode/decode', () => {
     it('round-trips parts through encode/decode', () => {
         const parts = m.tokenToParts(SAMPLE_TOKEN);
         const decoded = m.decodePayload(m.encodePayload(parts));
-        expect(decoded.userId).to.equal('727');
+        expect(decoded.userId).to.equal('41');
+        expect(decoded.clientCode).to.equal('nar');
         expect(decoded.iv.equals(parts.iv)).to.be.true;
         expect(decoded.tag.equals(parts.tag)).to.be.true;
         expect(decoded.cipher.equals(parts.cipher)).to.be.true;

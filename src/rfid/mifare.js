@@ -48,27 +48,31 @@ const HEADER_BLOCK = planDataBlocks()[0]; // 4
 
 const tokenToParts = (token) => {
     const parts = token.split('.');
-    if (parts.length !== 5 || parts[0] !== TOKEN_PREFIX) {
-        throw new Error('invalid token format (expected EXEC.userId.iv.tag.cipher)');
+    if (parts.length !== 6 || parts[0] !== TOKEN_PREFIX) {
+        throw new Error('invalid token format (expected EXEC.userId.clientCode.iv.tag.cipher)');
     }
     return {
         userId: parts[1],
-        iv: Buffer.from(parts[2], 'base64'),
-        tag: Buffer.from(parts[3], 'base64'),
-        cipher: Buffer.from(parts[4], 'base64'),
+        clientCode: parts[2],
+        iv: Buffer.from(parts[3], 'base64'),
+        tag: Buffer.from(parts[4], 'base64'),
+        cipher: Buffer.from(parts[5], 'base64'),
     };
 };
 
-const partsToToken = ({ userId, iv, tag, cipher }) =>
-    `${TOKEN_PREFIX}.${userId}.${iv.toString('base64')}.${tag.toString('base64')}.${cipher.toString('base64')}`;
+const partsToToken = ({ userId, clientCode, iv, tag, cipher }) =>
+    `${TOKEN_PREFIX}.${userId}.${clientCode}.${iv.toString('base64')}.${tag.toString('base64')}.${cipher.toString('base64')}`;
 
-const encodePayload = ({ userId, iv, tag, cipher }) => {
+const encodePayload = ({ userId, clientCode, iv, tag, cipher }) => {
     const userIdBuf = Buffer.from(String(userId), 'ascii');
-    if (userIdBuf.length > 255 || iv.length > 255 || tag.length > 255) {
-        throw new Error('userId/iv/tag field exceeds 255 bytes');
+    const clientCodeBuf = Buffer.from(String(clientCode), 'ascii');
+    if (userIdBuf.length > 255 || clientCodeBuf.length > 255 || iv.length > 255 || tag.length > 255) {
+        throw new Error('userId/clientCode/iv/tag field exceeds 255 bytes');
     }
+
     const payload = Buffer.concat([
         Buffer.from([userIdBuf.length]), userIdBuf,
+        Buffer.from([clientCodeBuf.length]), clientCodeBuf,
         Buffer.from([iv.length]), iv,
         Buffer.from([tag.length]), tag,
         cipher,
@@ -108,10 +112,11 @@ const decodePayload = (full) => {
         return v;
     };
     const userId = readField().toString('ascii');
+    const clientCode = readField().toString('ascii');
     const iv = readField();
     const tag = readField();
     const cipher = Buffer.from(payload.subarray(o));
-    return { userId, iv, tag, cipher };
+    return { userId, clientCode, iv, tag, cipher };
 };
 
 const bytesToBlocks = (buf) => {

@@ -41,6 +41,10 @@ class MifareCard {
         await this.transmit(mifare.buildWrite(block, data16));
     }
 
+    // Returns the stored token, or null for any card that is not a readable
+    // logmod card (blank, foreign keys, non-Classic, or corrupt content).
+    // Never throws on card-level failures: a tap of an unrelated card must not
+    // surface a smartcard error (e.g. SW=6300 on auth) to the login flow.
     async readPayload() {
         await this.loadKey();
         const plan = mifare.planDataBlocks();
@@ -55,24 +59,29 @@ class MifareCard {
             return this.readBlock(block);
         };
 
-        const headerBlock = await readPlanned(plan[0]);
-        if (!headerBlock.subarray(0, 2).equals(mifare.MAGIC)) {
-            return null; // blank or foreign card
-        }
+        try {
+            const headerBlock = await readPlanned(plan[0]);
+            if (!headerBlock.subarray(0, 2).equals(mifare.MAGIC)) {
+                return null; // blank or foreign card
+            }
 
-        const totalBytes = mifare.payloadByteLength(headerBlock);
-        const neededBlocks = Math.ceil(totalBytes / mifare.BLOCK_SIZE);
-        if (neededBlocks > plan.length) {
-            throw new Error(`card claims ${totalBytes} bytes but capacity is ${mifare.CAPACITY_BYTES}`);
-        }
+            const totalBytes = mifare.payloadByteLength(headerBlock);
+            const neededBlocks = Math.ceil(totalBytes / mifare.BLOCK_SIZE);
+            if (neededBlocks > plan.length) {
+                return null; // corrupt/foreign card claiming more than capacity
+            }
 
-        const chunks = [headerBlock];
-        for (let i = 1; i < neededBlocks; i++) {
-            chunks.push(await readPlanned(plan[i]));
-        }
+            const chunks = [headerBlock];
+            for (let i = 1; i < neededBlocks; i++) {
+                chunks.push(await readPlanned(plan[i]));
+            }
 
-        const full = mifare.blocksToBytes(chunks).subarray(0, totalBytes);
-        return mifare.partsToToken(mifare.decodePayload(full));
+            const full = mifare.blocksToBytes(chunks).subarray(0, totalBytes);
+            return mifare.partsToToken(mifare.decodePayload(full));
+        } catch (error) {
+            // not authenticable / unreadable / corrupt -> treat as "not a logmod card"
+            return null;
+        }
     }
 
     async writePayload(token) {
