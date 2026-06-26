@@ -1,50 +1,46 @@
 const pcsclite = require('pcsclite')
+const config = require('config');
 const {logInfo} = require("../logging");
+const MifareCard = require('./card');
+
+const ENABLED = !config.has('rfid.enabled') || config.get('rfid.enabled') === true;
+const SECTOR_KEY = (config.has('rfid.sectorKey') && config.get('rfid.sectorKey')) || 'FFFFFFFFFFFF';
+const WRITE_TIMEOUT_MS = (config.has('rfid.writeTimeoutMs') && config.get('rfid.writeTimeoutMs')) || 20000;
+const GET_UID = Buffer.from([0xFF, 0xCA, 0x00, 0x00, 0x00]);
 
 class RFIDHandler
 {
     initialized = false;
+    pendingWrite = null; // { encryptedKey, resolve }
+    applicationWindow = null;
+    processing = false; // re-entrancy guard: a card is currently being handled
+    awaitCardRemoval = false; // suppress auto-login until a just-written card is lifted
+    reader = null; // the connected PC/SC reader
+    cardPresent = false; // whether a card is currently on the reader
 
     initialize = (applicationWindow) => {
-        if (this.initialized) {
+        if (this.initialized || !ENABLED) {
            return;
         }
+        this.applicationWindow = applicationWindow;
 
         this.initReader()
             .then((reader) => {
+                this.reader = reader;
                 logInfo('application', 'initRFIDReader', `connected to reader ${reader.name}`)
                 reader.on('status', (status) => {
-                    if ((status.state & reader.SCARD_STATE_PRESENT)) {
-                        console.log('Card inserted');
-
-                        reader.connect({ share_mode : reader.SCARD_SHARE_SHARED }, function(err, protocol) {
-                            if (err) {
-                                console.error(err);
-                                return;
-                            }
-
-                            const GET_UID = Buffer.from([0xFF, 0xCA, 0x00, 0x00, 0x00]);
-                            reader.transmit(GET_UID, 40, protocol, function(err, data) {
-                                console.log('GETUID result', err, data)
-                                if (err) {
-                                    console.error('Transmit error:', err);
-                                    return;
-                                }
-
-                                const uid = data.subarray(0, -2);
-                                const tagId = uid.toString('hex').toUpperCase();
-                                console.log(`UID: ${tagId}`);
-
-                                applicationWindow?.webContents?.send('debug-rfid', { tagId })
-
-                                reader.disconnect(reader.SCARD_LEAVE_CARD, function(err) {
-                                    if (err) {
-                                        console.error(err);
-                                    }
-                                });
-                            });
-                        });
+                    const present = !!(status.state & reader.SCARD_STATE_PRESENT);
+                    this.cardPresent = present;
+                    if (!present) {
+                        // card lifted: clear post-write suppression, ready for next card
+                        this.awaitCardRemoval = false;
+                        return;
                     }
+                    if (this.processing || this.awaitCardRemoval) {
+                        return;
+                    }
+                    this.processing = true;
+                    this.onCardPresent(reader);
                 })
             })
             .catch((error) => {
@@ -53,6 +49,115 @@ class RFIDHandler
 
         this.initialized = true;
     }
+
+    onCardPresent = (reader) => {
+        const wasWrite = !!this.pendingWrite;
+        reader.connect({ share_mode : reader.SCARD_SHARE_SHARED }, async (err, protocol) => {
+            if (err) {
+                console.error('rfid connect error', err);
+                this.failPendingWrite('connect failed');
+                this.processing = false;
+                return;
+            }
+
+            let tagId = null;
+            try {
+                const uid = await this.transmit(reader, protocol, GET_UID);
+                tagId = uid.subarray(0, -2).toString('hex').toUpperCase();
+
+                const card = new MifareCard(reader, protocol, SECTOR_KEY);
+
+                if (this.pendingWrite) {
+                    await this.handleWrite(card, tagId);
+                } else {
+                    const content = await card.readPayload();
+                    console.log('rfid card content', content);
+                    if (!content || !content.toString().startsWith('EXEC.')) {
+                        // not a logmod login card -> no auto-login
+                        this.applicationWindow?.webContents?.send('debug-rfid', { tagId });
+                    } else {
+                        await this.handleLogin(content, tagId);
+                    }
+                }
+            } catch (error) {
+                console.error('rfid card handling error', error);
+                this.resolvePendingWrite({ success: false, tagId, error: error.message });
+            } finally {
+                // after a write, don't auto-login the same card still on the reader;
+                // wait until it is physically removed.
+                if (wasWrite) {
+                    this.awaitCardRemoval = true;
+                }
+                this.processing = false;
+                reader.disconnect(reader.SCARD_LEAVE_CARD, (e) => {
+                    if (e) {
+                        console.error('rfid disconnect error', e);
+                    }
+                });
+            }
+        });
+    }
+
+    handleWrite = async (card, tagId) => {
+        await card.writePayload(this.pendingWrite.encryptedKey);
+        this.resolvePendingWrite({ success: true, tagId });
+    }
+
+    handleLogin = async (encryptedKey, tagId) => {
+        const chunks = encryptedKey.toString().split('.');
+        if (chunks.length !== 6) {
+            console.warn('rfid card contains invalid login data');
+            return;
+        }
+
+        this.applicationWindow?.webContents?.send('auth-request', { clientCode: chunks[2], token: encryptedKey });
+    }
+
+    writeKey = (encryptedKey) => {
+        if (!encryptedKey) {
+            return Promise.resolve({ success: false, error: 'missing encryptedKey' });
+        }
+        if (this.pendingWrite) {
+            return Promise.resolve({ success: false, error: 'write already in progress' });
+        }
+        return new Promise((resolve) => {
+            const timer = setTimeout(() => {
+                this.pendingWrite = null;
+                resolve({ success: false, error: 'timeout' });
+            }, WRITE_TIMEOUT_MS);
+            this.pendingWrite = {
+                encryptedKey,
+                resolve: (result) => {
+                    clearTimeout(timer);
+                    this.pendingWrite = null;
+                    resolve(result);
+                },
+            };
+
+            // if a card is already on the reader, write to it now instead of
+            // waiting for the next card-present event (which won't fire).
+            if (this.cardPresent && !this.processing && this.reader) {
+                this.processing = true;
+                this.awaitCardRemoval = false;
+                this.onCardPresent(this.reader);
+            }
+        });
+    }
+
+    resolvePendingWrite = (result) => {
+        if (this.pendingWrite) {
+            this.pendingWrite.resolve(result);
+        }
+    }
+
+    failPendingWrite = (message) => {
+        this.resolvePendingWrite({ success: false, error: message });
+    }
+
+    transmit = (reader, protocol, apdu, resLen = 40) =>
+        new Promise((resolve, reject) => {
+            reader.transmit(apdu, resLen, protocol, (err, data) => (err ? reject(err) : resolve(data)));
+        });
 
     initReader = (timeout = 3000) => {
         return new Promise((resolve, reject) => {
