@@ -51,6 +51,18 @@
     "parserDelimiter": []
   },
 
+  "doc::rfid": "RFID reader/writer support",
+  "rfid": {
+    "doc::enabled": "enable RFID reader/writer support.",
+    "enabled": false,
+
+    "doc::sectorKey": "sector key, default FFFFFFFFFFFF for mifare reader",
+    "sectorKey": "FFFFFFFFFFFF",
+
+    "doc::writeTimeoutMs": "rfid write timeout default 20000",
+    "writeTimeoutMs": 20000
+  },
+
   "doc::webcam": "webcam / shipout photo settings",
   "webcam": {
     "doc::shipoutPhotoSavePath": "The path where shipout photos are stored. Available parameters {%orderNumber}, {%invoiceNumber}, {%date}, {%dateTime}, {%time}",
