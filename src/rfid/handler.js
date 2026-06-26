@@ -1,49 +1,30 @@
 const pcsclite = require('pcsclite')
+const config = require('config');
 const {logInfo} = require("../logging");
+const MifareCard = require('./card');
+
+const SECTOR_KEY = (config.has('rfid.sectorKey') && config.get('rfid.sectorKey')) || 'FFFFFFFFFFFF';
+const WRITE_TIMEOUT_MS = (config.has('rfid.writeTimeoutMs') && config.get('rfid.writeTimeoutMs')) || 20000;
+const GET_UID = Buffer.from([0xFF, 0xCA, 0x00, 0x00, 0x00]);
 
 class RFIDHandler
 {
     initialized = false;
+    pendingWrite = null; // { encryptedKey, resolve }
+    applicationWindow = null;
 
     initialize = (applicationWindow) => {
         if (this.initialized) {
            return;
         }
+        this.applicationWindow = applicationWindow;
 
         this.initReader()
             .then((reader) => {
                 logInfo('application', 'initRFIDReader', `connected to reader ${reader.name}`)
                 reader.on('status', (status) => {
                     if ((status.state & reader.SCARD_STATE_PRESENT)) {
-                        console.log('Card inserted');
-
-                        reader.connect({ share_mode : reader.SCARD_SHARE_SHARED }, function(err, protocol) {
-                            if (err) {
-                                console.error(err);
-                                return;
-                            }
-
-                            const GET_UID = Buffer.from([0xFF, 0xCA, 0x00, 0x00, 0x00]);
-                            reader.transmit(GET_UID, 40, protocol, function(err, data) {
-                                console.log('GETUID result', err, data)
-                                if (err) {
-                                    console.error('Transmit error:', err);
-                                    return;
-                                }
-
-                                const uid = data.subarray(0, -2);
-                                const tagId = uid.toString('hex').toUpperCase();
-                                console.log(`UID: ${tagId}`);
-
-                                applicationWindow?.webContents?.send('debug-rfid', { tagId })
-
-                                reader.disconnect(reader.SCARD_LEAVE_CARD, function(err) {
-                                    if (err) {
-                                        console.error(err);
-                                    }
-                                });
-                            });
-                        });
+                        this.onCardPresent(reader);
                     }
                 })
             })
@@ -53,6 +34,91 @@ class RFIDHandler
 
         this.initialized = true;
     }
+
+    onCardPresent = (reader) => {
+        reader.connect({ share_mode : reader.SCARD_SHARE_SHARED }, async (err, protocol) => {
+            if (err) {
+                console.error('rfid connect error', err);
+                this.failPendingWrite('connect failed');
+                return;
+            }
+
+            let tagId = null;
+            try {
+                const uid = await this.transmit(reader, protocol, GET_UID);
+                tagId = uid.subarray(0, -2).toString('hex').toUpperCase();
+
+                const card = new MifareCard(reader, protocol, SECTOR_KEY);
+
+                if (this.pendingWrite) {
+                    await this.handleWrite(card, tagId);
+                } else {
+                    await this.handleLogin(card, tagId);
+                }
+            } catch (error) {
+                console.error('rfid card handling error', error);
+                this.resolvePendingWrite({ success: false, tagId, error: error.message });
+            } finally {
+                reader.disconnect(reader.SCARD_LEAVE_CARD, (e) => {
+                    if (e) {
+                        console.error('rfid disconnect error', e);
+                    }
+                });
+            }
+        });
+    }
+
+    handleWrite = async (card, tagId) => {
+        await card.writePayload(this.pendingWrite.encryptedKey);
+        this.resolvePendingWrite({ success: true, tagId });
+    }
+
+    handleLogin = async (card, tagId) => {
+        const encryptedKey = await card.readPayload();
+        if (encryptedKey) {
+            this.applicationWindow?.webContents?.send('rfid-login', { tagId, encryptedKey });
+        } else {
+            this.applicationWindow?.webContents?.send('debug-rfid', { tagId });
+        }
+    }
+
+    writeKey = (encryptedKey) => {
+        if (!encryptedKey) {
+            return Promise.resolve({ success: false, error: 'missing encryptedKey' });
+        }
+        if (this.pendingWrite) {
+            return Promise.resolve({ success: false, error: 'write already in progress' });
+        }
+        return new Promise((resolve) => {
+            const timer = setTimeout(() => {
+                this.pendingWrite = null;
+                resolve({ success: false, error: 'timeout' });
+            }, WRITE_TIMEOUT_MS);
+            this.pendingWrite = {
+                encryptedKey,
+                resolve: (result) => {
+                    clearTimeout(timer);
+                    this.pendingWrite = null;
+                    resolve(result);
+                },
+            };
+        });
+    }
+
+    resolvePendingWrite = (result) => {
+        if (this.pendingWrite) {
+            this.pendingWrite.resolve(result);
+        }
+    }
+
+    failPendingWrite = (message) => {
+        this.resolvePendingWrite({ success: false, error: message });
+    }
+
+    transmit = (reader, protocol, apdu, resLen = 40) =>
+        new Promise((resolve, reject) => {
+            reader.transmit(apdu, resLen, protocol, (err, data) => (err ? reject(err) : resolve(data)));
+        });
 
     initReader = (timeout = 3000) => {
         return new Promise((resolve, reject) => {

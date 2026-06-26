@@ -326,6 +326,12 @@ const bindIpcEvents = () => {
         windowInstance.webContents.send('debug-weight', { weight });
     });
 
+    // logmod requests writing an encrypted access key to the next tapped card
+    ipcMain.on('rfid-write', async (event, arg) => {
+        const result = await rfidHandlerInstance.writeKey(arg && arg.encryptedKey);
+        windowInstance.webContents.send('rfid-write-result', result);
+    });
+
     // deprecated - not used anymore
     ipcMain.on('back', () => showLogModMobile(windowInstance));
     // deprecated - not used anymore
