@@ -27,6 +27,18 @@ const mapWebSocketMessage = (data) => {
                 requestPackage.weight = shippingRequestPackage.weight;
             }
 
+            if (shippingRequestPackage.hasOwnProperty('width')) {
+                requestPackage.width = shippingRequestPackage.width;
+            }
+
+            if (shippingRequestPackage.hasOwnProperty('length')) {
+                requestPackage.length = shippingRequestPackage.length;
+            }
+
+            if (shippingRequestPackage.hasOwnProperty('height')) {
+                requestPackage.height = shippingRequestPackage.height;
+            }
+
             if (shippingRequestPackage.hasOwnProperty('services') && shippingRequestPackage.services.length > 0) {
                 requestPackage.services = shippingRequestPackage.services;
             }
