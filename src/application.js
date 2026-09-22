@@ -341,6 +341,21 @@ const bindIpcEvents = () => {
         showLogModMobile(windowInstance);
     });
 
+    // printer list for the renderer - same payload the websocket request delivers
+    ipcMain.handle('printer-list', () => {
+        return printingHandlerInstance.getPrinterList().catch((err) => {
+            logWarning('application', 'printer-list', 'could not collect printer list ' + err.message);
+
+            // keep the response parsable for the renderer, an empty list means 'no printers or not readable'
+            return {
+                logModIdent: getLogModIdentification(),
+                defaultPrinter: '',
+                configuredPrinters: {},
+                printers: []
+            };
+        });
+    });
+
     ipcMain.handle('save-photo', async (event, args) => {
         try {
             webcamHandlerInstance.savePhoto(args);

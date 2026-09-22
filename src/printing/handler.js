@@ -4,8 +4,8 @@ const restClientInstance = require('./../restClient');
 const tmp = require('tmp');
 const fs = require('fs');
 const printer = require('@grandchef/node-printer')
-const {isLinux, isWindows} = require('../helper')
-const {getDocumentPrinter, getProductLabelPrinter, getMovementLabelPrinter, getShipmentLabelPrinter, getRawLabelPrinter} = require('./printer');
+const {isLinux, isWindows, getLogModIdentification} = require('../helper')
+const {getDocumentPrinter, getProductLabelPrinter, getMovementLabelPrinter, getShipmentLabelPrinter, getRawLabelPrinter, getAvailablePrinters, getDefaultPrinterName} = require('./printer');
 const {logDebug, logWarning} = require('./../logging');
 const { exec } = require("child_process");
 
@@ -83,6 +83,103 @@ class PrintingHandler {
         eventEmitter.on('pickListNeedsAdditionalDocuments', this._requestAdditionalPickListDocuments);
         eventEmitter.on('multiPackageSupplyNotePrint', this._requestMultiPackageSupplyNote);
         eventEmitter.on('requestPersonalizationDocuments', this._requestPersonalizationDocuments);
+        eventEmitter.on('requestPrinterList', this._requestPrinterList);
+    };
+
+    /**
+     * all printers known by the system together with the printers configured for this instance
+     *
+     * this is the single source for both transports - the websocket request wraps it into a message envelope,
+     * the ipc call from the renderer gets it as it is. it does not need the handler to be initialized.
+     *
+     * @returns {Promise<{logModIdent: string, defaultPrinter: string, configuredPrinters: {}, printers: [{}]}>}
+     */
+    getPrinterList = () => {
+        return getAvailablePrinters().then((printers) => {
+            logDebug('printingHandler', 'getPrinterList', 'found ' + printers.length + ' printers');
+
+            return {
+                logModIdent: getLogModIdentification(),
+                defaultPrinter: getDefaultPrinterName(),
+                configuredPrinters: this._getConfiguredPrinters(),
+                printers: printers
+            };
+        });
+    };
+
+    /**
+     * collects all printers known by the system and answers the requesting device
+     *
+     * @param {{event: string, type: string, senderUserId: int, receiverUserId: int, receiverLogModIdent: string, data: {requestId: string, logModIdent: string}}} request
+     *
+     * @private
+     */
+    _requestPrinterList = (request) => {
+        const requestData = (request && request.data) || {};
+
+        this.getPrinterList().then((printerList) => {
+            eventEmitter.emit('printerListResponse', {
+                // must not be the request event name - the socket delivers our own message back to us
+                event: 'logModPrinterListResponse',
+                type: 'logMod',
+                receiverUserId: this._getRequestingUserId(request),
+                // both address fields stay empty, otherwise the answer is routed to a logmod instance
+                // instead of the asking device - same envelope the heartbeat uses
+                receiverLogModIdent: '',
+                logModIdent: null,
+                data: {
+                    requestId: requestData.requestId || null,
+                    ...printerList
+                }
+            });
+        }).catch(this._handleError);
+    };
+
+    /**
+     * evaluates the user id the printer list response has to be sent to
+     *
+     * the receiverUserId of the request is not taken into account - it addresses this logmod instance,
+     * mirroring it would send the answer to logmod instances instead of the asking device. 0 means public,
+     * which is the way the heartbeat reaches the devices.
+     *
+     * @param {{senderUserId: int, data: {userId: int, senderUserId: int}}} request
+     *
+     * @returns {int}
+     *
+     * @private
+     */
+    _getRequestingUserId = (request) => {
+        const requestData = (request && request.data) || {};
+
+        return request.senderUserId || requestData.userId || requestData.senderUserId || 0;
+    };
+
+    /**
+     * the printers currently configured for this instance, so the requesting device is able to preselect them
+     *
+     * @returns {{}}
+     *
+     * @private
+     */
+    _getConfiguredPrinters = () => {
+        // shipment labels are not listed here, they are configured per shipmentTypeCode and cannot be overridden
+        const printerConfigKeys = {
+            invoice: 'printing.defaultInvoiceSlipPrinter',
+            delivery: 'printing.defaultDeliverySlipPrinter',
+            return: 'printing.defaultReturnSlipPrinter',
+            productLabel: 'printing.defaultProductLabelPrinter',
+            movementLabel: 'printing.defaultMovementLabelPrinter',
+            additionalDocument: 'printing.defaultAdditionalDocumentPrinter',
+            personalization: 'printing.defaultPersonalizationPrinter'
+        };
+
+        const configuredPrinters = {};
+        Object.keys(printerConfigKeys).forEach((printerType) => {
+            const configKey = printerConfigKeys[printerType];
+            configuredPrinters[printerType] = config.has(configKey) ? config.get(configKey) : '';
+        });
+
+        return configuredPrinters;
     };
 
     /**
@@ -214,7 +311,7 @@ class PrintingHandler {
     /**
      * requesting documents from blisstribute and print them
      *
-     * @param {{productEan:string, templateId:int, invoiceNumber:string}} data
+     * @param {{productEan:string, templateId:int, invoiceNumber:string, printer:string}} data
      *
      * @private
      */
@@ -222,6 +319,9 @@ class PrintingHandler {
         if (!data || !data.hasOwnProperty('documentType')) {
             return;
         }
+
+        // optional printer given with the print command, overrides the configured printer
+        const requestedPrinter = data.printer || '';
 
         switch (data.documentType.toUpperCase()) {
             case 'REPAIRCASECOVERLETTER': {
@@ -231,7 +331,7 @@ class PrintingHandler {
                 }
 
                 restClientInstance.requestRepairCaseDocuments(data.pickBox).then((response) => {
-                    this._handleDocumentPrinting('additional', response.response, response.response.repairCasePdf)
+                    this._handleDocumentPrinting('additional', response.response, response.response.repairCasePdf, true, requestedPrinter)
                 }).catch(this._handleError);
                 break;
             }
@@ -242,7 +342,7 @@ class PrintingHandler {
                 }
 
                 restClientInstance.requestRelocationDocuments(data.pickBox).then((response) => {
-                    this._handleDocumentPrinting('additional', response.response, response.response.relocationPdf)
+                    this._handleDocumentPrinting('additional', response.response, response.response.relocationPdf, true, requestedPrinter)
                 }).catch(this._handleError);
                 break;
             }
@@ -253,7 +353,7 @@ class PrintingHandler {
                 }
 
                 restClientInstance.requestProductLabel(data.productEan, data.templateId).then((response) => {
-                    this._handleProductLabelPrinting(response.response, data.quantity);
+                    this._handleProductLabelPrinting(response.response, data.quantity, requestedPrinter);
                 }).catch(this._handleError);
                 break;
             }
@@ -264,7 +364,7 @@ class PrintingHandler {
                 }
 
                 restClientInstance.requestProductLabel(data.productEan, data.templateId, data.movementId).then((response) => {
-                    this._handleMovementLabelPrinting(response.response, data.quantity);
+                    this._handleMovementLabelPrinting(response.response, data.quantity, requestedPrinter);
                 }).catch(this._handleError);
                 break;
             }
@@ -275,7 +375,7 @@ class PrintingHandler {
                 }
 
                 restClientInstance.requestShippingRequestPackageLabel(data.shippingRequestPackageNumber).then((response) => {
-                    this._handleShippingRequestPackageLabelPrinting(response.response, data.quantity);
+                    this._handleShippingRequestPackageLabelPrinting(response.response, data.quantity, requestedPrinter);
                 }).catch(this._handleError);
                 break;
             }
@@ -286,7 +386,7 @@ class PrintingHandler {
                 }
 
                 restClientInstance.requestInvoiceDocument(data.invoiceNumber).then((response) => {
-                    this._handleDocumentPrinting('invoice', response.response, response.response.content)
+                    this._handleDocumentPrinting('invoice', response.response, response.response.content, true, requestedPrinter)
                 }).catch(this._handleError);
                 break;
             }
@@ -297,7 +397,7 @@ class PrintingHandler {
                 }
 
                 restClientInstance.requestDeliverySlipDocument(data.invoiceNumber).then((response) => {
-                    this._handleDocumentPrinting('delivery', response.response, response.response.content)
+                    this._handleDocumentPrinting('delivery', response.response, response.response.content, true, requestedPrinter)
                 }).catch(this._handleError);
                 break;
             }
@@ -308,7 +408,7 @@ class PrintingHandler {
                 }
 
                 restClientInstance.requestReturnSlipDocument(data.invoiceNumber).then((response) => {
-                    this._handleDocumentPrinting('return', response.response, response.response.content)
+                    this._handleDocumentPrinting('return', response.response, response.response.content, true, requestedPrinter)
                 }).catch(this._handleError);
                 break;
             }
@@ -323,7 +423,7 @@ class PrintingHandler {
                         if (printAdditionalDocumentsFirst) {
                             this._handleAdditionalDocumentPrinting(response.response);
                         }
-                        this._handleDocumentPrinting('invoiceMerge', response.response, response.response.mergedDocumentsPdf);
+                        this._handleDocumentPrinting('invoiceMerge', response.response, response.response.mergedDocumentsPdf, true, requestedPrinter);
 
                         if (!printAdditionalDocumentsFirst) {
                             this._handleAdditionalDocumentPrinting(response.response);
@@ -335,9 +435,9 @@ class PrintingHandler {
                             this._handleAdditionalDocumentPrinting(response.response);
                         }
 
-                        this._handleDocumentPrinting('invoice', response.response, response.response.invoicePdf);
-                        this._handleDocumentPrinting('delivery', response.response, response.response.deliverySlipPdf);
-                        this._handleDocumentPrinting('return', response.response, response.response.returnSlipPdf);
+                        this._handleDocumentPrinting('invoice', response.response, response.response.invoicePdf, true, requestedPrinter);
+                        this._handleDocumentPrinting('delivery', response.response, response.response.deliverySlipPdf, true, requestedPrinter);
+                        this._handleDocumentPrinting('return', response.response, response.response.returnSlipPdf, true, requestedPrinter);
 
                         if (!printAdditionalDocumentsFirst) {
                             this._handleAdditionalDocumentPrinting(response.response);
@@ -413,15 +513,16 @@ class PrintingHandler {
      * @param {{advertisingMedium:string, deliveryCountry:string, isEU: boolean}} data
      * @param {string} contentToPrint
      * @param {boolean} isBase64
+     * @param {string} requestedPrinter printer given with the print command, overrides the configured printer
      * @private
      */
-    _handleDocumentPrinting = (type, data, contentToPrint, isBase64 = true) => {
+    _handleDocumentPrinting = (type, data, contentToPrint, isBase64 = true, requestedPrinter = '') => {
         if (!contentToPrint || contentToPrint.length < 100) {
             return;
         }
 
         const tmpFileName = this._saveResultToPdf(contentToPrint, isBase64);
-        const printerConfig = getDocumentPrinter(type, data.advertisingMedium, data.deliveryCountry, data.isEU);
+        const printerConfig = getDocumentPrinter(type, data.advertisingMedium, data.deliveryCountry, data.isEU, requestedPrinter);
         const printingOptions = this._getOptionsForPrinting(printerConfig);
 
         logDebug('printingHandler', '_handleDocumentPrinting', 'start printing with options ' + JSON.stringify(printingOptions));
@@ -441,6 +542,10 @@ class PrintingHandler {
     };
 
     _handleRawPrint = (printerName, command) => {
+        if (printerName && typeof printerName === 'object') {
+            printerName = printerName.name || printerName.printer || '';
+        }
+
         logDebug('printingHandler', '_handleRawPrint', `started for printer ${printerName} with command ${command}`)
         labelPrinter().printDirect({
             data: command,
@@ -505,16 +610,17 @@ class PrintingHandler {
      *
      * @param {{}} responseData
      * @param {int} numberOfCopies
+     * @param {string} requestedPrinter printer given with the print command, overrides the configured printer
      *
      * @private
      */
-    _handleProductLabelPrinting = (responseData, numberOfCopies) => {
+    _handleProductLabelPrinting = (responseData, numberOfCopies, requestedPrinter = '') => {
         logDebug('printingHandler', '_handleProductLabelPrinting', 'start printing with options ' + JSON.stringify(responseData));
         const {content: labelContent, ean13, price, articleNumber, classification1, classification2} = responseData;
         if (!labelContent || labelContent.length < 100) {
             return;
         }
-        const printerConfig = getProductLabelPrinter(numberOfCopies);
+        const printerConfig = getProductLabelPrinter(numberOfCopies, requestedPrinter);
         if (printProductLabelRAW) {
             return this.productLabelPrintRaw(printerConfig.printer, productLabelRAWTemplate, numberOfCopies, ean13, price, articleNumber, classification1, classification2);
         }
@@ -531,16 +637,17 @@ class PrintingHandler {
      *
      * @param {{}} responseData
      * @param {int} numberOfCopies
+     * @param {string} requestedPrinter printer given with the print command, overrides the configured printer
      *
      * @private
      */
-    _handleMovementLabelPrinting = (responseData, numberOfCopies) => {
+    _handleMovementLabelPrinting = (responseData, numberOfCopies, requestedPrinter = '') => {
         logDebug('printingHandler', '_handleMovementLabelPrinting', 'start printing with options ' + JSON.stringify(responseData));
         const {content: labelContent } = responseData;
         if (!labelContent || labelContent.length < 100) {
             return;
         }
-        const printerConfig = getMovementLabelPrinter();
+        const printerConfig = getMovementLabelPrinter(requestedPrinter);
         const tmpFileName = this._saveResultToPdf(labelContent);
         const printingOptions = this._getOptionsForPrinting(printerConfig, numberOfCopies);
 
@@ -553,16 +660,17 @@ class PrintingHandler {
      *
      * @param {{}} responseData
      * @param {int} numberOfCopies
+     * @param {string} requestedPrinter printer given with the print command, overrides the configured printer
      *
      * @private
      */
-    _handleShippingRequestPackageLabelPrinting = (responseData, numberOfCopies = 1) => {
+    _handleShippingRequestPackageLabelPrinting = (responseData, numberOfCopies = 1, requestedPrinter = '') => {
         logDebug('printingHandler', '_handleShippingRequestPackageLabelPrinting', 'start printing with options ' + JSON.stringify(responseData));
         const {content: labelContent, shippingRequestPackageNumber, shippingRequestNumber} = responseData;
         if (!labelContent || labelContent.length < 100) {
             return;
         }
-        const printerConfig = getProductLabelPrinter(numberOfCopies);
+        const printerConfig = getProductLabelPrinter(numberOfCopies, requestedPrinter);
         if (printShippingRequestPackageLabelRaw) {
             return this.shippingRequestPackageLabelPrintRaw(printerConfig.printer, shippingRequestPackageLabelRAWTemplate, numberOfCopies, shippingRequestPackageNumber, shippingRequestNumber);
         }

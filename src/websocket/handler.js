@@ -12,6 +12,7 @@ const MULTI_PACKAGE_SUPPLY_NOTE_EVENT = 'LOGMODMULTIPACKAGESUPPLYNOTE';
 const PRINT_EVENT = 'LOGMODPRINT';
 const PICK_BOX_READY = 'PICKBOXREADY';
 const PICK_LIST_FINISHED = 'PICKLISTFINISHED';
+const PRINTER_LIST_EVENT = 'LOGMODPRINTERLIST';
 
 class WebSocketHandler
 {
@@ -20,6 +21,7 @@ class WebSocketHandler
         eventEmitter.on('shipOutSucceed', this.sendMessage);
         eventEmitter.on('pickBoxInvoiceSuccess', this.sendMessage);
         eventEmitter.on('pickBoxInvoiceFailed', this.sendMessage);
+        eventEmitter.on('printerListResponse', this.sendMessage);
     }
 
     /**
@@ -179,6 +181,23 @@ class WebSocketHandler
                 eventEmitter.emit('requestDocuments', socketEvent.data);
                 break;
             }
+            case PRINTER_LIST_EVENT: {
+                const printerListRequest = {...socketEvent, data: socketEvent.data || {}};
+
+                // an answer never triggers a new request, no matter which event name it carries
+                if (printerListRequest.data.hasOwnProperty('printers')) {
+                    return;
+                }
+
+                // a targeted request is answered by the addressed instance only, an untargeted one by every receiver
+                if (this._isMessageTargeted(printerListRequest) && !this._isMessageForMe(printerListRequest)) {
+                    return;
+                }
+
+                // the whole message is needed here, the response has to be addressed back to the requesting device
+                eventEmitter.emit('requestPrinterList', printerListRequest);
+                break;
+            }
             case PICK_BOX_READY: {
                 if (!this._isInvoicePrintingActive(socketEvent.data) || this.pickListNeedsAdditionalDocuments(socketEvent.data)) {
                     return;
@@ -214,6 +233,18 @@ class WebSocketHandler
         return (messageData.hasOwnProperty('logModIdent') && messageData.logModIdent === ident)
             || (receiverLogModIdent === ident);
 
+    };
+
+    /**
+     * checks if socket message is addressed to a dedicated logmod instance
+     *
+     * @param {{}} socketMessage
+     * @returns {boolean}
+     * @private
+     */
+    _isMessageTargeted = (socketMessage) => {
+        const { data: messageData, receiverLogModIdent } = socketMessage;
+        return Boolean(receiverLogModIdent) || Boolean(messageData && messageData.logModIdent);
     };
 
     /**

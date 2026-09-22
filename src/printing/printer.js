@@ -1,4 +1,4 @@
-const { logDebug } = require('./../logging');
+const { logDebug, logWarning } = require('./../logging');
 const config = require('config');
 const printer = require('pdf-to-printer');
 const {isLinux, isWindows} = require("../helper");
@@ -14,17 +14,110 @@ function systemPrinter() {
   throw new Error(`unsupported platform. ${process.platform}`)
 }
 
+/**
+ * normalized list of all printers known by the system
+ *
+ * @type {[{name: string, displayName: string, status: string, paperSizes: [string]}]}
+ */
 let printerList = [];
-systemPrinter().getPrinters().then((res) => {
-  console.log('printer.js', 'getPrinters', res)
-  printerList = res
-});
 
+/**
+ * the system default printer as delivered by the printing module - platform dependent structure
+ */
 let defaultPrinter = '';
-systemPrinter().getDefaultPrinter().then((res) => {
-  console.log('printer.js', 'getDefaultPrinter', res)
-  defaultPrinter = res
-});
+
+/**
+ * name of the system default printer
+ *
+ * @type {string}
+ */
+let defaultPrinterName = '';
+
+/**
+ * normalizes the platform dependent printer information
+ *
+ * windows (pdf-to-printer) delivers {deviceId, name, paperSizes}
+ * linux (unix-print) delivers {printer, description, status, alerts, connection}
+ *
+ * @param {{}|string} systemPrinterInfo
+ *
+ * @returns {{name: string, displayName: string, status: string, paperSizes: [string]}|null}
+ *
+ * @private
+ */
+_normalizePrinterInfo = (systemPrinterInfo) => {
+  if (!systemPrinterInfo) {
+    return null;
+  }
+
+  if (typeof systemPrinterInfo === 'string') {
+    return {name: systemPrinterInfo, displayName: systemPrinterInfo, status: '', paperSizes: []};
+  }
+
+  const name = systemPrinterInfo.name || systemPrinterInfo.printer || '';
+  if (name === '') {
+    return null;
+  }
+
+  return {
+    name: name,
+    displayName: systemPrinterInfo.description || name,
+    status: systemPrinterInfo.status || systemPrinterInfo.alerts || '',
+    paperSizes: systemPrinterInfo.paperSizes || []
+  };
+};
+
+/**
+ * reads all printers from the system and refreshes the local cache
+ *
+ * @returns {Promise<[{name: string, displayName: string, status: string, paperSizes: [string]}]>}
+ */
+refreshPrinterList = () => {
+  // both requests are handled independently - a host without a default print queue still has to deliver its printers
+  const printerListRequest = systemPrinter().getPrinters().then((systemPrinterList) => {
+    printerList = (systemPrinterList || []).map(_normalizePrinterInfo).filter((printerInfo) => printerInfo !== null);
+  }).catch((err) => {
+    logWarning('printer', 'refreshPrinterList', 'could not read printers from system - ' + err.message);
+  });
+
+  const defaultPrinterRequest = systemPrinter().getDefaultPrinter().then((systemDefaultPrinter) => {
+    defaultPrinter = systemDefaultPrinter;
+    const normalizedDefaultPrinter = _normalizePrinterInfo(systemDefaultPrinter);
+    defaultPrinterName = normalizedDefaultPrinter ? normalizedDefaultPrinter.name : '';
+  }).catch((err) => {
+    logWarning('printer', 'refreshPrinterList', 'could not read default printer from system - ' + err.message);
+  });
+
+  return Promise.all([printerListRequest, defaultPrinterRequest]).then(() => {
+    logDebug('printer', 'refreshPrinterList', JSON.stringify({printerList, defaultPrinterName}));
+
+    return printerList;
+  });
+};
+
+refreshPrinterList();
+
+/**
+ * all printers known by the system, refreshed on every call
+ *
+ * @returns {Promise<[{name: string, displayName: string, status: string, isDefault: boolean, paperSizes: [string]}]>}
+ */
+getAvailablePrinters = () => {
+  return refreshPrinterList().then((availablePrinters) => {
+    return availablePrinters.map((printerInfo) => {
+      return {...printerInfo, isDefault: printerInfo.name === defaultPrinterName};
+    });
+  });
+};
+
+/**
+ * name of the system default printer - may be empty until the first refresh has been done
+ *
+ * @returns {string}
+ */
+getDefaultPrinterName = () => {
+  return defaultPrinterName;
+};
 
 /**
  * checks if given printer name is existent in system
@@ -84,17 +177,50 @@ _getConfigTemplate = (defaultPrinter) => {
 }
 
 /**
+ * applies a printer requested with the print command
+ * the requested printer always wins over any configured printer
+ *
+ * @param {{}} printerConfig
+ * @param {string} requestedPrinter
+ *
+ * @returns {{}}
+ *
+ * @private
+ */
+_applyRequestedPrinter = (printerConfig, requestedPrinter) => {
+  if (!requestedPrinter || typeof requestedPrinter !== 'string' || requestedPrinter.trim() === '') {
+    return printerConfig;
+  }
+
+  const requestedPrinterName = requestedPrinter.trim();
+
+  // an empty printer list means we were not able to read the printers from the system - in this case we trust the request
+  const printerIsKnown = printerList.length === 0 || printerList.some((printerInfo) => printerInfo.name === requestedPrinterName);
+  if (!printerIsKnown) {
+    logWarning('printer', '_applyRequestedPrinter', 'requested printer ' + requestedPrinterName + ' is unknown to the system, keeping configured printer ' + JSON.stringify(printerConfig.printer));
+
+    return printerConfig;
+  }
+
+  logDebug('printer', '_applyRequestedPrinter', 'using requested printer ' + requestedPrinterName);
+  printerConfig.printer = requestedPrinterName;
+
+  return printerConfig;
+};
+
+/**
  * evaluates the printer and printer settings for given documentType
  *
  * @param {string} documentType
  * @param {string} advertisingMedium
  * @param {string} deliveryCountryCode
  * @param {boolean} deliveryCountryIsEU
+ * @param {string} requestedPrinter printer given with the print command, overrides the configured printer
  *
  * @returns {{numOfCopies: number, printer: string}}
  *
  */
-getDocumentPrinter = (documentType, advertisingMedium = '', deliveryCountryCode= '', deliveryCountryIsEU = false) => {
+getDocumentPrinter = (documentType, advertisingMedium = '', deliveryCountryCode= '', deliveryCountryIsEU = false, requestedPrinter = '') => {
   logDebug('printer', 'getDocumentPrinter', JSON.stringify({documentType, advertisingMedium, deliveryCountryIsEU, deliveryCountryCode}));
   let printerConfig = {};
   switch(documentType.toUpperCase()) {
@@ -123,6 +249,8 @@ getDocumentPrinter = (documentType, advertisingMedium = '', deliveryCountryCode=
       break;
     }
   }
+
+  printerConfig = _applyRequestedPrinter(printerConfig, requestedPrinter);
 
   logDebug('printer', 'getDocumentPrinter', JSON.stringify(printerConfig));
   return printerConfig;
@@ -337,9 +465,12 @@ getPersonalizationPrinter = () => {
 /**
  * load product label printer
  *
+ * @param {int} numberOfCopies
+ * @param {string} requestedPrinter printer given with the print command, overrides the configured printer
+ *
  * @returns {{numOfCopies: number, printer: string, rotate: boolean, color: boolean, monochrome: boolean}}
  */
-getProductLabelPrinter = (numberOfCopies) => {
+getProductLabelPrinter = (numberOfCopies, requestedPrinter = '') => {
   let printerConfig = _getConfigTemplate(defaultPrinter);
   if (_checkPrinterKey('printing.defaultProductLabelPrinter')) {
     printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultProductLabelPrinter'));
@@ -365,15 +496,17 @@ getProductLabelPrinter = (numberOfCopies) => {
     }
   }
 
-  return printerConfig;
+  return _applyRequestedPrinter(printerConfig, requestedPrinter);
 };
 
 /**
  * load movement label printer
  *
+ * @param {string} requestedPrinter printer given with the print command, overrides the configured printer
+ *
  * @returns {{numOfCopies: number, printer: string, rotate: boolean, color: boolean, monochrome: boolean}}
  */
-getMovementLabelPrinter = () => {
+getMovementLabelPrinter = (requestedPrinter = '') => {
   let printerConfig = _getConfigTemplate(defaultPrinter);
   if (_checkPrinterKey('printing.defaultMovementLabelPrinter')) {
     printerConfig.printer = _checkPrinterAndCorrect(config.get('printing.defaultMovementLabelPrinter'));
@@ -387,7 +520,7 @@ getMovementLabelPrinter = () => {
     }
   }
 
-  return printerConfig;
+  return _applyRequestedPrinter(printerConfig, requestedPrinter);
 };
 
 /**
@@ -433,5 +566,7 @@ module.exports = {
   getProductLabelPrinter,
   getMovementLabelPrinter,
   getRawLabelPrinter,
-  getShipmentLabelPrinter
+  getShipmentLabelPrinter,
+  getAvailablePrinters,
+  getDefaultPrinterName
 };
